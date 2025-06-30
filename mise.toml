@@ -1,0 +1,9 @@
+[tools]
+java = "openjdk-21"
+node = "latest"
+
+[env]
+ANDROID_HOME = "/home/armaldio/Android/Sdk"
+
+[tasks.build-android]
+run = "pnpm cap sync && pnpm cap build android"
