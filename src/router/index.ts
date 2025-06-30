@@ -1,8 +1,29 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHistory, type NavigationGuard } from 'vue-router'
 import Introduction from '@/views/Introduction.vue'
 import Home from '@/views/Home.vue'
 import Details from '@/views/Details.vue'
 import { useServicesStore } from '@/stores/services'
+import { parseDeepLink, navigateFromDeepLink } from '@/utils/deepLink'
+
+// Handle deep link navigation
+const handleDeepLink: NavigationGuard = (to, _from, next) => {
+  // Check for deep link in query parameters (web fallback)
+  if (to.query.deep_link) {
+    const deepLink = Array.isArray(to.query.deep_link) 
+      ? to.query.deep_link[0] 
+      : to.query.deep_link || '';
+    
+    if (deepLink) {
+      const params = parseDeepLink(deepLink);
+      if (params) {
+        navigateFromDeepLink(router, params);
+        return;
+      }
+    }
+  }
+  
+  next();
+};
 
 const router = createRouter({
   history: createWebHistory(),
@@ -10,20 +31,39 @@ const router = createRouter({
     {
       path: '/',
       name: 'introduction',
-      component: Introduction
+      component: Introduction,
+      beforeEnter: handleDeepLink
     },
     {
       path: '/home',
       name: 'home',
       component: Home,
-      meta: { requiresServices: true }
+      meta: { requiresServices: true },
+      beforeEnter: handleDeepLink
     },
     {
       path: '/details/:mediaType/:id',
       name: 'details',
       component: Details,
       props: true,
-      meta: { requiresServices: true }
+      meta: { requiresServices: true },
+      beforeEnter: handleDeepLink
+    },
+    // Catch-all route for web-based deep links
+    {
+      path: '/:pathMatch(.*)*',
+      beforeEnter: (to, from, next) => {
+        // Check if this is a deep link
+        if (to.path.startsWith('/mediahub/')) {
+          const deepLink = to.path.replace(/^\/mediahub\//, 'mediahub://');
+          const params = parseDeepLink(deepLink);
+          if (params) {
+            navigateFromDeepLink(router, params);
+            return;
+          }
+        }
+        next('/');
+      }
     }
   ]
 })

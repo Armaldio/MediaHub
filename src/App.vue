@@ -7,10 +7,13 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useServicesStore } from '@/stores/services'
+import { setupDeepLinkHandler } from '@/utils/deepLinkHandler'
 
 const servicesStore = useServicesStore()
 
 onMounted(() => {
   servicesStore.loadFromLocalStorage()
+  // Initialize deep link handler
+  setupDeepLinkHandler()
 })
 </script>
