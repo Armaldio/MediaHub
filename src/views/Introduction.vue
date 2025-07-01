@@ -21,28 +21,35 @@
         </div>
   
         <!-- Filter Tabs -->
-        <div class="flex flex-wrap justify-center gap-2 mb-8">
-          <button
-            @click="selectedCategory = null"
-            class="px-4 py-2 rounded-full text-sm font-medium transition-all"
-            :class="selectedCategory === null 
-              ? 'bg-primary-500 text-white' 
-              : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
-          >
-            All Services ({{ availableServicesFiltered.length }})
-          </button>
-          <button
-            v-for="category in servicesStore.serviceCategories"
-            :key="category.id"
-            @click="selectedCategory = category.id"
-            class="px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-1"
-            :class="selectedCategory === category.id 
-              ? 'bg-primary-500 text-white' 
-              : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
-          >
-            <span>{{ category.icon }}</span>
-            {{ category.name }} ({{ servicesStore.servicesByCategory[category.id].length }})
-          </button>
+        <div class="relative mb-6">
+          <div class="absolute inset-y-0 left-0 w-6 bg-gradient-to-r from-gray-900 to-transparent z-10 pointer-events-none"></div>
+          <div class="absolute inset-y-0 right-0 w-6 bg-gradient-to-l from-gray-900 to-transparent z-10 pointer-events-none"></div>
+          <div class="flex overflow-x-auto pb-3 -mx-2 px-2 scrollbar-none">
+            <div class="flex space-x-2">
+              <button
+                @click="selectedCategory = null"
+                class="px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap flex-shrink-0"
+                :class="selectedCategory === null 
+                  ? 'bg-primary-500 text-white shadow-md' 
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
+              >
+                All ({{ availableServicesFiltered.length }})
+              </button>
+              <button
+                v-for="category in servicesStore.serviceCategories"
+                :key="category.id"
+                @click="selectedCategory = category.id"
+                class="px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1"
+                :class="selectedCategory === category.id 
+                  ? 'bg-primary-500 text-white shadow-md' 
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'"
+              >
+                <span class="text-xs">{{ category.icon }}</span>
+                <span>{{ category.name }}</span>
+                <span class="opacity-70 text-[0.7rem]">({{ servicesStore.servicesByCategory[category.id].length }})</span>
+              </button>
+            </div>
+          </div>
         </div>
   
         <!-- Show installed apps only toggle -->
@@ -67,12 +74,12 @@
         </div>
   
         <!-- Services Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-12">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 mb-12">
           <div
             v-for="service in availableServicesFiltered"
             :key="service.id"
             @click="servicesStore.toggleService(service.id)"
-            class="service-card glass-effect rounded-xl p-4 cursor-pointer animate-slide-up relative"
+            class="service-card glass-effect rounded-lg p-2.5 cursor-pointer animate-slide-up relative hover:bg-white/5 transition-colors"
             :class="{ 
               'selected': servicesStore.isServiceSelected(service.id),
               'opacity-60': !servicesStore.isServiceInstalled(service)
@@ -80,41 +87,33 @@
             :style="{ animationDelay: `${availableServicesFiltered.indexOf(service) * 0.05}s` }"
           >
             <!-- Installation status indicator -->
-            <div class="absolute top-2 right-2">
+            <div class="absolute top-1.5 right-1.5">
               <div
                 v-if="servicesStore.isServiceInstalled(service)"
-                class="w-3 h-3 bg-green-500 rounded-full"
+                class="w-2.5 h-2.5 bg-green-500 rounded-full"
                 title="Installed"
               ></div>
               <div
                 v-else-if="service.androidAppId"
-                class="w-3 h-3 bg-gray-500 rounded-full"
+                class="w-2.5 h-2.5 bg-gray-500 rounded-full"
                 title="Not installed"
               ></div>
               <div
                 v-else
-                class="w-3 h-3 bg-blue-500 rounded-full"
+                class="w-2.5 h-2.5 bg-blue-500 rounded-full"
                 title="Web service"
               ></div>
             </div>
   
-            <div class="text-center">
-              <div class="text-3xl mb-3">{{ service.icon }}</div>
-              <h3 class="text-base font-semibold text-white mb-1">{{ service.name }}</h3>
-              <p class="text-gray-400 text-xs mb-3 line-clamp-2">{{ service.description }}</p>
-              
-              <!-- Category badge -->
-              <div class="mb-3">
-                <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-700 rounded-full text-xs text-gray-300">
-                  {{ servicesStore.getCategoryInfo(service.category).icon }}
-                  {{ servicesStore.getCategoryInfo(service.category).name }}
-                </span>
+            <div class="flex items-center gap-2 w-full">
+              <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
+                <span v-if="service.icon" class="text-lg">{{ service.icon }}</span>
+                <span v-else class="text-xs text-gray-400">{{ service.name.charAt(0) }}</span>
               </div>
-  
-              <div
-                class="w-full h-1 rounded-full"
-                :style="{ backgroundColor: service.color }"
-              ></div>
+              <div class="min-w-0 flex-1">
+                <h3 class="font-medium text-xs text-white truncate">{{ service.name }}</h3>
+                <p class="text-[0.65rem] text-gray-400 line-clamp-2 leading-tight">{{ service.description }}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -190,5 +189,13 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
   </style>

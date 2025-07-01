@@ -82,7 +82,7 @@ router.beforeEach((to, from, next) => {
   console.log('servicesStore.selectedServices', JSON.stringify(servicesStore.selectedServices));
   
   // If we're going to introduction but have services selected, redirect to home
-  if (to.name === 'introduction' && servicesStore.hasSelectedServices) {
+  if (to.name === 'introduction' && servicesStore.hasSelectedServices && to.query.force !== '1') {
     next({ name: 'home' })
     return
   }

@@ -118,7 +118,12 @@ const goToDetails = (item: any) => {
 }
 
 const goToIntroduction = () => {
-  router.push('/')
+  router.push({
+    name: 'introduction',
+    query: {
+      force: '1'
+    }
+  })
 }
 
 onMounted(async () => {
