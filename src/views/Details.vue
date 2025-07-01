@@ -1,7 +1,10 @@
 <template>
-  <div class="min-h-screen">
+  <div class="min-h-screen bg-gray-900">
+    <!-- Safe Area Top -->
+    <div class="h-safe-top"></div>
+    
     <!-- Loading State -->
-    <div v-if="moviesStore.loading" class="flex justify-center items-center min-h-screen">
+    <div v-if="moviesStore.loading" class="flex justify-center items-center min-h-screen-safe">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
     </div>
 
@@ -10,7 +13,8 @@
       <!-- Back Button -->
       <button
         @click="goBack"
-        class="fixed top-4 left-4 z-50 p-3 glass-effect rounded-full text-white hover:bg-white hover:bg-opacity-20 transition-all"
+        class="fixed z-50 p-3 glass-effect rounded-full text-white hover:bg-white hover:bg-opacity-20 transition-all"
+        :style="backButtonStyle"
       >
         <ArrowLeft class="h-6 w-6" />
       </button>
@@ -172,12 +176,15 @@
           </button>
         </div>
       </div>
-    </div>
+        </div>
+    
+    <!-- Safe Area Bottom -->
+    <div class="h-safe-bottom"></div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, CSSProperties } from 'vue'
 import type { DeepLink } from '@/types'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Star, Film } from 'lucide-vue-next'
@@ -192,8 +199,13 @@ interface Props {
 
 const props = defineProps<Props>()
 
-
 const router = useRouter()
+
+const backButtonStyle = {
+  '--top-offset': 'calc(env(safe-area-inset-top, 0px) + 1rem)',
+  top: 'var(--top-offset)',
+  left: '1rem'
+} as CSSProperties
 const moviesStore = useMoviesStore()
 const servicesStore = useServicesStore()
 
@@ -267,16 +279,6 @@ const categoriesWithServices = computed(() => {
   return categories
 })
 
-const getServiceActionText = (service: Service) => {
-  if (!servicesStore.isServiceInstalled(service)) {
-    return 'Not installed'
-  }
-  if (service.androidAppId) {
-    return 'Open in app'
-  }
-  return 'Open website'
-}
-
 const openDeepLink = async (service: Service, link: DeepLink) => {
   // Handle different types of deep links
   if (link.name === 'Website') {
@@ -311,73 +313,9 @@ const openInService = async (service: Service) => {
   // If there are deep links, open the first one by default
   if (service.deepLinks?.length > 0) {
     await openDeepLink(service, service.deepLinks[0])
-  } else if (service.urlScheme) {
-    // Fallback to URL scheme if no deep links
-    try {
-      const { AppLauncher } = await import('@capacitor/app-launcher')
-      await AppLauncher.openUrl({ url: service.urlScheme })
-    } catch (error) {
-      console.error('Error opening app:', error)
-      window.open(service.websiteUrl, '_blank', 'noopener,noreferrer')
-    }
   } else {
     // Fallback to website
     window.open(service.websiteUrl, '_blank', 'noopener,noreferrer')
-  }
-
-  // Generate deep link based on available IDs
-  const tmdbId = props.id
-  const imdbId = moviesStore.currentExternalIds?.imdb_id
-  const tvdbId = moviesStore.currentExternalIds?.tvdb_id
-  const wikidataId = moviesStore.currentExternalIds?.wikidata_id
-
-  // Find appropriate deep link pattern
-  let deepLinkUrl = null
-  
-  for (const deepLink of service.deepLinks) {
-    switch (deepLink.type) {
-      case 'tmdb':
-        deepLinkUrl = deepLink.pattern.replace('{tmdb_id}', tmdbId)
-        break
-      case 'imdb':
-        if (imdbId) {
-          deepLinkUrl = deepLink.pattern.replace('{imdb_id}', imdbId)
-        }
-        break
-      case 'tvdb':
-        if (tvdbId) {
-          deepLinkUrl = deepLink.pattern.replace('{tvdb_id}', tvdbId.toString())
-        }
-        break
-      case 'wikidata':
-        if (wikidataId) {
-          deepLinkUrl = deepLink.pattern.replace('{wikidata_id}', wikidataId)
-        }
-        break
-    }
-    
-    if (deepLinkUrl) break
-  }
-
-  if (deepLinkUrl) {
-    // For web URLs (like Wikidata, TVDB), open directly
-    if (deepLinkUrl.startsWith('http')) {
-      window.open(deepLinkUrl, '_blank')
-      return
-    }
-    
-    // Try to open deep link for mobile apps
-    window.location.href = deepLinkUrl
-    
-    // Fallback to app store after a short delay for mobile apps
-    if (service.androidAppId) {
-      setTimeout(() => {
-        window.open(service.appUrl, '_blank')
-      }, 1000)
-    }
-  } else {
-    // Fallback to service website
-    window.open(service.websiteUrl, '_blank')
   }
 }
 

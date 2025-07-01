@@ -9,7 +9,6 @@ export default [
     "websiteUrl": "https://netflix.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.netflix.mediaclient",
     "androidAppId": "com.netflix.mediaclient",
-    "urlScheme": "nflx://",
     "color": "#E50914",
     "category": "streaming",
     "deepLinks": [
@@ -27,7 +26,6 @@ export default [
     "websiteUrl": "https://primevideo.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.amazon.avod.thirdpartyclient",
     "androidAppId": "com.amazon.avod.thirdpartyclient",
-    "urlScheme": "intent://",
     "color": "#00A8E1",
     "category": "streaming",
     "deepLinks": [
@@ -45,7 +43,6 @@ export default [
     "websiteUrl": "https://www.disneyplus.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.disney.disneyplus",
     "androidAppId": "com.disney.disneyplus",
-    "urlScheme": "disneyplus://",
     "color": "#113CCF",
     "category": "streaming",
     "deepLinks": [
@@ -84,7 +81,6 @@ export default [
     "websiteUrl": "https://www.max.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.hbo.hbonow",
     "androidAppId": "com.hbo.hbonow",
-    "urlScheme": "hbonow://",
     "color": "#8B00FF",
     "category": "streaming",
     "deepLinks": [
@@ -106,7 +102,6 @@ export default [
     "websiteUrl": "https://tv.apple.com",
     "appUrl": "https://apps.apple.com/app/apple-tv/id1174078549",
     "androidAppId": "com.apple.atve.android.appletv",
-    "urlScheme": "tvplus://",
     "color": "#000000",
     "category": "streaming",
     "deepLinks": [
@@ -416,7 +411,6 @@ export default [
     "websiteUrl": "https://tvtime.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.tozelabs.tvshowtime",
     "androidAppId": "com.tozelabs.tvshowtime",
-    "urlScheme": "tvtime://",
     "color": "#FF6B6B",
     "category": "tracking",
     "deepLinks": [
@@ -438,7 +432,6 @@ export default [
     "websiteUrl": "https://www.youtube.com/movies",
     "appUrl": "https://play.google.com/store/apps/details?id=com.google.android.youtube",
     "androidAppId": "com.google.android.youtube",
-    "urlScheme": "youtube://",
     "color": "#FF0000",
     "category": "streaming",
     "deepLinks": [
@@ -460,7 +453,6 @@ export default [
     "websiteUrl": "https://mubi.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.mubi",
     "androidAppId": "com.mubi",
-    "urlScheme": "mubi://",
     "color": "#FF4B3E",
     "category": "streaming",
     "deepLinks": [
@@ -499,7 +491,6 @@ export default [
     "websiteUrl": "https://www.kinopoisk.ru",
     "appUrl": "https://play.google.com/store/apps/details?id=ru.kinopoisk",
     "androidAppId": "ru.kinopoisk",
-    "urlScheme": "kp://",
     "color": "#FF9A00",
     "category": "database",
     "deepLinks": [
@@ -542,7 +533,6 @@ export default [
     "websiteUrl": "https://www.themoviedb.org",
     "appUrl": "https://play.google.com/store/apps/details?id=com.themoviedb",
     "androidAppId": "com.themoviedb",
-    "urlScheme": "tmdb://",
     "color": "#01B4E4",
     "category": "database",
     "deepLinks": [
@@ -581,7 +571,6 @@ export default [
     "websiteUrl": "https://www.filmweb.pl",
     "appUrl": "https://play.google.com/store/apps/details?id=pl.filmweb.ffw",
     "androidAppId": "pl.filmweb.ffw",
-    "urlScheme": "filmweb://",
     "color": "#FF5A00",
     "category": "database",
     "deepLinks": [
@@ -603,7 +592,6 @@ export default [
     "websiteUrl": "https://www.allocine.fr",
     "appUrl": "https://play.google.com/store/apps/details?id=com.allocine.app",
     "androidAppId": "com.allocine.app",
-    "urlScheme": "allocine://",
     "color": "#FFCC00",
     "category": "database",
     "deepLinks": [
@@ -625,7 +613,6 @@ export default [
     "websiteUrl": "https://www.betaseries.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.betaseries.iliad",
     "androidAppId": "com.betaseries.iliad",
-    "urlScheme": "betaseries://",
     "color": "#00A4DC",
     "category": "tracking",
     "deepLinks": [
@@ -647,7 +634,6 @@ export default [
     "websiteUrl": "https://dubbingbase.com",
     "appUrl": "https://play.google.com/store/apps/details?id=xyz.armaldio.dubbingbase.app",
     "androidAppId": "xyz.armaldio.dubbingbase.app",
-    "urlScheme": "dubbingbase://",
     "color": "#FFCC00",
     "category": "database",
     "deepLinks": [

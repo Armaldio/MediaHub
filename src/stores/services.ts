@@ -114,14 +114,10 @@ export const useServicesStore = defineStore('services', () => {
       // Check each service that has a URL scheme or package name
       for (const service of availableServices.value) {
         try {
-          if (service.urlScheme) {
-            // Check if we can open the app using its URL scheme
-            const { value: canOpen } = await AppLauncher.canOpenUrl({ url: service.urlScheme })
-            service.isInstalled = canOpen
-          } else if (service.androidAppId) {
+          if (service.androidAppId) {
             // For Android, we can try to open the package
             const { value: canOpen } = await AppLauncher.canOpenUrl({ 
-              url: `package:${service.androidAppId}` 
+              url: service.androidAppId 
             })
             service.isInstalled = canOpen
           } else {

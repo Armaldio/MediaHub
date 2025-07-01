@@ -6,10 +6,6 @@ export interface Service {
   websiteUrl: string;
   appUrl: string;
   androidAppId: string;
-  /**
-   * URL scheme for the app (e.g., 'netflix://')
-   */
-  urlScheme?: string;
   deepLinks: DeepLink[];
   color: string;
   category: ServiceCategory;
@@ -155,4 +151,26 @@ export interface ExternalIds {
   twitter_id: string;
 }
 
-export type MediaType = 'movie' | 'tv';
+export type MediaType = 'movie' | 'tv' | 'person'
+
+export interface TrendingItem {
+  id: number;
+  media_type: MediaType;
+  title?: string;
+  name?: string;
+  overview: string;
+  poster_path: string | null;
+  backdrop_path: string | null;
+  vote_average: number;
+  vote_count: number;
+  popularity: number;
+  first_air_date?: string;
+  release_date?: string;
+  genre_ids: number[];
+  original_language: string;
+  original_title?: string;
+  original_name?: string;
+  adult: boolean;
+  video?: boolean;
+  origin_country?: string[];
+};
