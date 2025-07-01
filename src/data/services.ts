@@ -646,5 +646,26 @@ export default [
         "url": (data: any) => `https://dubbingbase.com/movie/${data.tmdb_id}`
       }
     ]
+  },
+  {
+    "id": "nzb360",
+    "name": "nzb360",
+    "description": "All-in-one download manager for your favorite services",
+    "icon": "📱",
+    "websiteUrl": "https://nzb360.com",
+    "appUrl": "https://play.google.com/store/apps/details?id=com.kevinforeman.nzb360",
+    "androidAppId": "com.kevinforeman.nzb360",
+    "color": "#4CAF50",
+    "category": "tracking",
+    "deepLinks": [
+      {
+        "name": "Search",
+        "url": (data: any) => `nzb360://search?query=${encodeURIComponent(data.title || '')}`
+      },
+      {
+        "name": "Open App",
+        "url": () => `nzb360://dashboard`
+      }
+    ]
   }
 ] satisfies Service[]
