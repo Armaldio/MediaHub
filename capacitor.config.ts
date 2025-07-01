@@ -1,17 +1,11 @@
 import { CapacitorConfig } from '@capacitor/cli';
+import { isProduction } from './src/utils/env';
 
-const config: CapacitorConfig = {
+// Base configuration shared between environments
+const baseConfig: CapacitorConfig = {
   appId: 'xyz.armaldio.mediahub.app',
   appName: 'Media Hub',
   webDir: 'dist',
-  server: {
-    androidScheme: 'https',
-    // This allows the app to handle custom URL schemes in development
-    // url: 'http://YOUR_DEV_SERVER_IP:5173',
-    // cleartext: true
-    url: 'http://192.168.1.94:5173',
-    cleartext: true
-  },
   plugins: {
     // Configure the App plugin for deep linking
     App: {
@@ -25,15 +19,31 @@ const config: CapacitorConfig = {
       hostname: 'mediahub.app',
       // This is the path prefix for universal links
       path: '/',
-      // Enable the new Capacitor 3.0+ web implementation
-      // This is required for proper deep linking on web
-      server: {
-        url: 'http://192.168.1.94:5173',
-        cleartext: true
-      },
-      launchUrl: 'moviehub://'
+      launchUrl: 'mediahub://'
     }
   }
 };
+
+// Development configuration
+const devConfig: CapacitorConfig = {
+  ...baseConfig,
+  server: {
+    androidScheme: 'http',
+    // Update this to your local development server IP
+    url: 'http://192.168.1.94:5173',
+    cleartext: true
+  }
+};
+
+// Production configuration
+const prodConfig: CapacitorConfig = {
+  ...baseConfig,
+  // Production-specific overrides can go here
+};  
+
+// Use NODE_ENV to determine which config to use
+const isProduction = process.env.NODE_ENV === 'production';
+console.log('Is production:', isProduction);
+const config = isProduction ? prodConfig : devConfig;
 
 export default config;

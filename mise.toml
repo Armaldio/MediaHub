@@ -5,5 +5,23 @@ node = "latest"
 [env]
 ANDROID_HOME = "/home/armaldio/Android/Sdk"
 
+[tasks.build]
+run = "pnpm build"
+
+[tasks.sync]    
+run = "pnpm cap sync"
+depends = ["build"]
+
 [tasks.build-android]
-run = "pnpm cap sync && pnpm cap build android"
+run = "pnpm cap build android"
+depends = ["sync"]
+
+[tasks.run-android-dev]
+run = "pnpm cap run android"
+env = { NODE_ENV = "development" }
+depends = ["sync"]
+
+[tasks.run-android-prod]
+run = "pnpm cap run android"
+env = { NODE_ENV = "production" }
+depends = ["sync"]

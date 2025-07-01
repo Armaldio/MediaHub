@@ -4,8 +4,19 @@ import { Device } from '@capacitor/device'
 import type { Service, ServiceCategory, ServiceCategoryInfo } from '@/types'
 import servicesData from '@/data/services'
 
+// Helper function to create a clean copy of services data
+const createCleanServicesData = () => {
+  try {
+    return JSON.parse(JSON.stringify(servicesData)) as Service[]
+  } catch (error) {
+    console.error('Error creating clean services data:', error)
+    return []
+  }
+}
+
 export const useServicesStore = defineStore('services', () => {
-  const availableServices = ref<Service[]>(servicesData as Service[])
+  // Initialize with clean services data
+  const availableServices = ref<Service[]>(createCleanServicesData())
   const selectedServiceIds = ref<string[]>([])
   const installedApps = ref<string[]>([])
   const isNative = ref(false)
@@ -84,7 +95,8 @@ export const useServicesStore = defineStore('services', () => {
 
   const isServiceInstalled = (service: Service) => {
     if (!service.androidAppId) return true // Web services are always available
-    return service.isInstalled || false
+    // Check if the service ID is in the installedApps array
+    return installedApps.value.includes(service.id) || service.isInstalled || false
   }
 
   const toggleService = (serviceId: string) => {
@@ -102,6 +114,9 @@ export const useServicesStore = defineStore('services', () => {
       const { AppLauncher } = await import('@capacitor/app-launcher')
       const deviceInfo = await Device.getInfo()
       isNative.value = deviceInfo.platform !== 'web'
+      
+      // Clear the installed apps array
+      installedApps.value = []
 
       if (!isNative.value) {
         // In web environment, mark all services as available
@@ -111,8 +126,12 @@ export const useServicesStore = defineStore('services', () => {
         return
       }
 
-      // Check each service that has a URL scheme or package name
-      for (const service of availableServices.value) {
+      // Create a new array to avoid modifying the original while iterating
+      const updatedServices = [...availableServices.value]
+      
+      // Check each service that has a package name
+      for (let i = 0; i < updatedServices.length; i++) {
+        const service = updatedServices[i]
         try {
           if (service.androidAppId) {
             // For Android, we can try to open the package
@@ -120,19 +139,22 @@ export const useServicesStore = defineStore('services', () => {
               url: service.androidAppId 
             })
             service.isInstalled = canOpen
+            
+            if (canOpen) {
+              installedApps.value.push(service.id) // Store only the service ID
+            }
           } else {
-            // If no URL scheme or package is provided, assume it's a web service
+            // If no package is provided, assume it's a web service
             service.isInstalled = true
-          }
-
-          if (service.isInstalled && service.androidAppId) {
-            installedApps.value.push(service.androidAppId)
           }
         } catch (error) {
           console.warn(`Error checking if ${service.name} is installed:`, error)
           service.isInstalled = false
         }
       }
+      
+      // Update the services array
+      availableServices.value = updatedServices
     } catch (error) {
       console.error('Error in checkInstalledApps:', error)
       // Fallback: mark all services as available
@@ -143,13 +165,40 @@ export const useServicesStore = defineStore('services', () => {
   }
 
   const saveToLocalStorage = () => {
-    localStorage.setItem('selectedServices', JSON.stringify(selectedServiceIds.value))
+    try {
+      // Only save the essential data (selected service IDs)
+      const dataToSave = {
+        selectedServiceIds: selectedServiceIds.value,
+        installedApps: installedApps.value,
+        // Add any other minimal state needed
+      }
+      localStorage.setItem('servicesState', JSON.stringify(dataToSave))
+    } catch (error) {
+      console.error('Error saving to localStorage:', error)
+    }
   }
 
   const loadFromLocalStorage = () => {
-    const stored = localStorage.getItem('selectedServices')
-    if (stored) {
-      selectedServiceIds.value = JSON.parse(stored)
+    try {
+      const stored = localStorage.getItem('servicesState')
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        // Only restore the data we need
+        if (Array.isArray(parsed.selectedServiceIds)) {
+          selectedServiceIds.value = parsed.selectedServiceIds.filter((id: string) => 
+            availableServices.value.some(s => s.id === id)
+          )
+        }
+        if (Array.isArray(parsed.installedApps)) {
+          installedApps.value = parsed.installedApps.filter((id: string) => 
+            availableServices.value.some(s => s.id === id)
+          )
+        }
+      }
+    } catch (error) {
+      console.error('Error loading from localStorage:', error)
+      // Clear corrupted data
+      localStorage.removeItem('servicesState')
     }
   }
 
@@ -158,6 +207,19 @@ export const useServicesStore = defineStore('services', () => {
   const getCategoryInfo = (categoryId: ServiceCategory): ServiceCategoryInfo => {
     return serviceCategories.find(cat => cat.id === categoryId) || serviceCategories[0]
   }
+
+  // Initialize the store
+  const initStore = async () => {
+    try {
+      await checkInstalledApps()
+      loadFromLocalStorage()
+    } catch (error) {
+      console.error('Error initializing services store:', error)
+    }
+  }
+
+  // Call init immediately
+  initStore()
 
   return {
     availableServices,
@@ -174,6 +236,7 @@ export const useServicesStore = defineStore('services', () => {
     checkInstalledApps,
     loadFromLocalStorage,
     hasSelectedServices,
-    getCategoryInfo
+    getCategoryInfo,
+    initStore // Expose initStore in case it needs to be called manually
   }
 })
