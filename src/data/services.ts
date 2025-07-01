@@ -246,40 +246,7 @@ export default [
       }
     ]
   },
-  {
-    "id": "tmdb",
-    "name": "TMDB",
-    "description": "The Movie Database",
-    "icon": "🎬",
-    "websiteUrl": "https://themoviedb.org",
-    "appUrl": "https://play.google.com/store/apps/details?id=com.tmdb.mobile",
-    "androidAppId": "com.tmdb.mobile",
-    "color": "#01B4E4",
-    "category": "database",
-    "deepLinks": [
-      {
-        "name": "App",
-        "url": (data: any) => `tmdb://movie/${data.tmdb_id}`
-      }
-    ]
-  },
-  {
-    "id": "tvdb",
-    "name": "TheTVDB",
-    "description": "TV series database",
-    "icon": "📺",
-    "websiteUrl": "https://thetvdb.com",
-    "appUrl": "https://thetvdb.com",
-    "androidAppId": "",
-    "color": "#4CAF50",
-    "category": "database",
-    "deepLinks": [
-      {
-        "name": "Website",
-        "url": (data: any) => `https://thetvdb.com/series/${data.tvdb_id}`
-      }
-    ]
-  },
+
   {
     "id": "wikidata",
     "name": "Wikidata",
