@@ -40,9 +40,9 @@ export default [
   {
     "id": "disney_plus",
     "name": "Disney+",
-    "description": "Disney, Marvel, Star Wars & more",
+    "description": "Stream Disney, Pixar, Marvel, Star Wars, and more",
     "icon": "🏰",
-    "websiteUrl": "https://disneyplus.com",
+    "websiteUrl": "https://www.disneyplus.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.disney.disneyplus",
     "androidAppId": "com.disney.disneyplus",
     "urlScheme": "disneyplus://",
@@ -52,6 +52,10 @@ export default [
       {
         "name": "App",
         "url": (data: any) => `disneyplus://content/${data.tmdb_id}`
+      },
+      {
+        "name": "Website",
+        "url": (data: any) => `https://www.disneyplus.com/movies//${data.tmdb_id}`
       }
     ]
   },
@@ -74,35 +78,41 @@ export default [
   },
   {
     "id": "hbo_max",
-    "name": "HBO Max",
-    "description": "Premium HBO content",
-    "icon": "👑",
-    "websiteUrl": "https://hbomax.com",
+    "name": "Max",
+    "description": "Stream HBO, Warner Bros, DC, and more",
+    "icon": "📺",
+    "websiteUrl": "https://www.max.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.hbo.hbonow",
     "androidAppId": "com.hbo.hbonow",
-    "color": "#673AB7",
+    "urlScheme": "hbonow://",
+    "color": "#8B00FF",
     "category": "streaming",
     "deepLinks": [
       {
         "name": "App",
-        "url": (data: any) => `hbomax://feature/${data.tmdb_id}`
+        "url": (data: any) => `hbonow://content/${data.tmdb_id}`
+      },
+      {
+        "name": "Website",
+        "url": (data: any) => `https://play.max.com/movie/${data.tmdb_id}`
       }
     ]
   },
   {
-    "id": "apple_tv",
+    "id": "apple_tv_plus",
     "name": "Apple TV+",
-    "description": "Original shows and movies",
+    "description": "Apple Original shows and movies",
     "icon": "🍎",
     "websiteUrl": "https://tv.apple.com",
-    "appUrl": "https://play.google.com/store/apps/details?id=com.apple.atve.androidtv.appletv",
-    "androidAppId": "com.apple.atve.androidtv.appletv",
+    "appUrl": "https://apps.apple.com/app/apple-tv/id1174078549",
+    "androidAppId": "com.apple.atve.android.appletv",
+    "urlScheme": "tvplus://",
     "color": "#000000",
     "category": "streaming",
     "deepLinks": [
       {
         "name": "App",
-        "url": (data: any) => `com.apple.tv://show/${data.tmdb_id}`
+        "url": (data: any) => `https://tv.apple.com/movie/${data.tmdb_id}`
       }
     ]
   },
@@ -406,12 +416,248 @@ export default [
     "websiteUrl": "https://tvtime.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.tozelabs.tvshowtime",
     "androidAppId": "com.tozelabs.tvshowtime",
+    "urlScheme": "tvtime://",
     "color": "#FF6B6B",
     "category": "tracking",
     "deepLinks": [
       {
         "name": "App",
         "url": (data: any) => `tvtime://show/${data.tmdb_id}`
+      },
+      {
+        "name": "Website",
+        "url": (data: any) => `https://www.tvtime.com/en/show/${data.tmdb_id}`
+      }
+    ]
+  },
+  {
+    "id": "youtube_movies",
+    "name": "YouTube Movies",
+    "description": "Rent or buy movies and shows",
+    "icon": "▶️",
+    "websiteUrl": "https://www.youtube.com/movies",
+    "appUrl": "https://play.google.com/store/apps/details?id=com.google.android.youtube",
+    "androidAppId": "com.google.android.youtube",
+    "urlScheme": "youtube://",
+    "color": "#FF0000",
+    "category": "streaming",
+    "deepLinks": [
+      {
+        "name": "Search in App",
+        "url": (data: any) => `vnd.youtube://search?query=${encodeURIComponent(data.title || '')}`
+      },
+      {
+        "name": "Website",
+        "url": (data: any) => `https://www.youtube.com/results?search_query=${encodeURIComponent(data.title || '')}`
+      }
+    ]
+  },
+  {
+    "id": "mubi",
+    "name": "MUBI",
+    "description": "Curated streaming service for independent films",
+    "icon": "🎞️",
+    "websiteUrl": "https://mubi.com",
+    "appUrl": "https://play.google.com/store/apps/details?id=com.mubi",
+    "androidAppId": "com.mubi",
+    "urlScheme": "mubi://",
+    "color": "#FF4B3E",
+    "category": "streaming",
+    "deepLinks": [
+      {
+        "name": "App",
+        "url": (data: any) => `mubi://films/${data.tmdb_id}`
+      },
+      {
+        "name": "Website",
+        "url": (data: any) => `https://mubi.com/films/${data.tmdb_id}`
+      }
+    ]
+  },
+  {
+    "id": "criterion_channel",
+    "name": "Criterion Channel",
+    "description": "Classic and contemporary films",
+    "icon": "🎭",
+    "websiteUrl": "https://www.criterionchannel.com",
+    "appUrl": "https://play.google.com/store/apps/details?id=com.criterionchannel.android",
+    "androidAppId": "com.criterionchannel.android",
+    "color": "#1133AA",
+    "category": "streaming",
+    "deepLinks": [
+      {
+        "name": "Website",
+        "url": (data: any) => `https://www.criterionchannel.com/search?q=${encodeURIComponent(data.title || '')}`
+      }
+    ]
+  },
+  {
+    "id": "kinopoisk",
+    "name": "Kinopoisk",
+    "description": "Russian movie database and streaming",
+    "icon": "🎬",
+    "websiteUrl": "https://www.kinopoisk.ru",
+    "appUrl": "https://play.google.com/store/apps/details?id=ru.kinopoisk",
+    "androidAppId": "ru.kinopoisk",
+    "urlScheme": "kp://",
+    "color": "#FF9A00",
+    "category": "database",
+    "deepLinks": [
+      {
+        "name": "App",
+        "url": (data: any) => `kp://film/${data.kinopoisk_id || data.tmdb_id}`
+      },
+      {
+        "name": "Website",
+        "url": (data: any) => `https://www.kinopoisk.ru/film/${data.kinopoisk_id || data.tmdb_id}/`
+      }
+    ]
+  },
+  {
+    "id": "simkl",
+    "name": "SIMKL",
+    "description": "Movie & TV show tracker",
+    "icon": "📊",
+    "websiteUrl": "https://simkl.com",
+    "appUrl": "https://play.google.com/store/apps/details?id=com.simkl",
+    "androidAppId": "com.simkl",
+    "color": "#2DAF38",
+    "category": "tracking",
+    "deepLinks": [
+      {
+        "name": "App",
+        "url": (data: any) => `simkl://media/movie/${data.tmdb_id}`
+      },
+      {
+        "name": "Website",
+        "url": (data: any) => `https://simkl.com/movies/${data.tmdb_id}`
+      }
+    ]
+  },
+  {
+    "id": "the_movie_database",
+    "name": "TMDB",
+    "description": "The Movie Database",
+    "icon": "🎥",
+    "websiteUrl": "https://www.themoviedb.org",
+    "appUrl": "https://play.google.com/store/apps/details?id=com.themoviedb",
+    "androidAppId": "com.themoviedb",
+    "urlScheme": "tmdb://",
+    "color": "#01B4E4",
+    "category": "database",
+    "deepLinks": [
+      {
+        "name": "App",
+        "url": (data: any) => `tmdb://movie/${data.tmdb_id}`
+      },
+      {
+        "name": "Website",
+        "url": (data: any) => `https://www.themoviedb.org/movie/${data.tmdb_id}`
+      }
+    ]
+  },
+  {
+    "id": "tvdb",
+    "name": "TheTVDB",
+    "description": "TV show database",
+    "icon": "📺",
+    "websiteUrl": "https://thetvdb.com",
+    "color": "#00B4CC",
+    "category": "database",
+    appUrl: "https://play.google.com/store/apps/details?id=com.thetvdb",
+    androidAppId: "com.thetvdb",
+    "deepLinks": [
+      {
+        "name": "Website",
+        "url": (data: any) => `https://thetvdb.com/movies/${data.tvdb_id || data.title?.toLowerCase().replace(/\s+/g, '-')}`
+      }
+    ]
+  },
+  {
+    "id": "filmweb",
+    "name": "Filmweb",
+    "description": "Polish movie database",
+    "icon": "🎞️",
+    "websiteUrl": "https://www.filmweb.pl",
+    "appUrl": "https://play.google.com/store/apps/details?id=pl.filmweb.ffw",
+    "androidAppId": "pl.filmweb.ffw",
+    "urlScheme": "filmweb://",
+    "color": "#FF5A00",
+    "category": "database",
+    "deepLinks": [
+      {
+        "name": "App",
+        "url": (data: any) => `filmweb://film/${data.filmweb_id || data.title?.toLowerCase().replace(/\s+/g, '-')}`
+      },
+      {
+        "name": "Website",
+        "url": (data: any) => `https://www.filmweb.pl/film/${data.filmweb_id || data.title?.toLowerCase().replace(/\s+/g, '-')}`
+      }
+    ]
+  },
+  {
+    "id": "allocine",
+    "name": "AlloCiné",
+    "description": "French movie database",
+    "icon": "🎭",
+    "websiteUrl": "https://www.allocine.fr",
+    "appUrl": "https://play.google.com/store/apps/details?id=com.allocine.app",
+    "androidAppId": "com.allocine.app",
+    "urlScheme": "allocine://",
+    "color": "#FFCC00",
+    "category": "database",
+    "deepLinks": [
+      {
+        "name": "App",
+        "url": (data: any) => `allocine://film/${data.allocine_id || data.tmdb_id}/`
+      },
+      {
+        "name": "Website",
+        "url": (data: any) => `https://www.allocine.fr/film/fichefilm_gen_cfilm=${data.allocine_id || data.tmdb_id}.html`
+      }
+    ]
+  },
+  {
+    "id": "betaseries",
+    "name": "BetaSeries",
+    "description": "TV show tracking",
+    "icon": "📺",
+    "websiteUrl": "https://www.betaseries.com",
+    "appUrl": "https://play.google.com/store/apps/details?id=com.betaseries.iliad",
+    "androidAppId": "com.betaseries.iliad",
+    "urlScheme": "betaseries://",
+    "color": "#00A4DC",
+    "category": "tracking",
+    "deepLinks": [
+      {
+        "name": "App",
+        "url": (data: any) => `betaseries://shows/${data.betaseries_id || data.tmdb_id}`
+      },
+      {
+        "name": "Website",
+        "url": (data: any) => `https://www.betaseries.com/movie/${data.title?.toLowerCase().replace(/\s+/g, '-')}`
+      }
+    ]
+  },
+  {
+    "id": "dubbingbase",
+    "name": "DubbingBase",
+    "description": "Voice actors database",
+    "icon": "🎬",
+    "websiteUrl": "https://dubbingbase.com",
+    "appUrl": "https://play.google.com/store/apps/details?id=xyz.armaldio.dubbingbase.app",
+    "androidAppId": "xyz.armaldio.dubbingbase.app",
+    "urlScheme": "dubbingbase://",
+    "color": "#FFCC00",
+    "category": "database",
+    "deepLinks": [
+      {
+        "name": "App",
+        "url": (data: any) => `dubbingbase://movie/${data.tmdb_id}`
+      },
+      {
+        "name": "Website",
+        "url": (data: any) => `https://dubbingbase.com/movie/${data.tmdb_id}`
       }
     ]
   }
