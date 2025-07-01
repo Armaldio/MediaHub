@@ -1,4 +1,4 @@
-[
+export default [
   {
     "id": "netflix",
     "name": "Netflix",
@@ -364,19 +364,15 @@
     "name": "AVA Assistant",
     "description": "AI movie recommendations",
     "icon": "🤖",
-    "websiteUrl": "https://ava-assistant.com",
-    "appUrl": "https://play.google.com/store/apps/details?id=com.ava.assistant",
-    "androidAppId": "com.ava.assistant",
+    "websiteUrl": "https://ava-assistant.app",
+    "appUrl": "https://play.google.com/store/apps/details?id=de.ava",
+    "androidAppId": "de.ava",
     "color": "#9C27B0",
     "category": "discovery",
     "deepLinks": [
       {
         "type": "tmdb",
-        "pattern": "ava://movie/{tmdb_id}"
-      },
-      {
-        "type": "imdb",
-        "pattern": "ava://imdb/{imdb_id}"
+        "pattern": "https://ava-assistant.app/{type}/{tmdb_id}"
       }
     ]
   },

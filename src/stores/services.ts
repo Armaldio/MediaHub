@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { App } from '@capacitor/app'
 import { Device } from '@capacitor/device'
 import type { Service, ServiceCategory, ServiceCategoryInfo } from '@/types'
-import servicesData from '@/data/services.json'
+import servicesData from '@/data/services'
 
 export const useServicesStore = defineStore('services', () => {
   const availableServices = ref<Service[]>(servicesData as Service[])

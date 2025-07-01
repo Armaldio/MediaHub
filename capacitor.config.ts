@@ -9,6 +9,8 @@ const config: CapacitorConfig = {
     // This allows the app to handle custom URL schemes in development
     // url: 'http://YOUR_DEV_SERVER_IP:5173',
     // cleartext: true
+    url: 'http://192.168.1.94:5173',
+    cleartext: true
   },
   plugins: {
     // Configure the App plugin for deep linking
@@ -26,7 +28,7 @@ const config: CapacitorConfig = {
       // Enable the new Capacitor 3.0+ web implementation
       // This is required for proper deep linking on web
       server: {
-        url: 'http://localhost:5173',
+        url: 'http://192.168.1.94:5173',
         cleartext: true
       },
       launchUrl: 'moviehub://'

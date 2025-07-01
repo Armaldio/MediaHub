@@ -7,6 +7,8 @@ import { parseDeepLink, navigateFromDeepLink } from '@/utils/deepLink'
 
 // Handle deep link navigation
 const handleDeepLink: NavigationGuard = (to, _from, next) => {
+  console.log('to', JSON.stringify(to));
+  console.log('_from', JSON.stringify(_from));
   // Check for deep link in query parameters (web fallback)
   if (to.query.deep_link) {
     const deepLink = Array.isArray(to.query.deep_link) 
@@ -68,16 +70,29 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, _from, next) => {
-  if (to.meta.requiresServices) {
-    const servicesStore = useServicesStore()
-    servicesStore.loadFromLocalStorage()
-    
-    if (!servicesStore.hasSelectedServices) {
-      next({ name: 'introduction' })
-      return
-    }
+router.beforeEach((to, from, next) => {
+  const servicesStore = useServicesStore()
+  
+  // Always load services from localStorage first
+  servicesStore.loadFromLocalStorage()
+
+  console.log('servicesStore.hasSelectedServices', servicesStore.hasSelectedServices);
+  console.log('to', JSON.stringify(to));
+  console.log('from', JSON.stringify(from));
+  console.log('servicesStore.selectedServices', JSON.stringify(servicesStore.selectedServices));
+  
+  // If we're going to introduction but have services selected, redirect to home
+  if (to.name === 'introduction' && servicesStore.hasSelectedServices) {
+    next({ name: 'home' })
+    return
   }
+  
+  // Existing requiresServices check
+  if (to.meta.requiresServices && !servicesStore.hasSelectedServices) {
+    next({ name: 'introduction' })
+    return
+  }
+  
   next()
 })
 
