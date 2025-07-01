@@ -1,3 +1,5 @@
+import { Service } from "@/types";
+
 export default [
   {
     "id": "netflix",
@@ -7,12 +9,13 @@ export default [
     "websiteUrl": "https://netflix.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.netflix.mediaclient",
     "androidAppId": "com.netflix.mediaclient",
+    "urlScheme": "nflx://",
     "color": "#E50914",
     "category": "streaming",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "netflix://title/{tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `netflix://title/${data.tmdb_id}`
       }
     ]
   },
@@ -24,12 +27,13 @@ export default [
     "websiteUrl": "https://primevideo.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.amazon.avod.thirdpartyclient",
     "androidAppId": "com.amazon.avod.thirdpartyclient",
+    "urlScheme": "intent://",
     "color": "#00A8E1",
     "category": "streaming",
     "deepLinks": [
       {
-        "type": "imdb",
-        "pattern": "aiv://aiv/resume?asin={imdb_id}"
+        "name": "App",
+        "url": (data: any) => `aiv://aiv/resume?asin=${data.imdb_id}`
       }
     ]
   },
@@ -41,12 +45,13 @@ export default [
     "websiteUrl": "https://disneyplus.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.disney.disneyplus",
     "androidAppId": "com.disney.disneyplus",
+    "urlScheme": "disneyplus://",
     "color": "#113CCF",
     "category": "streaming",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "disneyplus://content/{tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `disneyplus://content/${data.tmdb_id}`
       }
     ]
   },
@@ -62,8 +67,8 @@ export default [
     "category": "streaming",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "hulu://watch/{tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `hulu://watch/${data.tmdb_id}`
       }
     ]
   },
@@ -79,8 +84,8 @@ export default [
     "category": "streaming",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "hbomax://feature/{tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `hbomax://feature/${data.tmdb_id}`
       }
     ]
   },
@@ -96,8 +101,8 @@ export default [
     "category": "streaming",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "com.apple.tv://show/{tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `com.apple.tv://show/${data.tmdb_id}`
       }
     ]
   },
@@ -113,8 +118,8 @@ export default [
     "category": "streaming",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "paramountplus://content/{tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `paramountplus://content/${data.tmdb_id}`
       }
     ]
   },
@@ -130,8 +135,8 @@ export default [
     "category": "streaming",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "peacock://watch/{tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `peacock://watch/${data.tmdb_id}`
       }
     ]
   },
@@ -147,12 +152,12 @@ export default [
     "category": "tracking",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "moviebase://movie/{tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `moviebase://movie/${data.tmdb_id}`
       },
       {
-        "type": "imdb",
-        "pattern": "moviebase://imdb/{imdb_id}"
+        "name": "App",
+        "url": (data: any) => `moviebase://imdb/${data.imdb_id}`
       }
     ]
   },
@@ -168,12 +173,12 @@ export default [
     "category": "social",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "letterboxd://film/tmdb/{tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `letterboxd://film/tmdb/${data.tmdb_id}`
       },
       {
-        "type": "imdb",
-        "pattern": "letterboxd://film/{imdb_id}"
+        "name": "App",
+        "url": (data: any) => `letterboxd://film/${data.imdb_id}`
       }
     ]
   },
@@ -189,12 +194,12 @@ export default [
     "category": "tracking",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "trakt://movie/{tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `trakt://movie/${data.tmdb_id}`
       },
       {
-        "type": "imdb",
-        "pattern": "trakt://search/imdb/{imdb_id}"
+        "name": "App",
+        "url": (data: any) => `trakt://search/imdb/${data.imdb_id}`
       }
     ]
   },
@@ -210,8 +215,8 @@ export default [
     "category": "discovery",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "justwatch://title/movie/{tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `justwatch://title/movie/${data.tmdb_id}`
       }
     ]
   },
@@ -227,12 +232,12 @@ export default [
     "category": "database",
     "deepLinks": [
       {
-        "type": "imdb",
-        "pattern": "imdb:///title/{imdb_id}"
+        "name": "App",
+        "url": (data: any) => `imdb:///title/${data.imdb_id}`
       },
       {
-        "type": "tmdb",
-        "pattern": "imdb:///find?q={tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `imdb:///find?q=${data.tmdb_id}`
       }
     ]
   },
@@ -248,8 +253,8 @@ export default [
     "category": "database",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "tmdb://movie/{tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `tmdb://movie/${data.tmdb_id}`
       }
     ]
   },
@@ -265,8 +270,8 @@ export default [
     "category": "database",
     "deepLinks": [
       {
-        "type": "tvdb",
-        "pattern": "https://thetvdb.com/series/{tvdb_id}"
+        "name": "Website",
+        "url": (data: any) => `https://thetvdb.com/series/${data.tvdb_id}`
       }
     ]
   },
@@ -282,8 +287,8 @@ export default [
     "category": "database",
     "deepLinks": [
       {
-        "type": "wikidata",
-        "pattern": "https://wikidata.org/wiki/{wikidata_id}"
+        "name": "Website",
+        "url": (data: any) => `https://wikidata.org/wiki/${data.wikidata_id}`
       }
     ]
   },
@@ -299,12 +304,12 @@ export default [
     "category": "media_center",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "plex://movie/{tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `plex://movie/${data.tmdb_id}`
       },
       {
-        "type": "imdb",
-        "pattern": "plex://search?query={imdb_id}"
+        "name": "App",
+        "url": (data: any) => `plex://search?query=${data.imdb_id}`
       }
     ]
   },
@@ -320,8 +325,8 @@ export default [
     "category": "media_center",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "jellyfin://movie/{tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `jellyfin://movie/${data.tmdb_id}`
       }
     ]
   },
@@ -337,8 +342,8 @@ export default [
     "category": "media_center",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "kodi://movie/{tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `kodi://movie/${data.tmdb_id}`
       }
     ]
   },
@@ -354,8 +359,8 @@ export default [
     "category": "discovery",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "youtube://search?query={tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `youtube://search?query=${data.tmdb_id}`
       }
     ]
   },
@@ -371,8 +376,8 @@ export default [
     "category": "discovery",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "https://ava-assistant.app/{type}/{tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `https://ava-assistant.app/{type}/{tmdb_id}`
       }
     ]
   },
@@ -388,8 +393,8 @@ export default [
     "category": "tracking",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "cinemabox://movie/{tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `cinemabox://movie/${data.tmdb_id}`
       }
     ]
   },
@@ -405,9 +410,9 @@ export default [
     "category": "tracking",
     "deepLinks": [
       {
-        "type": "tmdb",
-        "pattern": "tvtime://show/{tmdb_id}"
+        "name": "App",
+        "url": (data: any) => `tvtime://show/${data.tmdb_id}`
       }
     ]
   }
-]
+] satisfies Service[]

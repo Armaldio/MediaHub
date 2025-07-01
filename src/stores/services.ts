@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { App } from '@capacitor/app'
 import { Device } from '@capacitor/device'
 import type { Service, ServiceCategory, ServiceCategoryInfo } from '@/types'
 import servicesData from '@/data/services'
@@ -100,6 +99,7 @@ export const useServicesStore = defineStore('services', () => {
 
   const checkInstalledApps = async () => {
     try {
+      const { AppLauncher } = await import('@capacitor/app-launcher')
       const deviceInfo = await Device.getInfo()
       isNative.value = deviceInfo.platform !== 'web'
 
@@ -111,34 +111,34 @@ export const useServicesStore = defineStore('services', () => {
         return
       }
 
-      // Check each service with an Android app ID
-      const appsToCheck = availableServices.value.filter(service => service.androidAppId)
-      
-      for (const service of appsToCheck) {
+      // Check each service that has a URL scheme or package name
+      for (const service of availableServices.value) {
         try {
-          // Try to get app info - if it throws, app is not installed
-          await App.getInfo()
-          // For now, we'll simulate app detection since Capacitor doesn't have direct app detection
-          // In a real implementation, you'd use a native plugin for this
-          service.isInstalled = Math.random() > 0.5 // Simulate random installation
-          
-          if (service.isInstalled) {
+          if (service.urlScheme) {
+            // Check if we can open the app using its URL scheme
+            const { value: canOpen } = await AppLauncher.canOpenUrl({ url: service.urlScheme })
+            service.isInstalled = canOpen
+          } else if (service.androidAppId) {
+            // For Android, we can try to open the package
+            const { value: canOpen } = await AppLauncher.canOpenUrl({ 
+              url: `package:${service.androidAppId}` 
+            })
+            service.isInstalled = canOpen
+          } else {
+            // If no URL scheme or package is provided, assume it's a web service
+            service.isInstalled = true
+          }
+
+          if (service.isInstalled && service.androidAppId) {
             installedApps.value.push(service.androidAppId)
           }
-        } catch {
+        } catch (error) {
+          console.warn(`Error checking if ${service.name} is installed:`, error)
           service.isInstalled = false
         }
       }
-
-      // Web services are always available
-      availableServices.value
-        .filter(service => !service.androidAppId)
-        .forEach(service => {
-          service.isInstalled = true
-        })
-
     } catch (error) {
-      console.error('Error checking installed apps:', error)
+      console.error('Error in checkInstalledApps:', error)
       // Fallback: mark all services as available
       availableServices.value.forEach(service => {
         service.isInstalled = true

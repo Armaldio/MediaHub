@@ -6,6 +6,10 @@ export interface Service {
   websiteUrl: string;
   appUrl: string;
   androidAppId: string;
+  /**
+   * URL scheme for the app (e.g., 'netflix://')
+   */
+  urlScheme?: string;
   deepLinks: DeepLink[];
   color: string;
   category: ServiceCategory;
@@ -13,8 +17,8 @@ export interface Service {
 }
 
 export interface DeepLink {
-  type: 'tmdb' | 'imdb' | 'tvdb' | 'wikidata';
-  pattern: string;
+  name: string;
+  url: (data: any) => string;
 }
 
 export type ServiceCategory = 

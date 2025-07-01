@@ -123,7 +123,32 @@
                   <h4 class="text-white font-semibold group-hover:text-primary-400 transition-colors text-sm">
                     {{ service.name }}
                   </h4>
-                  <p class="text-gray-400 text-xs">{{ getServiceActionText(service) }}</p>
+ 
+                  <!-- Deep Links Dropdown -->
+                  <div v-if="service.deepLinks?.length > 0" class="mt-2">
+                    <div class="text-xs text-gray-400 mb-1">Open with:</div>
+                    <div class="space-y-1.5">
+                      <button
+                        v-for="(link, index) in service.deepLinks"
+                        :key="index"
+                        @click.stop="openDeepLink(service, link)"
+                        class="w-full text-left px-3 py-2 text-xs rounded-md transition-all duration-200 flex items-center justify-between gap-2"
+                        :class="{
+                          'bg-white/5 hover:bg-white/10 text-white': true,
+                          'border border-white/10': true,
+                          'active:scale-95': true
+                        }"
+                        :title="link.name"
+                      >
+                        <span class="truncate flex-1 text-left">{{ link.name }}</span>
+                        <span class="text-gray-400 text-xs opacity-70 group-hover:opacity-100 transition-opacity">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                        </span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div
@@ -153,6 +178,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import type { DeepLink } from '@/types'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Star, Film } from 'lucide-vue-next'
 import { useMoviesStore } from '@/stores/movies'
@@ -165,6 +191,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+
 const router = useRouter()
 const moviesStore = useMoviesStore()
 const servicesStore = useServicesStore()
@@ -249,11 +277,52 @@ const getServiceActionText = (service: Service) => {
   return 'Open website'
 }
 
-const openInService = (service: Service) => {
-  if (!servicesStore.isServiceInstalled(service)) {
-    // Redirect to app store
-    window.open(service.appUrl, '_blank')
-    return
+const openDeepLink = async (service: Service, link: DeepLink) => {
+  // Handle different types of deep links
+  if (link.name === 'Website') {
+    window.open(service.websiteUrl, '_blank', 'noopener,noreferrer')
+  } else if (link.name === 'App') {
+    if (service.urlScheme) {
+      try {
+        const { AppLauncher } = await import('@capacitor/app-launcher')
+        await AppLauncher.openUrl({ url: service.urlScheme })
+      } catch (error) {
+        console.error('Error opening app:', error)
+        window.open(service.websiteUrl, '_blank', 'noopener,noreferrer')
+      }
+    }
+  } else if (link.url) {
+    // Handle custom deep links
+    const url = typeof link.url === 'function' 
+      ? link.url(moviesStore.currentDetails)
+      : link.url
+    
+    try {
+      const { AppLauncher } = await import('@capacitor/app-launcher')
+      await AppLauncher.openUrl({ url })
+    } catch (error) {
+      console.error('Error opening deep link:', error)
+      window.open(url, '_blank', 'noopener,noreferrer')
+    }
+  }
+}
+
+const openInService = async (service: Service) => {
+  // If there are deep links, open the first one by default
+  if (service.deepLinks?.length > 0) {
+    await openDeepLink(service, service.deepLinks[0])
+  } else if (service.urlScheme) {
+    // Fallback to URL scheme if no deep links
+    try {
+      const { AppLauncher } = await import('@capacitor/app-launcher')
+      await AppLauncher.openUrl({ url: service.urlScheme })
+    } catch (error) {
+      console.error('Error opening app:', error)
+      window.open(service.websiteUrl, '_blank', 'noopener,noreferrer')
+    }
+  } else {
+    // Fallback to website
+    window.open(service.websiteUrl, '_blank', 'noopener,noreferrer')
   }
 
   // Generate deep link based on available IDs
