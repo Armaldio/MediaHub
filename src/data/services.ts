@@ -633,7 +633,7 @@ export default [
     "icon": "🎬",
     "websiteUrl": "https://dubbingbase.com",
     "appUrl": "https://play.google.com/store/apps/details?id=xyz.armaldio.dubbingbase.app",
-    "androidAppId": "xyz.armaldio.dubbingbase.app",
+    "androidAppId": "com.dubbingbase.app",
     "color": "#FFCC00",
     "category": "database",
     "deepLinks": [

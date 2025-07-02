@@ -183,7 +183,7 @@
   })
   </script>
   
-  <style scoped>
+<style scoped>
   .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -198,4 +198,4 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  </style>
+</style>

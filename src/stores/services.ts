@@ -169,8 +169,6 @@ export const useServicesStore = defineStore('services', () => {
       // Only save the essential data (selected service IDs)
       const dataToSave = {
         selectedServiceIds: selectedServiceIds.value,
-        installedApps: installedApps.value,
-        // Add any other minimal state needed
       }
       localStorage.setItem('servicesState', JSON.stringify(dataToSave))
     } catch (error) {
@@ -186,11 +184,6 @@ export const useServicesStore = defineStore('services', () => {
         // Only restore the data we need
         if (Array.isArray(parsed.selectedServiceIds)) {
           selectedServiceIds.value = parsed.selectedServiceIds.filter((id: string) => 
-            availableServices.value.some(s => s.id === id)
-          )
-        }
-        if (Array.isArray(parsed.installedApps)) {
-          installedApps.value = parsed.installedApps.filter((id: string) => 
             availableServices.value.some(s => s.id === id)
           )
         }

@@ -19,7 +19,6 @@ depends = ["sync"]
 [tasks.run-android-dev]
 run = "pnpm cap run android"
 env = { NODE_ENV = "development" }
-depends = ["sync"]
 
 [tasks.run-android-prod]
 run = "pnpm cap run android"
