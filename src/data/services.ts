@@ -367,7 +367,7 @@ export default [
       {
         "enabled": (data) => data.type === 'tv',
         "name": "App - TV Show",
-        "url": (data) => `https://ava-assistant.app/series/${data.tmdbId}`
+        "url": (data) => `https://ava-assistant.app/show/${data.tmdbId}`
       }
     ]
   },

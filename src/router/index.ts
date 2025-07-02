@@ -53,15 +53,6 @@ const router = createRouter({
     {
       path: '/:pathMatch(.*)*',
       beforeEnter: (to, from, next) => {
-        // Check if this is a deep link
-        if (to.path.startsWith('/mediahub/')) {
-          const deepLink = to.path.replace(/^\/mediahub\//, 'mediahub://');
-          const params = parseDeepLink(deepLink);
-          if (params) {
-            navigateFromDeepLink(router, params);
-            return;
-          }
-        }
         next('/');
       }
     }
