@@ -22,6 +22,24 @@ const handleDeepLink: NavigationGuard = (to, _from, next) => {
     }
   }
   
+  // Handle direct navigation with explicit ID types
+  if (to.name === 'details') {
+    const idType = to.query.source === 'imdb' ? 'imdb' : 'tmdb';
+    const id = to.params[`${idType}id`];
+    
+    if (id) {
+      next({
+        name: `details-${idType}`,
+        params: {
+          ...to.params,
+          [`${idType}id`]: id
+        },
+        query: to.query
+      });
+      return;
+    }
+  }
+  
   next();
 };
 
@@ -42,17 +60,38 @@ const router = createRouter({
       beforeEnter: handleDeepLink
     },
     {
-      path: '/details/:mediaType/:id',
+      path: '/details/:mediaType',
       name: 'details',
       component: Details,
       props: true,
       meta: { requiresServices: true },
-      beforeEnter: handleDeepLink
+      beforeEnter: (to, from, next) => {
+        // Ensure at least one ID type is provided
+        if (!to.params.tmdbid && !to.params.imdbid) {
+          next('/'); // Redirect to home if no ID is provided
+          return;
+        }
+        next();
+      },
+      children: [
+        {
+          path: 'tmdb/:tmdbid',
+          name: 'details-tmdb',
+          component: Details,
+          props: true
+        },
+        {
+          path: 'imdb/:imdbid',
+          name: 'details-imdb',
+          component: Details,
+          props: true
+        }
+      ]
     },
     // Catch-all route for web-based deep links
     {
       path: '/:pathMatch(.*)*',
-      beforeEnter: (to, from, next) => {
+      beforeEnter: (_to, _from, next) => {
         next('/');
       }
     }

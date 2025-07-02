@@ -51,42 +51,31 @@ export function parseDeepLink(url: string): DeepLinkParams | null {
 }
 
 export function navigateFromDeepLink(router: any, params: DeepLinkParams) {
-  if (params.type === 'movie') {
-    const id = params.tmdbId || params.imdbId;
-    if (id) {
-      router.push({
-        name: 'details',
-        params: { 
-          mediaType: 'movie', 
-          id: id 
-        },
-        query: { 
-          source: params.tmdbId ? 'tmdb' : 'imdb' 
-        }
-      });
-    }
-  } else if (params.type === 'show') {
-    const id = params.tmdbId || params.imdbId;
-    if (id) {
-      const query: any = { 
-        source: params.tmdbId ? 'tmdb' : 'imdb' 
-      };
-      
-      if (params.season) {
-        query.season = params.season;
-        if (params.episode) {
-          query.episode = params.episode;
-        }
+  const mediaType = params.type === 'movie' ? 'movie' : 'tv';
+  const id = params.tmdbId || params.imdbId;
+  const idType = params.tmdbId ? 'tmdb' : 'imdb';
+  
+  if (!id) return;
+  
+  const query: Record<string, string> = { 
+    source: idType,
+  };
+  
+  if (params.type === 'show') {
+    if (params.season) {
+      query.season = params.season;
+      if (params.episode) {
+        query.episode = params.episode;
       }
-      
-      router.push({
-        name: 'details',
-        params: { 
-          mediaType: 'tv', // Assuming 'tv' is the type for shows in your app
-          id: id 
-        },
-        query
-      });
     }
   }
+  
+  router.push({
+    name: `details-${idType}`,
+    params: { 
+      mediaType,
+      [`${idType}id`]: id
+    },
+    query
+  });
 }

@@ -197,7 +197,9 @@ import { FormattedDetails } from '@/models/models'
 
 interface Props {
   mediaType: MediaType
-  id: string
+  id?: string // For backward compatibility
+  tmdbid?: string
+  imdbid?: string
 }
 
 const props = defineProps<Props>()
@@ -213,9 +215,9 @@ const moviesStore = useMoviesStore()
 const servicesStore = useServicesStore()
 
 const title = computed(() => {
-  const details = moviesStore.currentDetails
-  if (!details) return ''
-  return 'title' in details ? details.title : details.name
+  const details = moviesStore.currentDetails;
+  if (!details) return 'Loading...';
+  return ('title' in details ? details.title : details.name) || 'Untitled';
 })
 
 const overview = computed(() => moviesStore.currentDetails?.overview || '')
@@ -282,17 +284,37 @@ const categoriesWithServices = computed(() => {
   return categories
 })
 
+interface ExternalIds {
+  imdb_id?: string;
+  wikidata_id?: string;
+  facebook_id?: string;
+  instagram_id?: string;
+  twitter_id?: string;
+}
+
 const formattedDetails = computed(() => {
-    return {
+  const details = moviesStore.currentDetails;
+  const title = details ? ('title' in details ? details.title : details.name) : 'Untitled';
+  const externalIds: ExternalIds = details?.external_ids || {};
+  
+  // Ensure we have at least one valid ID
+  const tmdbId = props.tmdbid || props.id || '';
+  const imdbId = props.imdbid || externalIds.imdb_id || '';
+  
+  if (!tmdbId && !imdbId) {
+    console.warn('No valid ID found for this media item');
+  }
+  
+  return {
     type: props.mediaType,
-    title: moviesStore.currentDetails?.title || moviesStore.currentDetails?.name,
-    tmdbId: props.id,
-    imdbId: moviesStore.currentDetails?.external_ids?.imdb_id,
-    wikidataId: moviesStore.currentDetails?.external_ids?.wikidata_id,
-    facebookId: moviesStore.currentDetails?.external_ids?.facebook_id,
-    instagramId: moviesStore.currentDetails?.external_ids?.instagram_id,
-    twitterId: moviesStore.currentDetails?.external_ids?.twitter_id
-} satisfies FormattedDetails
+    title: title,
+    tmdbId: tmdbId,
+    imdbId: imdbId,
+    wikidataId: externalIds.wikidata_id || '',
+    facebookId: externalIds.facebook_id || '',
+    instagramId: externalIds.instagram_id || '',
+    twitterId: externalIds.twitter_id || ''
+  } satisfies FormattedDetails;
 })
 
 const openDeepLink = async (service: Service, link: DeepLink) => {
@@ -333,6 +355,22 @@ const goToIntroduction = () => {
 }
 
 onMounted(async () => {
-  await moviesStore.fetchDetails(parseInt(props.id), props.mediaType)
+  try {
+    // Prefer tmdbid, fallback to id for backward compatibility
+    const tmdbId = props.tmdbid || props.id;
+    
+    if (tmdbId) {
+      await moviesStore.fetchDetails(parseInt(tmdbId), props.mediaType);
+    } else if (props.imdbid) {
+      await moviesStore.fetchDetailsByImdbId(props.imdbid, props.mediaType);
+    } else {
+      console.error('No valid ID provided for fetching details');
+      // Optionally redirect to home or show an error message
+      router.push('/');
+    }
+  } catch (error) {
+    console.error('Error loading media details:', error);
+    // Handle error (e.g., show error message to user)
+  }
 })
 </script>

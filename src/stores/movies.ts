@@ -95,11 +95,77 @@ export const useMoviesStore = defineStore('movies', () => {
       }
       
       currentDetails.value = detailsResponse
+      return detailsResponse;
     } catch (err) {
       error.value = 'Failed to fetch details'
       console.error(err)
+      throw err
     } finally {
       loading.value = false
+    }
+  }
+
+  const fetchDetailsByImdbId = async (imdbId: string, mediaType: MediaType) => {
+    try {
+      loading.value = true;
+      
+      if (mediaType === 'movie') {
+        // First, try to get the movie directly by IMDB ID
+        try {
+          const response = await fetch(
+            `https://api.themoviedb.org/3/find/${imdbId}?api_key=${import.meta.env.VITE_TMDB_API_KEY}&external_source=imdb_id`
+          );
+          
+          if (!response.ok) {
+            throw new Error('Failed to fetch from TMDB API');
+          }
+          
+          const data = await response.json();
+          const movieResult = data.movie_results?.[0];
+          
+          if (!movieResult) {
+            throw new Error('No movie found with this IMDB ID');
+          }
+          
+          // Fetch the full details using the TMDB ID
+          return await fetchDetails(movieResult.id, 'movie');
+        } catch (err) {
+          console.error('Error fetching movie by IMDB ID:', err);
+          throw new Error('Failed to fetch movie details by IMDB ID');
+        }
+      } else if (mediaType === 'tv') {
+        // First, try to get the TV show directly by IMDB ID
+        try {
+          const response = await fetch(
+            `https://api.themoviedb.org/3/find/${imdbId}?api_key=${import.meta.env.VITE_TMDB_API_KEY}&external_source=imdb_id`
+          );
+          
+          if (!response.ok) {
+            throw new Error('Failed to fetch from TMDB API');
+          }
+          
+          const data = await response.json();
+          const tvResult = data.tv_results?.[0];
+          
+          if (!tvResult) {
+            throw new Error('No TV show found with this IMDB ID');
+          }
+          
+          // Fetch the full details using the TMDB ID
+          return await fetchDetails(tvResult.id, 'tv');
+        } catch (err) {
+          console.error('Error fetching TV show by IMDB ID:', err);
+          throw new Error('Failed to fetch TV show details by IMDB ID');
+        }
+      } else {
+        throw new Error('Invalid media type');
+      }
+    } catch (err) {
+      error.value = 'Failed to fetch details by IMDB ID';
+      console.error(err);
+      throw err;
+    } finally {
+      loading.value = false;
     }
   }
 
@@ -144,6 +210,7 @@ export const useMoviesStore = defineStore('movies', () => {
     fetchTrending,
     searchMulti,
     fetchDetails,
+    fetchDetailsByImdbId,
     getImageUrl,
     clearSearch
   }
