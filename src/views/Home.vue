@@ -204,6 +204,7 @@ import { useRouter } from 'vue-router'
 import { Search, X, ChevronRight } from 'lucide-vue-next'
 import { useMoviesStore } from '@/stores/movies'
 import MediaCard from '@/components/MediaCard.vue'
+import { MultiSearchResult } from 'tmdb-ts'
 
 const router = useRouter()
 const moviesStore = useMoviesStore()
@@ -222,9 +223,9 @@ const clearSearch = () => {
   moviesStore.clearSearch()
 }
 
-const goToDetails = (item: any) => {
-  const mediaType = item.media_type || (item.title ? 'movie' : 'tv')
-  router.push(`/details/${mediaType}/${item.id}`)
+const goToDetails = (item: MultiSearchResult) => {
+  const mediaType = item.media_type
+  router.push({name: 'details-tmdb', params: { mediaType, tmdbId: item.id }})
 }
 
 const goToIntroduction = () => {

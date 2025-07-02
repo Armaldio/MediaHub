@@ -191,15 +191,16 @@ import { useRouter } from 'vue-router'
 import { ArrowLeft, Star, Film } from 'lucide-vue-next'
 import { useMoviesStore } from '@/stores/movies'
 import { useServicesStore } from '@/stores/services'
-import type { Service, MediaType, ServiceCategory } from '@/types'
+import type { Service, ServiceCategory } from '@/types'
 import safeStringify from 'safe-stringify';
 import { FormattedDetails } from '@/models/models'
+import { MediaType } from 'tmdb-ts'
 
 interface Props {
   mediaType: MediaType
   id?: string // For backward compatibility
-  tmdbid?: string
-  imdbid?: string
+  tmdbId?: string
+  imdbId?: string
 }
 
 const props = defineProps<Props>()
@@ -298,8 +299,8 @@ const formattedDetails = computed(() => {
   const externalIds: ExternalIds = details?.external_ids || {};
   
   // Ensure we have at least one valid ID
-  const tmdbId = props.tmdbid || props.id || '';
-  const imdbId = props.imdbid || externalIds.imdb_id || '';
+  const tmdbId = props.tmdbId || props.id || '';
+  const imdbId = props.imdbId || externalIds.imdb_id || '';
   
   if (!tmdbId && !imdbId) {
     console.warn('No valid ID found for this media item');
@@ -356,13 +357,14 @@ const goToIntroduction = () => {
 
 onMounted(async () => {
   try {
+    console.log(props)
     // Prefer tmdbid, fallback to id for backward compatibility
-    const tmdbId = props.tmdbid || props.id;
+    const tmdbId = props.tmdbId || props.id;
     
     if (tmdbId) {
       await moviesStore.fetchDetails(parseInt(tmdbId), props.mediaType);
-    } else if (props.imdbid) {
-      await moviesStore.fetchDetailsByImdbId(props.imdbid, props.mediaType);
+    } else if (props.imdbId) {
+      await moviesStore.fetchDetailsByImdbId(props.imdbId, props.mediaType);
     } else {
       console.error('No valid ID provided for fetching details');
       // Optionally redirect to home or show an error message

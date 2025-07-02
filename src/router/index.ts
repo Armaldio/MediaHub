@@ -67,7 +67,7 @@ const router = createRouter({
       meta: { requiresServices: true },
       beforeEnter: (to, from, next) => {
         // Ensure at least one ID type is provided
-        if (!to.params.tmdbid && !to.params.imdbid) {
+        if (!to.params.tmdbId && !to.params.imdbId) {
           next('/'); // Redirect to home if no ID is provided
           return;
         }
@@ -75,13 +75,13 @@ const router = createRouter({
       },
       children: [
         {
-          path: 'tmdb/:tmdbid',
+          path: 'tmdb/:tmdbId',
           name: 'details-tmdb',
           component: Details,
           props: true
         },
         {
-          path: 'imdb/:imdbid',
+          path: 'imdb/:imdbId',
           name: 'details-imdb',
           component: Details,
           props: true
@@ -104,9 +104,6 @@ router.beforeEach((to, from, next) => {
   // Always load services from localStorage first
   servicesStore.loadFromLocalStorage()
 
-  console.log('servicesStore.hasSelectedServices', servicesStore.hasSelectedServices);
-  console.log('servicesStore.selectedServices', JSON.stringify(servicesStore.selectedServices));
-  
   // If we're going to introduction but have services selected, redirect to home
   if (to.name === 'introduction' && servicesStore.hasSelectedServices && to.query.force !== '1') {
     next({ name: 'home' })

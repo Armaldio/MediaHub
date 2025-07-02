@@ -1,12 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Movie, TVShow, MediaType, TrendingItem } from '@/types'
-import { AppendToResponse, MultiSearchResult, TMDB, MovieDetails, TvShowDetails } from 'tmdb-ts';
+import { AppendToResponse, MultiSearchResult, TMDB, MovieDetails, TvShowDetails, TrendingResults, Movie, PopularTvShowResult, MediaType } from 'tmdb-ts';
 
 export const useMoviesStore = defineStore('movies', () => {
   const popularMovies = ref<Movie[]>([])
-  const popularTVShows = ref<TVShow[]>([])
-  const trending = ref<TrendingItem[]>([])
+  const popularTVShows = ref<PopularTvShowResult[]>([])
+  const trending = ref<TrendingResults<any>[]>([])
   const searchResults = ref<MultiSearchResult[]>([])
   const currentDetails = ref<AppendToResponse<TvShowDetails, "external_ids"[], "tvShow">
   | AppendToResponse<MovieDetails, "external_ids"[], "movie"> | null>(null)
@@ -112,16 +111,15 @@ export const useMoviesStore = defineStore('movies', () => {
       if (mediaType === 'movie') {
         // First, try to get the movie directly by IMDB ID
         try {
-          const response = await fetch(
-            `https://api.themoviedb.org/3/find/${imdbId}?api_key=${import.meta.env.VITE_TMDB_API_KEY}&external_source=imdb_id`
-          );
+          const response = await tmdb.find.byExternalId(imdbId, {
+            external_source: 'imdb_id'
+          });
           
-          if (!response.ok) {
+          if (!response) {
             throw new Error('Failed to fetch from TMDB API');
           }
           
-          const data = await response.json();
-          const movieResult = data.movie_results?.[0];
+          const movieResult = response.movie_results?.[0];
           
           if (!movieResult) {
             throw new Error('No movie found with this IMDB ID');
@@ -136,16 +134,15 @@ export const useMoviesStore = defineStore('movies', () => {
       } else if (mediaType === 'tv') {
         // First, try to get the TV show directly by IMDB ID
         try {
-          const response = await fetch(
-            `https://api.themoviedb.org/3/find/${imdbId}?api_key=${import.meta.env.VITE_TMDB_API_KEY}&external_source=imdb_id`
-          );
+          const response = await tmdb.find.byExternalId(imdbId, {
+            external_source: 'imdb_id'
+          });
           
-          if (!response.ok) {
+          if (!response) {
             throw new Error('Failed to fetch from TMDB API');
           }
           
-          const data = await response.json();
-          const tvResult = data.tv_results?.[0];
+          const tvResult = response.tv_results?.[0];
           
           if (!tvResult) {
             throw new Error('No TV show found with this IMDB ID');

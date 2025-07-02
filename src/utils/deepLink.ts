@@ -16,28 +16,28 @@ export function parseDeepLink(url: string): DeepLinkParams | null {
     // Handle movie deep links
     if (path === 'movie') {
       const params = Object.fromEntries(parsedUrl.searchParams);
-      if (!params.tmdb && !params.imdb) {
+      if (!params.tmdbId && !params.imdbId) {
         throw new Error('Missing required parameter: tmdb or imdb');
       }
       
       return {
         type: 'movie',
-        tmdbId: params.tmdb,
-        imdbId: params.imdb
+        tmdbId: params.tmdbId,
+        imdbId: params.imdbId
       };
     }
     
     // Handle show deep links
     if (path === 'show') {
       const params = Object.fromEntries(parsedUrl.searchParams);
-      if (!params.tmdb && !params.imdb) {
+      if (!params.tmdbId && !params.imdbId) {
         throw new Error('Missing required parameter: tmdb or imdb');
       }
       
       return {
         type: 'show',
-        tmdbId: params.tmdb,
-        imdbId: params.imdb,
+        tmdbId: params.tmdbId,
+        imdbId: params.imdbId,
         season: params.season,
         episode: params.episode
       };
@@ -74,7 +74,7 @@ export function navigateFromDeepLink(router: any, params: DeepLinkParams) {
     name: `details-${idType}`,
     params: { 
       mediaType,
-      [`${idType}id`]: id
+      [`${idType}Id`]: id
     },
     query
   });
