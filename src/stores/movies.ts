@@ -83,8 +83,10 @@ export const useMoviesStore = defineStore('movies', () => {
   const fetchDetails = async (id: number, mediaType: MediaType) => {
     try {
       loading.value = true
+      error.value = null
       let detailsResponse: AppendToResponse<TvShowDetails, "external_ids"[], "tvShow">
       | AppendToResponse<MovieDetails, "external_ids"[], "movie">;
+      
       if (mediaType === 'movie') {
         detailsResponse = await tmdb.movies.details(id, ['external_ids']);
       } else if (mediaType === 'tv') {
@@ -93,12 +95,17 @@ export const useMoviesStore = defineStore('movies', () => {
         throw new Error('Invalid media type');
       }
       
+      if (!detailsResponse) {
+        throw new Error('No data returned from API');
+      }
+      
       currentDetails.value = detailsResponse
       return detailsResponse;
     } catch (err) {
-      error.value = 'Failed to fetch details'
-      console.error(err)
-      throw err
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch details';
+      error.value = `Error loading ${mediaType === 'movie' ? 'movie' : 'TV show'} details: ${errorMessage}`
+      console.error('Error in fetchDetails:', err)
+      throw error.value; // Re-throw to allow component to handle the error
     } finally {
       loading.value = false
     }
@@ -106,63 +113,39 @@ export const useMoviesStore = defineStore('movies', () => {
 
   const fetchDetailsByImdbId = async (imdbId: string, mediaType: MediaType) => {
     try {
-      loading.value = true;
+      loading.value = true
+      error.value = null
       
+      if (!imdbId) {
+        throw new Error('No IMDB ID provided');
+      }
+      
+      // First, search by IMDB ID to get the TMDB ID
+      const searchResponse = await tmdb.find.byExternalId(imdbId, { external_source: 'imdb_id' });
+      
+      if (!searchResponse) {
+        throw new Error('No response from TMDB API');
+      }
+      
+      // Determine which type of media to get details for
       if (mediaType === 'movie') {
-        // First, try to get the movie directly by IMDB ID
-        try {
-          const response = await tmdb.find.byExternalId(imdbId, {
-            external_source: 'imdb_id'
-          });
-          
-          if (!response) {
-            throw new Error('Failed to fetch from TMDB API');
-          }
-          
-          const movieResult = response.movie_results?.[0];
-          
-          if (!movieResult) {
-            throw new Error('No movie found with this IMDB ID');
-          }
-          
-          // Fetch the full details using the TMDB ID
-          return await fetchDetails(movieResult.id, 'movie');
-        } catch (err) {
-          console.error('Error fetching movie by IMDB ID:', err);
-          throw new Error('Failed to fetch movie details by IMDB ID');
-        }
+        const movieResults = searchResponse.movie_results?.[0];
+        if (!movieResults) throw new Error('No movie found with this IMDB ID');
+        return await fetchDetails(movieResults.id, 'movie');
       } else if (mediaType === 'tv') {
-        // First, try to get the TV show directly by IMDB ID
-        try {
-          const response = await tmdb.find.byExternalId(imdbId, {
-            external_source: 'imdb_id'
-          });
-          
-          if (!response) {
-            throw new Error('Failed to fetch from TMDB API');
-          }
-          
-          const tvResult = response.tv_results?.[0];
-          
-          if (!tvResult) {
-            throw new Error('No TV show found with this IMDB ID');
-          }
-          
-          // Fetch the full details using the TMDB ID
-          return await fetchDetails(tvResult.id, 'tv');
-        } catch (err) {
-          console.error('Error fetching TV show by IMDB ID:', err);
-          throw new Error('Failed to fetch TV show details by IMDB ID');
-        }
+        const tvResults = searchResponse.tv_results?.[0];
+        if (!tvResults) throw new Error('No TV show found with this IMDB ID');
+        return await fetchDetails(tvResults.id, 'tv');
       } else {
         throw new Error('Invalid media type');
       }
     } catch (err) {
-      error.value = 'Failed to fetch details by IMDB ID';
-      console.error(err);
-      throw err;
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch details by IMDB ID';
+      error.value = `Error loading details: ${errorMessage}`
+      console.error('Error in fetchDetailsByImdbId:', err)
+      throw error.value;
     } finally {
-      loading.value = false;
+      loading.value = false
     }
   }
 

@@ -4,8 +4,32 @@
     <div class="h-safe-top"></div>
     
     <!-- Loading State -->
-    <div v-if="moviesStore.loading" class="flex justify-center items-center min-h-screen-safe">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
+    <div v-if="moviesStore.loading" class="flex flex-col justify-center items-center min-h-screen-safe p-8 text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mb-4"></div>
+      <p class="text-gray-300">Loading details...</p>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="errorMessage" class="flex flex-col items-center justify-center min-h-screen-safe p-8 text-center">
+      <div class="bg-red-900/30 border border-red-800 rounded-xl p-6 max-w-2xl w-full">
+        <div class="text-red-400 text-5xl mb-4">⚠️</div>
+        <h2 class="text-2xl font-bold text-white mb-2">Something went wrong</h2>
+        <p class="text-gray-300 mb-6">{{ errorMessage }}</p>
+        <div class="flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            @click="retryLoading"
+            class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+          >
+            Try Again
+          </button>
+          <button
+            @click="goBack"
+            class="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Content -->
@@ -184,7 +208,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, CSSProperties } from 'vue'
+import { computed, onMounted, ref, CSSProperties } from 'vue'
 import type { DeepLink } from '@/types'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Star, Film } from 'lucide-vue-next'
@@ -211,8 +235,10 @@ const backButtonStyle = {
   top: 'var(--top-offset)',
   left: '1rem'
 } as CSSProperties
+
 const moviesStore = useMoviesStore()
 const servicesStore = useServicesStore()
+const errorMessage = ref<string | null>(null)
 
 const title = computed(() => {
   const details = moviesStore.currentDetails;
@@ -353,9 +379,10 @@ const goToIntroduction = () => {
   router.push('/')
 }
 
-onMounted(async () => {
+const loadDetails = async () => {
   try {
-    console.log(props)
+    errorMessage.value = null;
+    
     // Prefer tmdbid, fallback to id for backward compatibility
     const tmdbId = props.tmdbId || props.id;
     
@@ -364,13 +391,21 @@ onMounted(async () => {
     } else if (props.imdbId) {
       await moviesStore.fetchDetailsByImdbId(props.imdbId, props.mediaType);
     } else {
-      console.error('No valid ID provided for fetching details');
-      // Optionally redirect to home or show an error message
-      router.push('/');
+      throw new Error('No valid ID provided for fetching details');
     }
   } catch (error) {
     console.error('Error loading media details:', error);
-    // Handle error (e.g., show error message to user)
+    errorMessage.value = typeof error === 'string' ? error : 
+                         error instanceof Error ? error.message : 
+                         'An unknown error occurred while loading details';
   }
-})
+};
+
+const retryLoading = async () => {
+  await loadDetails();
+};
+
+onMounted(() => {
+  loadDetails();
+});
 </script>

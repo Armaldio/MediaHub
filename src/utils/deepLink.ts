@@ -61,14 +61,14 @@ export function navigateFromDeepLink(router: any, params: DeepLinkParams) {
     source: idType,
   };
   
-  if (params.type === 'show') {
-    if (params.season) {
-      query.season = params.season;
-      if (params.episode) {
-        query.episode = params.episode;
-      }
-    }
-  }
+  // if (params.type === 'show') {
+  //   if (params.season) {
+  //     query.season = params.season;
+  //     if (params.episode) {
+  //       query.episode = params.episode;
+  //     }
+  //   }
+  // }
   
   router.push({
     name: `details-${idType}`,
