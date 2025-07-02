@@ -16,9 +16,10 @@
     "@capacitor/app-launcher": "^7.0.1",
     "@capacitor/core": "7.4.0",
     "@capacitor/device": "^7.0.1",
-    "axios": "^1.6.2",
     "lucide-vue-next": "^0.294.0",
     "pinia": "^2.1.7",
+    "safe-stringify": "^1.2.0",
+    "tmdb-ts": "^2.0.1",
     "vue": "^3.4.38",
     "vue-router": "^4.2.5"
   },

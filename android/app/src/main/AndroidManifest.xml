@@ -43,6 +43,43 @@
         </provider>
     </application>
 
+    <queries>
+        <!-- Explicit apps you know in advance about: -->
+        <package android:name="de.ava"/>
+        <package android:name="com.netflix.mediaclient" />
+        <package android:name="com.amazon.avod.thirdpartyclient" />
+        <package android:name="com.disney.disneyplus" />
+        <package android:name="com.hulu.plus" />
+        <package android:name="com.hbo.hbonow" />
+        <package android:name="com.apple.atve.android.appletv" />
+        <package android:name="com.cbs.app" />
+        <package android:name="com.peacocktv.peacockandroid" />
+        <package android:name="com.moviebase" />
+        <package android:name="com.letterboxd" />
+        <package android:name="tv.trakt.trakt" />
+        <package android:name="com.justwatch.justwatch" />
+        <package android:name="com.imdb.mobile" />
+        <package android:name="com.plexapp.android" />
+        <package android:name="org.jellyfin.mobile" />
+        <package android:name="org.xbmc.kodi" />
+        <package android:name="com.google.android.youtube" />
+        <package android:name="de.ava" />
+        <package android:name="com.cinemabox" />
+        <package android:name="com.tozelabs.tvshowtime" />
+        <package android:name="com.google.android.youtube" />
+        <package android:name="com.mubi" />
+        <package android:name="com.criterionchannel.android" />
+        <package android:name="ru.kinopoisk" />
+        <package android:name="com.simkl" />
+        <package android:name="com.themoviedb" />
+        <package android:name="om.thetvdb" />
+        <package android:name="pl.filmweb.ffw" />
+        <package android:name="com.allocine.app" />
+        <package android:name="com.betaseries.iliad" />
+        <package android:name="com.dubbingbase.app" />
+        <package android:name="com.kevinforeman.nzb360" />
+    </queries>
+
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />

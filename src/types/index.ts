@@ -1,3 +1,5 @@
+import { FormattedDetails } from "@/models/models";
+
 export interface Service {
   id: string;
   name: string;
@@ -14,7 +16,8 @@ export interface Service {
 
 export interface DeepLink {
   name: string;
-  url: (data: any) => string;
+  enabled?: (data: FormattedDetails) => boolean;
+  url: (data: FormattedDetails) => string;
 }
 
 export type ServiceCategory = 

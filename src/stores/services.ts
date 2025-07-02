@@ -4,19 +4,9 @@ import { Device } from '@capacitor/device'
 import type { Service, ServiceCategory, ServiceCategoryInfo } from '@/types'
 import servicesData from '@/data/services'
 
-// Helper function to create a clean copy of services data
-const createCleanServicesData = () => {
-  try {
-    return JSON.parse(JSON.stringify(servicesData)) as Service[]
-  } catch (error) {
-    console.error('Error creating clean services data:', error)
-    return []
-  }
-}
-
 export const useServicesStore = defineStore('services', () => {
   // Initialize with clean services data
-  const availableServices = ref<Service[]>(createCleanServicesData())
+  const availableServices = ref<Service[]>(servicesData)
   const selectedServiceIds = ref<string[]>([])
   const installedApps = ref<string[]>([])
   const isNative = ref(false)

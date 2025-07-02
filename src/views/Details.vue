@@ -132,9 +132,9 @@
                   <div v-if="service.deepLinks?.length > 0" class="mt-2">
                     <div class="text-xs text-gray-400 mb-1">Open with:</div>
                     <div class="space-y-1.5">
+                      <template v-for="(link, index) in service.deepLinks" :key="index">
                       <button
-                        v-for="(link, index) in service.deepLinks"
-                        :key="index"
+                        v-if="link.enabled?.(formattedDetails)"
                         @click.stop="openDeepLink(service, link)"
                         class="w-full text-left px-3 py-2 text-xs rounded-md transition-all duration-200 flex items-center justify-between gap-2"
                         :class="{
@@ -151,6 +151,7 @@
                           </svg>
                         </span>
                       </button>
+                      </template>
                     </div>
                   </div>
                 </div>
@@ -191,6 +192,8 @@ import { ArrowLeft, Star, Film } from 'lucide-vue-next'
 import { useMoviesStore } from '@/stores/movies'
 import { useServicesStore } from '@/stores/services'
 import type { Service, MediaType, ServiceCategory } from '@/types'
+import safeStringify from 'safe-stringify';
+import { FormattedDetails } from '@/models/models'
 
 interface Props {
   mediaType: MediaType
@@ -279,32 +282,34 @@ const categoriesWithServices = computed(() => {
   return categories
 })
 
+const formattedDetails = computed(() => {
+    return {
+    type: props.mediaType,
+    title: moviesStore.currentDetails?.title || moviesStore.currentDetails?.name,
+    tmdbId: props.id,
+    imdbId: moviesStore.currentDetails?.external_ids?.imdb_id,
+    wikidataId: moviesStore.currentDetails?.external_ids?.wikidata_id,
+    facebookId: moviesStore.currentDetails?.external_ids?.facebook_id,
+    instagramId: moviesStore.currentDetails?.external_ids?.instagram_id,
+    twitterId: moviesStore.currentDetails?.external_ids?.twitter_id
+} satisfies FormattedDetails
+})
+
 const openDeepLink = async (service: Service, link: DeepLink) => {
+  
+
+  const resolvedUrl = link.url(formattedDetails.value)
+
   // Handle different types of deep links
-  if (link.name === 'Website') {
-    window.open(service.websiteUrl, '_blank', 'noopener,noreferrer')
-  } else if (link.name === 'App') {
-    if (service.urlScheme) {
-      try {
-        const { AppLauncher } = await import('@capacitor/app-launcher')
-        await AppLauncher.openUrl({ url: service.urlScheme })
-      } catch (error) {
-        console.error('Error opening app:', error)
-        window.open(service.websiteUrl, '_blank', 'noopener,noreferrer')
-      }
-    }
-  } else if (link.url) {
-    // Handle custom deep links
-    const url = typeof link.url === 'function' 
-      ? link.url(moviesStore.currentDetails)
-      : link.url
-    
+  if (resolvedUrl.startsWith('http')) {
+    window.open(resolvedUrl, '_blank', 'noopener,noreferrer')
+  } else if (service.androidAppId) {
     try {
       const { AppLauncher } = await import('@capacitor/app-launcher')
-      await AppLauncher.openUrl({ url })
+      await AppLauncher.openUrl({ url: resolvedUrl })
     } catch (error) {
-      console.error('Error opening deep link:', error)
-      window.open(url, '_blank', 'noopener,noreferrer')
+      console.error('Error opening app:', error)
+      window.open(service.appUrl, '_blank', 'noopener,noreferrer')
     }
   }
 }

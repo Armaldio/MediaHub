@@ -75,8 +75,6 @@ router.beforeEach((to, from, next) => {
   servicesStore.loadFromLocalStorage()
 
   console.log('servicesStore.hasSelectedServices', servicesStore.hasSelectedServices);
-  console.log('to', JSON.stringify(to));
-  console.log('from', JSON.stringify(from));
   console.log('servicesStore.selectedServices', JSON.stringify(servicesStore.selectedServices));
   
   // If we're going to introduction but have services selected, redirect to home

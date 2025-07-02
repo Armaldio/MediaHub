@@ -14,7 +14,7 @@ export default [
     "deepLinks": [
       {
         "name": "App",
-        "url": (data: any) => `netflix://title/${data.tmdb_id}`
+        "url": (data) => `netflix://title/${data.tmdbId}`
       }
     ]
   },
@@ -31,7 +31,7 @@ export default [
     "deepLinks": [
       {
         "name": "App",
-        "url": (data: any) => `aiv://aiv/resume?asin=${data.imdb_id}`
+        "url": (data) => `aiv://aiv/resume?asin=${data.tmdbId}`
       }
     ]
   },
@@ -48,11 +48,11 @@ export default [
     "deepLinks": [
       {
         "name": "App",
-        "url": (data: any) => `disneyplus://content/${data.tmdb_id}`
+        "url": (data) => `disneyplus://content/${data.tmdbId}`
       },
       {
         "name": "Website",
-        "url": (data: any) => `https://www.disneyplus.com/movies//${data.tmdb_id}`
+        "url": (data) => `https://www.disneyplus.com/movies//${data.tmdbId}`
       }
     ]
   },
@@ -69,7 +69,7 @@ export default [
     "deepLinks": [
       {
         "name": "App",
-        "url": (data: any) => `hulu://watch/${data.tmdb_id}`
+        "url": (data) => `hulu://watch/${data.tmdbId}`
       }
     ]
   },
@@ -86,11 +86,11 @@ export default [
     "deepLinks": [
       {
         "name": "App",
-        "url": (data: any) => `hbonow://content/${data.tmdb_id}`
+        "url": (data) => `hbonow://content/${data.tmdbId}`
       },
       {
         "name": "Website",
-        "url": (data: any) => `https://play.max.com/movie/${data.tmdb_id}`
+        "url": (data) => `https://play.max.com/movie/${data.tmdbId}`
       }
     ]
   },
@@ -107,7 +107,7 @@ export default [
     "deepLinks": [
       {
         "name": "App",
-        "url": (data: any) => `https://tv.apple.com/movie/${data.tmdb_id}`
+        "url": (data) => `https://tv.apple.com/movie/${data.tmdbId}`
       }
     ]
   },
@@ -124,7 +124,7 @@ export default [
     "deepLinks": [
       {
         "name": "App",
-        "url": (data: any) => `paramountplus://content/${data.tmdb_id}`
+        "url": (data) => `paramountplus://content/${data.tmdbId}`
       }
     ]
   },
@@ -141,7 +141,7 @@ export default [
     "deepLinks": [
       {
         "name": "App",
-        "url": (data: any) => `peacock://watch/${data.tmdb_id}`
+        "url": (data) => `peacock://watch/${data.tmdbId}`
       }
     ]
   },
@@ -158,11 +158,11 @@ export default [
     "deepLinks": [
       {
         "name": "App",
-        "url": (data: any) => `moviebase://movie/${data.tmdb_id}`
+        "url": (data) => `moviebase://movie/${data.tmdbId}`
       },
       {
         "name": "App",
-        "url": (data: any) => `moviebase://imdb/${data.imdb_id}`
+        "url": (data) => `moviebase://imdb/${data.imdbId}`
       }
     ]
   },
@@ -179,11 +179,11 @@ export default [
     "deepLinks": [
       {
         "name": "App",
-        "url": (data: any) => `letterboxd://film/tmdb/${data.tmdb_id}`
+        "url": (data) => `letterboxd://film/tmdb/${data.tmdbId}`
       },
       {
         "name": "App",
-        "url": (data: any) => `letterboxd://film/${data.imdb_id}`
+        "url": (data) => `letterboxd://film/${data.imdbId}`
       }
     ]
   },
@@ -199,12 +199,20 @@ export default [
     "category": "tracking",
     "deepLinks": [
       {
-        "name": "App",
-        "url": (data: any) => `trakt://movie/${data.tmdb_id}`
+        "name": "App - Movie",
+        "url": (data) => `trakt://movie/${data.tmdbId}`
       },
       {
-        "name": "App",
-        "url": (data: any) => `trakt://search/imdb/${data.imdb_id}`
+        "name": "App - Search",
+        "url": (data) => `trakt://search/imdb/${data.imdbId}`
+      },
+      {
+        "name": "App - TV Show",
+        "url": (data) => `trakt://search/tvshow/${data.tmdbId}`
+      },
+      {
+        "name": "Website",
+        "url": (data) => `https://trakt.tv/movies/${data.tmdbId}`
       }
     ]
   },
@@ -221,7 +229,7 @@ export default [
     "deepLinks": [
       {
         "name": "App",
-        "url": (data: any) => `justwatch://title/movie/${data.tmdb_id}`
+        "url": (data) => `justwatch://title/movie/${data.tmdbId}`
       }
     ]
   },
@@ -237,12 +245,12 @@ export default [
     "category": "database",
     "deepLinks": [
       {
-        "name": "App",
-        "url": (data: any) => `imdb:///title/${data.imdb_id}`
+        "name": "App - Movie",
+        "url": (data) => `imdb:///title/${data.imdbId}`
       },
       {
-        "name": "App",
-        "url": (data: any) => `imdb:///find?q=${data.tmdb_id}`
+        "name": "App - TV Show",
+        "url": (data) => `imdb:///find?q=${data.tmdbId}`
       }
     ]
   },
@@ -260,7 +268,8 @@ export default [
     "deepLinks": [
       {
         "name": "Website",
-        "url": (data: any) => `https://wikidata.org/wiki/${data.wikidata_id}`
+        "enabled": (data) => !!data.wikidataId,
+        "url": (data) => `https://wikidata.org/wiki/${data.wikidataId}`
       }
     ]
   },
@@ -276,12 +285,16 @@ export default [
     "category": "media_center",
     "deepLinks": [
       {
-        "name": "App",
-        "url": (data: any) => `plex://movie/${data.tmdb_id}`
+        "name": "App - Movie",
+        "url": (data) => `plex://movie/${data.tmdbId}`
       },
       {
-        "name": "App",
-        "url": (data: any) => `plex://search?query=${data.imdb_id}`
+        "name": "App - TV Show",
+        "url": (data) => `plex://tvshow/${data.tmdbId}`
+      },
+      {
+        "name": "App - Search",
+        "url": (data) => `plex://search?query=${data.tmdbId}`
       }
     ]
   },
@@ -297,8 +310,16 @@ export default [
     "category": "media_center",
     "deepLinks": [
       {
-        "name": "App",
-        "url": (data: any) => `jellyfin://movie/${data.tmdb_id}`
+        "name": "App - Movie",
+        "url": (data) => `jellyfin://movie/${data.tmdbId}`
+      },
+      {
+        "name": "App - TV Show",
+        "url": (data) => `jellyfin://tvshow/${data.tmdbId}`
+      },
+      {
+        "name": "App - Search",
+        "url": (data) => `jellyfin://search?query=${data.tmdbId}`
       }
     ]
   },
@@ -314,25 +335,16 @@ export default [
     "category": "media_center",
     "deepLinks": [
       {
-        "name": "App",
-        "url": (data: any) => `kodi://movie/${data.tmdb_id}`
-      }
-    ]
-  },
-  {
-    "id": "youtube",
-    "name": "YouTube",
-    "description": "Video platform",
-    "icon": "📹",
-    "websiteUrl": "https://youtube.com",
-    "appUrl": "https://play.google.com/store/apps/details?id=com.google.android.youtube",
-    "androidAppId": "com.google.android.youtube",
-    "color": "#FF0000",
-    "category": "discovery",
-    "deepLinks": [
+        "name": "App - Movie",
+        "url": (data) => `kodi://movie/${data.tmdbId}`
+      },
       {
-        "name": "App",
-        "url": (data: any) => `youtube://search?query=${data.tmdb_id}`
+        "name": "App - TV Show",
+        "url": (data) => `kodi://tvshow/${data.tmdbId}`
+      },
+      {
+        "name": "App - Search",
+        "url": (data) => `kodi://search?query=${data.tmdbId}`
       }
     ]
   },
@@ -348,8 +360,14 @@ export default [
     "category": "discovery",
     "deepLinks": [
       {
-        "name": "App",
-        "url": (data: any) => `https://ava-assistant.app/{type}/{tmdb_id}`
+        "enabled": (data) => data.type === 'movie',
+        "name": "App - Movie",
+        "url": (data) => `https://ava-assistant.app/movie/${data.tmdbId}`
+      },
+      {
+        "enabled": (data) => data.type === 'tv',
+        "name": "App - TV Show",
+        "url": (data) => `https://ava-assistant.app/series/${data.tmdbId}`
       }
     ]
   },
@@ -365,8 +383,9 @@ export default [
     "category": "tracking",
     "deepLinks": [
       {
-        "name": "App",
-        "url": (data: any) => `cinemabox://movie/${data.tmdb_id}`
+        "enabled": (data) => data.type === 'movie',
+        "name": "App - Movie",
+        "url": (data) => `cinemabox://movie/${data.tmdbId}`
       }
     ]
   },
@@ -382,33 +401,45 @@ export default [
     "category": "tracking",
     "deepLinks": [
       {
-        "name": "App",
-        "url": (data: any) => `tvtime://show/${data.tmdb_id}`
+        "enabled": (data) => data.type === 'movie',
+        "name": "App - Movie",
+        "url": (data) => `tvtime://movie/${data.tmdbId}`
+      },
+      {
+        "enabled": (data) => data.type === 'tv',
+        "name": "App - TV Show",
+        "url": (data) => `tvtime://show/${data.tmdbId}`
       },
       {
         "name": "Website",
-        "url": (data: any) => `https://www.tvtime.com/en/show/${data.tmdb_id}`
+        "url": (data) => `https://www.tvtime.com/en/show/${data.tmdbId}`
       }
     ]
   },
   {
-    "id": "youtube_movies",
-    "name": "YouTube Movies",
-    "description": "Rent or buy movies and shows",
+    "id": "youtube",
+    "name": "YouTube",
+    "description": "Video platform",
     "icon": "▶️",
-    "websiteUrl": "https://www.youtube.com/movies",
+    "websiteUrl": "https://www.youtube.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.google.android.youtube",
     "androidAppId": "com.google.android.youtube",
     "color": "#FF0000",
     "category": "streaming",
     "deepLinks": [
       {
-        "name": "Search in App",
-        "url": (data: any) => `vnd.youtube://search?query=${encodeURIComponent(data.title || '')}`
+        "enabled": (data) => data.type === 'movie',
+        "name": "Search in App - Movie",
+        "url": (data) => `vnd.youtube://search?query=${encodeURIComponent(data.title || '')}`
+      },
+      {
+        "enabled": (data) => data.type === 'tv',
+        "name": "Search in App - TV Show",
+        "url": (data) => `vnd.youtube://search?query=${encodeURIComponent(data.title || '')}`
       },
       {
         "name": "Website",
-        "url": (data: any) => `https://www.youtube.com/results?search_query=${encodeURIComponent(data.title || '')}`
+        "url": (data) => `https://www.youtube.com/results?search_query=${encodeURIComponent(data.title || '')}`
       }
     ]
   },
@@ -425,11 +456,11 @@ export default [
     "deepLinks": [
       {
         "name": "App",
-        "url": (data: any) => `mubi://films/${data.tmdb_id}`
+        "url": (data) => `mubi://films/${data.tmdbId}`
       },
       {
         "name": "Website",
-        "url": (data: any) => `https://mubi.com/films/${data.tmdb_id}`
+        "url": (data) => `https://mubi.com/films/${data.tmdbId}`
       }
     ]
   },
@@ -445,8 +476,18 @@ export default [
     "category": "streaming",
     "deepLinks": [
       {
+        "enabled": (data) => data.type === 'movie',
+        "name": "Search in App - Movie",
+        "url": (data) => `vnd.youtube://search?query=${encodeURIComponent(data.title || '')}`
+      },
+      {
+        "enabled": (data) => data.type === 'tv',
+        "name": "Search in App - TV Show",
+        "url": (data) => `vnd.youtube://search?query=${encodeURIComponent(data.title || '')}`
+      },
+      {
         "name": "Website",
-        "url": (data: any) => `https://www.criterionchannel.com/search?q=${encodeURIComponent(data.title || '')}`
+        "url": (data) => `https://www.criterionchannel.com/search?q=${encodeURIComponent(data.title || '')}`
       }
     ]
   },
@@ -462,12 +503,18 @@ export default [
     "category": "database",
     "deepLinks": [
       {
-        "name": "App",
-        "url": (data: any) => `kp://film/${data.kinopoisk_id || data.tmdb_id}`
+        "enabled": (data) => data.type === 'movie',
+        "name": "App - Movie",
+        "url": (data) => `kp://film/${data.tmdbId}`
+      },
+      {
+        "enabled": (data) => data.type === 'tv',
+        "name": "App - TV Show",
+        "url": (data) => `kp://serial/${data.tmdbId}`
       },
       {
         "name": "Website",
-        "url": (data: any) => `https://www.kinopoisk.ru/film/${data.kinopoisk_id || data.tmdb_id}/`
+        "url": (data) => `https://www.kinopoisk.ru/film/${data.tmdbId}/`
       }
     ]
   },
@@ -483,12 +530,18 @@ export default [
     "category": "tracking",
     "deepLinks": [
       {
-        "name": "App",
-        "url": (data: any) => `simkl://media/movie/${data.tmdb_id}`
+        "enabled": (data) => data.type === 'movie',
+        "name": "App - Movie",
+        "url": (data) => `simkl://media/movie/${data.tmdbId}`
+      },
+      {
+        "enabled": (data) => data.type === 'tv',
+        "name": "App - TV Show",
+        "url": (data) => `simkl://media/tv/${data.tmdbId}`
       },
       {
         "name": "Website",
-        "url": (data: any) => `https://simkl.com/movies/${data.tmdb_id}`
+        "url": (data) => `https://simkl.com/movies/${data.tmdbId}`
       }
     ]
   },
@@ -504,12 +557,18 @@ export default [
     "category": "database",
     "deepLinks": [
       {
-        "name": "App",
-        "url": (data: any) => `tmdb://movie/${data.tmdb_id}`
+        "enabled": (data) => data.type === 'movie',
+        "name": "App - Movie",
+        "url": (data) => `tmdb://movie/${data.tmdbId}`
+      },
+      {
+        "enabled": (data) => data.type === 'tv',
+        "name": "App - TV Show",
+        "url": (data) => `tmdb://tv/${data.tmdbId}`
       },
       {
         "name": "Website",
-        "url": (data: any) => `https://www.themoviedb.org/movie/${data.tmdb_id}`
+        "url": (data) => `https://www.themoviedb.org/movie/${data.tmdbId}`
       }
     ]
   },
@@ -526,7 +585,7 @@ export default [
     "deepLinks": [
       {
         "name": "Website",
-        "url": (data: any) => `https://thetvdb.com/movies/${data.tvdb_id || data.title?.toLowerCase().replace(/\s+/g, '-')}`
+        "url": (data) => `https://thetvdb.com/movies/${data.title?.toLowerCase().replace(/\s+/g, '-')}`
       }
     ]
   },
@@ -542,12 +601,18 @@ export default [
     "category": "database",
     "deepLinks": [
       {
-        "name": "App",
-        "url": (data: any) => `filmweb://film/${data.filmweb_id || data.title?.toLowerCase().replace(/\s+/g, '-')}`
+        "enabled": (data) => data.type === 'movie',
+        "name": "App - Movie",
+        "url": (data) => `filmweb://film/${data.tmdbId}`
+      },
+      {
+        "enabled": (data) => data.type === 'tv',
+        "name": "App - TV Show",
+        "url": (data) => `filmweb://serial/${data.tmdbId}`
       },
       {
         "name": "Website",
-        "url": (data: any) => `https://www.filmweb.pl/film/${data.filmweb_id || data.title?.toLowerCase().replace(/\s+/g, '-')}`
+        "url": (data) => `https://www.filmweb.pl/film/${data.tmdbId}`
       }
     ]
   },
@@ -563,13 +628,15 @@ export default [
     "category": "database",
     "deepLinks": [
       {
-        "name": "App",
-        "url": (data: any) => `allocine://film/${data.allocine_id || data.tmdb_id}/`
+        "enabled": (data) => data.type === 'movie',
+        "name": "App - Movie",
+        "url": (data) => `allocine://film/${data.tmdbId}`
       },
       {
-        "name": "Website",
-        "url": (data: any) => `https://www.allocine.fr/film/fichefilm_gen_cfilm=${data.allocine_id || data.tmdb_id}.html`
-      }
+        "enabled": (data) => data.type === 'tv',
+        "name": "App - TV Show",
+        "url": (data) => `allocine://series/${data.tmdbId}`
+      },
     ]
   },
   {
@@ -584,12 +651,18 @@ export default [
     "category": "tracking",
     "deepLinks": [
       {
-        "name": "App",
-        "url": (data: any) => `betaseries://shows/${data.betaseries_id || data.tmdb_id}`
+        "enabled": (data) => data.type === 'movie',
+        "name": "App - Movie",
+        "url": (data) => `betaseries://movie/${data.tmdbId}`
+      },
+      {
+        "enabled": (data) => data.type === 'tv',
+        "name": "App - TV Show",
+        "url": (data) => `betaseries://shows/${data.tmdbId}`
       },
       {
         "name": "Website",
-        "url": (data: any) => `https://www.betaseries.com/movie/${data.title?.toLowerCase().replace(/\s+/g, '-')}`
+        "url": (data) => `https://www.betaseries.com/movie/${data.title?.toLowerCase().replace(/\s+/g, '-')}`
       }
     ]
   },
@@ -605,13 +678,15 @@ export default [
     "category": "database",
     "deepLinks": [
       {
-        "name": "App",
-        "url": (data: any) => `dubbingbase://movie/${data.tmdb_id}`
+        "enabled": (data) => data.type === 'movie',
+        "name": "App - Movie",
+        "url": (data) => `dubbingbase://movie/${data.tmdbId}`
       },
       {
-        "name": "Website",
-        "url": (data: any) => `https://dubbingbase.com/movie/${data.tmdb_id}`
-      }
+        "enabled": (data) => data.type === 'tv',
+        "name": "App - TV Show",
+        "url": (data) => `dubbingbase://show/${data.tmdbId}`
+      },
     ]
   },
   {
@@ -626,8 +701,14 @@ export default [
     "category": "tracking",
     "deepLinks": [
       {
-        "name": "Search",
-        "url": (data: any) => `nzb360://search?query=${encodeURIComponent(data.title || '')}`
+        "enabled": (data) => data.type === 'movie',
+        "name": "Add Movie",
+        "url": (data) => `nzb360://radarr?movieId=${data.tmdbId}`
+      },
+      {
+        "enabled": (data) => data.type === 'tv',
+        "name": "Add TV Show",
+        "url": (data) => `nzb360://sonarr?seriesId=${data.tmdbId}`
       },
       {
         "name": "Open App",
