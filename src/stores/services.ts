@@ -205,7 +205,7 @@ export const useServicesStore = defineStore('services', () => {
   const initStore = async () => {
     try {
       await checkInstalledApps()
-      loadFromLocalStorage()
+     // loadFromLocalStorage()
     } catch (error) {
       console.error('Error initializing services store:', error)
     }

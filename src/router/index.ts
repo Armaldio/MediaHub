@@ -7,8 +7,6 @@ import { parseDeepLink, navigateFromDeepLink } from '@/utils/deepLink'
 
 // Handle deep link navigation
 const handleDeepLink: NavigationGuard = (to, _from, next) => {
-  console.log('to', JSON.stringify(to));
-  console.log('_from', JSON.stringify(_from));
   // Check for deep link in query parameters (web fallback)
   if (to.query.deep_link) {
     const deepLink = Array.isArray(to.query.deep_link) 
