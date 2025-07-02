@@ -75,9 +75,7 @@ export const useServicesStore = defineStore('services', () => {
   })
 
   const installedServices = computed(() => 
-    availableServices.value.filter(service => 
-      service.isInstalled || !service.androidAppId // Web services are always "available"
-    )
+    availableServices.value // All services are available, we just filter by selection
   )
 
   const isServiceSelected = (serviceId: string) => 

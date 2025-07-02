@@ -105,19 +105,18 @@
               :key="service.id"
               @click="openInService(service)"
               class="group p-4 glass-effect rounded-xl hover:bg-white hover:bg-opacity-10 transition-all duration-300 text-left relative"
-              :class="{ 'opacity-60': !servicesStore.isServiceInstalled(service) }"
             >
-              <!-- Installation status indicator -->
+              <!-- Native app availability indicator -->
               <div class="absolute top-2 right-2">
                 <div
                   v-if="servicesStore.isServiceInstalled(service)"
                   class="w-2 h-2 bg-green-500 rounded-full"
-                  title="Available"
+                  title="Native app installed"
                 ></div>
                 <div
                   v-else
-                  class="w-2 h-2 bg-gray-500 rounded-full"
-                  title="Not installed"
+                  class="w-2 h-2 bg-blue-500 rounded-full"
+                  title="Web version available"
                 ></div>
               </div>
 
@@ -134,7 +133,7 @@
                     <div class="space-y-1.5">
                       <template v-for="(link, index) in service.deepLinks" :key="index">
                       <button
-                        v-if="link.enabled?.(formattedDetails)"
+                        v-if="('enabled' in link && link.enabled?.(formattedDetails)) || !('enabled' in link)"
                         @click.stop="openDeepLink(service, link)"
                         class="w-full text-left px-3 py-2 text-xs rounded-md transition-all duration-200 flex items-center justify-between gap-2"
                         :class="{
@@ -258,10 +257,9 @@ const runtime = computed(() => {
 
 const genres = computed(() => moviesStore.currentDetails?.genres || [])
 
+// All selected services are available by default
 const availableSelectedServices = computed(() => 
-  servicesStore.selectedServices.filter(service => 
-    servicesStore.isServiceInstalled(service)
-  )
+  servicesStore.selectedServices
 )
 
 const categoriesWithServices = computed(() => {
