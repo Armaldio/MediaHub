@@ -55,7 +55,7 @@
           <span class="text-gray-400">{{ moviesStore.searchResults.length }} results</span>
         </div>
         <div class="relative">
-          <div class="flex space-x-4 pb-4 overflow-x-auto scrollbar-hide">
+          <div class="flex space-x-4 py-4 overflow-x-auto scrollbar-hide">
             <MediaCard
               v-for="item in moviesStore.searchResults.slice(0, 14)"
               :key="`search-${item.id}`"
@@ -86,7 +86,7 @@
             </router-link> -->
           </div>
           <div class="relative">
-            <div class="flex space-x-4 pb-4 overflow-x-auto scrollbar-hide">
+            <div class="flex space-x-4 py-4 overflow-x-auto scrollbar-hide">
               <MediaCard
                 v-for="movie in moviesStore.popularMovies.slice(0, 14)"
                 :key="`movie-${movie.id}`"
@@ -110,7 +110,7 @@
             </router-link> -->
           </div>
           <div class="relative">
-            <div class="flex space-x-4 pb-4 overflow-x-auto scrollbar-hide">
+            <div class="flex space-x-4 py-4 overflow-x-auto scrollbar-hide">
               <MediaCard
                 v-for="show in moviesStore.popularTVShows.slice(0, 14)"
                 :key="`show-${show.id}`"
@@ -134,7 +134,7 @@
             </router-link> -->
           </div>
           <div class="relative">
-            <div class="flex space-x-4 pb-4 overflow-x-auto scrollbar-hide">
+            <div class="flex space-x-4 py-4 overflow-x-auto scrollbar-hide">
               <template v-for="item in moviesStore.trending.slice(0, 7)" :key="`trending-${item.id}-${item.media_type}`">
                 <MediaCard
                   v-if="item.media_type === 'movie'"

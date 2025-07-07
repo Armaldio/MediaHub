@@ -1,19 +1,19 @@
 <template>
-  <div
-    class="group cursor-pointer card-hover"
-    @click="$emit('click')"
-  >
-    <div class="relative overflow-hidden rounded-xl bg-gray-800 shadow-lg">
-      <!-- Poster -->
-      <div class="aspect-[2/3] relative">
-        <img
-          v-if="posterUrl"
-          :src="posterUrl"
-          :alt="title"
-          class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-        >
-        <div v-else class="w-full h-full bg-gray-700 flex items-center justify-center">
-          <Film class="h-8 w-8 text-gray-500" />
+  <div class="group cursor-pointer card-hover" @click="$emit('click')">
+    <div class="relative overflow-hidden rounded-xl bg-gray-800 shadow-lg h-full flex flex-col">
+      <!-- Poster Container -->
+      <div class="aspect-[2/3] relative overflow-hidden">
+        <!-- Image with zoom effect -->
+        <div class="w-full h-full overflow-hidden">
+          <img
+            v-if="posterUrl"
+            :src="posterUrl"
+            :alt="title"
+            class="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          />
+          <div v-else class="w-full h-full bg-gray-700 flex items-center justify-center">
+            <Film class="h-8 w-8 text-gray-500 group-hover:scale-110 transition-transform duration-300" />
+          </div>
         </div>
         
         <!-- Overlay -->
@@ -24,7 +24,7 @@
                 <Star class="h-4 w-4 text-yellow-500 fill-current" />
                 {{ rating.toFixed(1) }}
               </span>
-              <span v-if="year" class="bg-black/50 px-2 py-1 rounded">{{ year }}</span>
+              <span v-if="year" class="bg-black/50 px-2 py-1 rounded backdrop-blur-sm">{{ year }}</span>
             </div>
           </div>
         </div>
@@ -32,7 +32,7 @@
       
       <!-- Info -->
       <div class="p-3">
-        <h3 class="text-white font-medium text-sm line-clamp-2 group-hover:text-primary-400 transition-colors">
+        <h3 class="text-white font-medium text-sm line-clamp-2 group-hover:text-primary-400 transition-colors duration-300">
           {{ title }}
         </h3>
         <p v-if="mediaTypeLabel" class="text-gray-400 text-xs mt-1">{{ mediaTypeLabel }}</p>
