@@ -117,16 +117,8 @@
 
         <!-- Services -->
         <div v-for="service in servicesStore.selectedServices" :key="service.id" class="mb-8">
-          <div class="flex items-center gap-2 mb-4">
-            <span class="text-xl">{{ service.icon }}</span>
-            <h3 class="text-lg font-semibold text-white">{{ service.name }}</h3>
-          </div>
-          
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <button
-              v-for="deepLink in service.deepLinks"
-              :key="deepLink.name"
-              @click="openDeepLink(service, deepLink)"
               class="group p-4 glass-effect rounded-xl hover:bg-white hover:bg-opacity-10 transition-all duration-300 text-left relative"
             >
               <!-- Native app availability indicator -->
