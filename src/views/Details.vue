@@ -108,81 +108,95 @@
 
       <!-- Services Section -->
       <div class="max-w-7xl mx-auto px-4 py-12">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-2xl font-bold text-white">Open in your apps & services</h2>
-          <div class="text-sm text-gray-400">
-            {{ servicesStore.selectedServices.length }} available
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h2 class="text-2xl font-bold text-white mb-1">Available on</h2>
+            <p class="text-gray-400 text-sm">Your connected streaming services</p>
+          </div>
+          <div class="px-3 py-1 bg-white/5 rounded-full text-sm text-gray-300">
+            {{ servicesStore.selectedServices.length }} services
           </div>
         </div>
 
-        <!-- Services -->
-        <div v-for="service in servicesStore.selectedServices" :key="service.id" class="mb-8">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            <button
-              class="group p-4 glass-effect rounded-xl hover:bg-white hover:bg-opacity-10 transition-all duration-300 text-left relative"
-            >
-              <!-- Native app availability indicator -->
-              <div class="absolute top-2 right-2">
-                <div
-                  v-if="servicesStore.isServiceInstalled(service)"
-                  class="w-2 h-2 bg-green-500 rounded-full"
-                  title="Native app installed"
-                ></div>
-                <div
-                  v-else
-                  class="w-2 h-2 bg-blue-500 rounded-full"
-                  title="Web version available"
-                ></div>
-              </div>
-
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  <img 
-                    v-if="service.icon" 
-                    :src="service.icon" 
-                    :alt="service.name"
-                    class="w-full h-full object-cover"
-                  />
-                  <span v-else class="text-xs text-gray-400">{{ service.name.charAt(0) }}</span>
-                </div>
-                <div class="flex-1">
-                  <h4 class="text-white font-semibold group-hover:text-primary-400 transition-colors text-sm">
-                    {{ service.name }}
-                  </h4>
- 
-                  <!-- Deep Links Dropdown -->
-                  <div v-if="service.deepLinks?.length > 0" class="mt-2">
-                    <div class="text-xs text-gray-400 mb-1">Open with:</div>
-                    <div class="space-y-1.5">
-                      <template v-for="(link, index) in service.deepLinks" :key="index">
-                      <button
-                        v-if="('enabled' in link && link.enabled?.(formattedDetails)) || !('enabled' in link)"
-                        @click.stop="openDeepLink(service, link)"
-                        class="w-full text-left px-3 py-2 text-xs rounded-md transition-all duration-200 flex items-center justify-between gap-2"
-                        :class="{
-                          'bg-white/5 hover:bg-white/10 text-white': true,
-                          'border border-white/10': true,
-                          'active:scale-95': true
-                        }"
-                        :title="link.name"
-                      >
-                        <span class="truncate flex-1 text-left">{{ link.name }}</span>
-                        <span class="text-gray-400 text-xs opacity-70 group-hover:opacity-100 transition-opacity">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                          </svg>
-                        </span>
-                      </button>
-                      </template>
+        <!-- Services Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div 
+            v-for="service in servicesStore.selectedServices" 
+            :key="service.id"
+            class="group relative"
+          >
+            <div class="h-full flex flex-col bg-gray-800/50 rounded-xl overflow-hidden border border-gray-700/50 hover:border-gray-600/50 transition-all duration-300 hover:shadow-lg hover:shadow-black/20">
+              <!-- Service Header -->
+              <div class="p-4 pb-2">
+                <div class="flex items-center gap-3">
+                  <!-- Service Icon -->
+                  <div class="relative">
+                    <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      <img 
+                        v-if="service.icon" 
+                        :src="service.icon" 
+                        :alt="service.name"
+                        class="w-full h-full object-cover"
+                      />
+                      <span v-else class="text-sm font-medium text-gray-400">{{ service.name.charAt(0) }}</span>
                     </div>
+                    <!-- App Status Badge -->
+                    <div 
+                      class="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-gray-900"
+                      :class="{
+                        'bg-green-500': servicesStore.isServiceInstalled(service),
+                        'bg-blue-500': !servicesStore.isServiceInstalled(service)
+                      }"
+                      :title="servicesStore.isServiceInstalled(service) ? 'Native app installed' : 'Web version available'"
+                    ></div>
+                  </div>
+                  
+                  <!-- Service Name -->
+                  <div class="flex-1 min-w-0">
+                    <h3 class="text-white font-semibold truncate text-base">
+                      {{ service.name }}
+                    </h3>
+                    <p class="text-xs text-gray-400 truncate">
+                      {{ servicesStore.isServiceInstalled(service) ? 'App installed' : 'Web access' }}
+                    </p>
                   </div>
                 </div>
               </div>
-              <div
-                class="mt-3 h-1 rounded-full opacity-60"
+
+              <!-- Deep Links -->
+              <div v-if="service.deepLinks?.length > 0" class="px-4 pb-4">
+                <div class="space-y-2">
+                  <template v-for="(link, index) in service.deepLinks" :key="index">
+                    <button
+                      v-if="('enabled' in link && link.enabled?.(formattedDetails)) || !('enabled' in link)"
+                      @click.stop="openDeepLink(service, link)"
+                      class="w-full text-left px-3 py-2 text-sm rounded-lg transition-all duration-200 flex items-center justify-between gap-2 group/link"
+                      :class="{
+                        'bg-white/5 hover:bg-white/10 text-white': true,
+                        'border border-white/5': true,
+                        'active:scale-[0.98]': true
+                      }"
+                      :title="link.name"
+                    >
+                      <span class="truncate flex-1 text-left text-gray-200 group-hover/link:text-white transition-colors">
+                        {{ link.name }}
+                      </span>
+                      <span class="text-gray-400 group-hover/link:text-white transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </span>
+                    </button>
+                  </template>
+                </div>
+              </div>
+              
+              <!-- Accent Border Bottom -->
+              <div 
+                class="h-0.5 w-full"
                 :style="{ backgroundColor: service.color }"
               ></div>
-            </button>
+            </div>
           </div>
         </div>
 
