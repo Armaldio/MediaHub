@@ -61,7 +61,7 @@
               :key="`search-${item.id}`"
               :media="item"
               @click="goToDetails(item)"
-              class="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 hover:scale-105 transition-transform duration-200"
+              class="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 transition-transform duration-200"
             />
           </div>
         </div>
@@ -78,12 +78,12 @@
         <section>
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-white">Popular Movies</h2>
-            <router-link 
+            <!-- <router-link 
               to="/movies" 
               class="text-gray-400 hover:text-white transition-colors text-sm font-medium flex items-center"
             >
               View All <ChevronRight class="h-4 w-4 ml-1" />
-            </router-link>
+            </router-link> -->
           </div>
           <div class="relative">
             <div class="flex space-x-4 pb-4 overflow-x-auto scrollbar-hide">
@@ -92,7 +92,7 @@
                 :key="`movie-${movie.id}`"
                 :media="{ ...movie, media_type: 'movie' }"
                 @click="goToDetails({ ...movie, media_type: 'movie' })"
-                class="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 hover:scale-105 transition-transform duration-200"
+                class="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 transition-transform duration-200"
               />
             </div>
           </div>
@@ -102,12 +102,12 @@
         <section>
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-white">Popular TV Shows</h2>
-            <router-link 
+            <!-- <router-link 
               to="/tv" 
               class="text-gray-400 hover:text-white transition-colors text-sm font-medium flex items-center"
             >
               View All <ChevronRight class="h-4 w-4 ml-1" />
-            </router-link>
+            </router-link> -->
           </div>
           <div class="relative">
             <div class="flex space-x-4 pb-4 overflow-x-auto scrollbar-hide">
@@ -116,7 +116,7 @@
                 :key="`show-${show.id}`"
                 :media="{ ...show, media_type: 'tv' }"
                 @click="goToDetails({ ...show, media_type: 'tv' })"
-                class="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 hover:scale-105 transition-transform duration-200"
+                class="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 transition-transform duration-200"
               />
             </div>
           </div>
@@ -126,12 +126,12 @@
         <section v-if="moviesStore.trending.length > 0">
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-white">Trending This Week</h2>
-            <router-link 
+            <!-- <router-link 
               to="/trending" 
               class="text-gray-400 hover:text-white transition-colors text-sm font-medium flex items-center"
             >
               View All <ChevronRight class="h-4 w-4 ml-1" />
-            </router-link>
+            </router-link> -->
           </div>
           <div class="relative">
             <div class="flex space-x-4 pb-4 overflow-x-auto scrollbar-hide">
@@ -159,7 +159,7 @@
                     title: item.title || '',
                     release_date: item.release_date
                   })"
-                  class="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 hover:scale-105 transition-transform duration-200"
+                  class="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 transition-transform duration-200"
                 />
                 <MediaCard
                   v-else-if="item.media_type === 'tv'"
@@ -184,7 +184,7 @@
                     title: item.name || '',
                     first_air_date: item.first_air_date
                   })"
-                  class="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 hover:scale-105 transition-transform duration-200"
+                  class="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 transition-transform duration-200"
                 />
               </template>
             </div>
