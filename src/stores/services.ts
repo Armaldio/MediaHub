@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { Device } from '@capacitor/device'
-import type { Service, ServiceCategory, ServiceCategoryInfo } from '@/types'
+import type { Service } from '@/types'
 import servicesData from '@/data/services'
 
 export const useServicesStore = defineStore('services', () => {
@@ -11,68 +11,11 @@ export const useServicesStore = defineStore('services', () => {
   const installedApps = ref<string[]>([])
   const isNative = ref(false)
 
-  // Service categories configuration
-  const serviceCategories: ServiceCategoryInfo[] = [
-    {
-      id: 'streaming',
-      name: 'Streaming Services',
-      description: 'Watch movies and TV shows',
-      icon: '🎬'
-    },
-    {
-      id: 'tracking',
-      name: 'Tracking & Collection',
-      description: 'Track and organize your watchlist',
-      icon: '📊'
-    },
-    {
-      id: 'social',
-      name: 'Social & Reviews',
-      description: 'Share and discover with others',
-      icon: '👥'
-    },
-    {
-      id: 'discovery',
-      name: 'Discovery & Search',
-      description: 'Find new content and where to watch',
-      icon: '🔍'
-    },
-    {
-      id: 'database',
-      name: 'Information & Database',
-      description: 'Movie and TV show information',
-      icon: '📚'
-    },
-    {
-      id: 'media_center',
-      name: 'Media Centers',
-      description: 'Personal media servers and players',
-      icon: '🎞️'
-    }
-  ]
-
   const selectedServices = computed(() => 
     availableServices.value.filter(service => 
       selectedServiceIds.value.includes(service.id)
     )
   )
-
-  const servicesByCategory = computed(() => {
-    const categorized: Record<ServiceCategory, Service[]> = {
-      streaming: [],
-      tracking: [],
-      social: [],
-      discovery: [],
-      database: [],
-      media_center: []
-    }
-
-    availableServices.value.forEach(service => {
-      categorized[service.category].push(service)
-    })
-
-    return categorized
-  })
 
   const installedServices = computed(() => 
     availableServices.value // All services are available, we just filter by selection
@@ -185,10 +128,6 @@ export const useServicesStore = defineStore('services', () => {
 
   const hasSelectedServices = computed(() => selectedServiceIds.value.length > 0)
 
-  const getCategoryInfo = (categoryId: ServiceCategory): ServiceCategoryInfo => {
-    return serviceCategories.find(cat => cat.id === categoryId) || serviceCategories[0]
-  }
-
   // Initialize the store
   const initStore = async () => {
     try {
@@ -207,8 +146,6 @@ export const useServicesStore = defineStore('services', () => {
     selectedServices,
     selectedServiceIds,
     installedServices,
-    servicesByCategory,
-    serviceCategories,
     installedApps,
     isNative,
     isServiceSelected,
@@ -217,7 +154,6 @@ export const useServicesStore = defineStore('services', () => {
     checkInstalledApps,
     loadFromLocalStorage,
     hasSelectedServices,
-    getCategoryInfo,
     initStore // Expose initStore in case it needs to be called manually
   }
 })

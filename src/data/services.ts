@@ -1,16 +1,44 @@
-import { Service } from "@/types";
+import { Service } from "../types/index.ts";
+
+import netflixIcon from '../assets/apps/images/netflix/assets/play_store.png'
+import primeVideoIcon from '../assets/apps/images/prime_video/assets/play_store.png'
+import disneyPlusIcon from '../assets/apps/images/disney_plus/assets/play_store.png'
+import huluIcon from '../assets/apps/images/hulu/assets/play_store.png'
+import maxIcon from '../assets/apps/images/max/assets/play_store.png'
+import appleTvPlusIcon from '../assets/apps/images/apple_tv_plus/assets/play_store.png'
+import paramountPlusIcon from '../assets/apps/images/paramount_plus/assets/play_store.png'
+import peacockIcon from '../assets/apps/images/peacock/assets/play_store.png'
+import moviebaseIcon from '../assets/apps/images/moviebase/assets/play_store.png'
+import letterboxdIcon from '../assets/apps/images/letterboxd/assets/play_store.png'
+import traktIcon from '../assets/apps/images/trakt/assets/play_store.png'
+import justWatchIcon from '../assets/apps/images/justwatch/assets/play_store.png'
+import imdbIcon from '../assets/apps/images/imdb/assets/play_store.png'
+import wikidataIcon from '../assets/apps/images/wikidata/assets/play_store.png'
+import plexIcon from '../assets/apps/images/plex/assets/play_store.png'
+import betaseriesIcon from '../assets/apps/images/betaseries/assets/play_store.png'
+import tvTimeIcon from '../assets/apps/images/tv_time/assets/play_store.png'
+import jellyfinIcon from '../assets/apps/images/jellyfin/assets/play_store.png'
+import kodiIcon from '../assets/apps/images/kodi/assets/play_store.png'
+import avaAssistantIcon from '../assets/apps/images/ava_assistant/assets/play_store.png'
+import youtubeIcon from '../assets/apps/images/youtube/assets/play_store.png'
+import mubiIcon from '../assets/apps/images/mubi/assets/play_store.png'
+import simklIcon from '../assets/apps/images/simkl/assets/play_store.png'
+import tmdbIcon from '../assets/apps/images/the_movie_database/assets/favicon.png'
+import tvdbIcon from '../assets/apps/images/tvdb/assets/favicon.png'
+import allocineIcon from '../assets/apps/images/allocine/assets/play_store.png'
+import dubbingbaseIcon from '../assets/apps/images/dubbingbase/assets/play_store.png'
+import nzb360Icon from '../assets/apps/images/nzb360/assets/play_store.png'
 
 export default [
   {
     "id": "netflix",
     "name": "Netflix",
     "description": "Stream movies and TV shows",
-    "icon": "🎬",
+    "icon": netflixIcon,
     "websiteUrl": "https://netflix.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.netflix.mediaclient",
     "androidAppId": "com.netflix.mediaclient",
     "color": "#E50914",
-    "category": "streaming",
     "deepLinks": [
       {
         "name": "App",
@@ -22,12 +50,11 @@ export default [
     "id": "prime_video",
     "name": "Prime Video",
     "description": "Amazon's streaming service",
-    "icon": "📺",
+    "icon": primeVideoIcon,
     "websiteUrl": "https://primevideo.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.amazon.avod.thirdpartyclient",
     "androidAppId": "com.amazon.avod.thirdpartyclient",
     "color": "#00A8E1",
-    "category": "streaming",
     "deepLinks": [
       {
         "name": "App",
@@ -39,12 +66,11 @@ export default [
     "id": "disney_plus",
     "name": "Disney+",
     "description": "Stream Disney, Pixar, Marvel, Star Wars, and more",
-    "icon": "🏰",
+    "icon": disneyPlusIcon,
     "websiteUrl": "https://www.disneyplus.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.disney.disneyplus",
     "androidAppId": "com.disney.disneyplus",
     "color": "#113CCF",
-    "category": "streaming",
     "deepLinks": [
       {
         "name": "App",
@@ -60,12 +86,11 @@ export default [
     "id": "hulu",
     "name": "Hulu",
     "description": "Stream current shows and movies",
-    "icon": "🟢",
+    "icon": huluIcon,
     "websiteUrl": "https://hulu.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.hulu.plus",
     "androidAppId": "com.hulu.plus",
     "color": "#1CE783",
-    "category": "streaming",
     "deepLinks": [
       {
         "name": "App",
@@ -74,19 +99,18 @@ export default [
     ]
   },
   {
-    "id": "hbo_max",
+    "id": "max",
     "name": "Max",
     "description": "Stream HBO, Warner Bros, DC, and more",
-    "icon": "📺",
+    "icon":   maxIcon,
     "websiteUrl": "https://www.max.com",
-    "appUrl": "https://play.google.com/store/apps/details?id=com.hbo.hbonow",
-    "androidAppId": "com.hbo.hbonow",
+    "appUrl": "https://play.google.com/store/apps/details?id=com.wbd.stream",
+    "androidAppId": "com.wbd.stream",
     "color": "#8B00FF",
-    "category": "streaming",
     "deepLinks": [
       {
         "name": "App",
-        "url": (data) => `hbonow://content/${data.tmdbId}`
+        "url": (data) => `max://content/${data.tmdbId}`
       },
       {
         "name": "Website",
@@ -98,12 +122,11 @@ export default [
     "id": "apple_tv_plus",
     "name": "Apple TV+",
     "description": "Apple Original shows and movies",
-    "icon": "🍎",
+    "icon": appleTvPlusIcon,
     "websiteUrl": "https://tv.apple.com",
     "appUrl": "https://apps.apple.com/app/apple-tv/id1174078549",
-    "androidAppId": "com.apple.atve.android.appletv",
+    "androidAppId": "com.apple.atve.sony.appletv",
     "color": "#000000",
-    "category": "streaming",
     "deepLinks": [
       {
         "name": "App",
@@ -115,12 +138,11 @@ export default [
     "id": "paramount_plus",
     "name": "Paramount+",
     "description": "CBS, Nickelodeon & more",
-    "icon": "⭐",
+    "icon": paramountPlusIcon,
     "websiteUrl": "https://paramountplus.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.cbs.app",
     "androidAppId": "com.cbs.app",
     "color": "#0064FF",
-    "category": "streaming",
     "deepLinks": [
       {
         "name": "App",
@@ -132,12 +154,11 @@ export default [
     "id": "peacock",
     "name": "Peacock",
     "description": "NBCUniversal's streaming service",
-    "icon": "🦚",
+    "icon": peacockIcon,
     "websiteUrl": "https://peacocktv.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.peacocktv.peacockandroid",
     "androidAppId": "com.peacocktv.peacockandroid",
     "color": "#673AB7",
-    "category": "streaming",
     "deepLinks": [
       {
         "name": "App",
@@ -149,12 +170,11 @@ export default [
     "id": "moviebase",
     "name": "Moviebase",
     "description": "Track movies & TV shows",
-    "icon": "🎭",
+    "icon": moviebaseIcon,
     "websiteUrl": "https://moviebase.app",
     "appUrl": "https://play.google.com/store/apps/details?id=com.moviebase",
     "androidAppId": "com.moviebase",
     "color": "#FF6B35",
-    "category": "tracking",
     "deepLinks": [
       {
         "name": "App",
@@ -170,12 +190,11 @@ export default [
     "id": "letterboxd",
     "name": "Letterboxd",
     "description": "Social film discovery",
-    "icon": "📝",
+    "icon": letterboxdIcon,
     "websiteUrl": "https://letterboxd.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.letterboxd",
-    "androidAppId": "com.letterboxd",
+    "androidAppId": "com.letterboxd.letterboxd",
     "color": "#00D735",
-    "category": "social",
     "deepLinks": [
       {
         "name": "App",
@@ -191,12 +210,11 @@ export default [
     "id": "trakt",
     "name": "Trakt",
     "description": "Track what you watch",
-    "icon": "📊",
+    "icon": traktIcon,
     "websiteUrl": "https://trakt.tv",
     "appUrl": "https://play.google.com/store/apps/details?id=tv.trakt.trakt",
     "androidAppId": "tv.trakt.trakt",
     "color": "#ED1C24",
-    "category": "tracking",
     "deepLinks": [
       {
         "name": "App - Movie",
@@ -220,12 +238,11 @@ export default [
     "id": "justwatch",
     "name": "JustWatch",
     "description": "Find where to watch movies",
-    "icon": "🔍",
+    "icon": justWatchIcon,
     "websiteUrl": "https://justwatch.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.justwatch.justwatch",
     "androidAppId": "com.justwatch.justwatch",
     "color": "#FFD23F",
-    "category": "discovery",
     "deepLinks": [
       {
         "name": "App",
@@ -237,12 +254,11 @@ export default [
     "id": "imdb",
     "name": "IMDb",
     "description": "Movie database & ratings",
-    "icon": "⭐",
+    "icon": imdbIcon,
     "websiteUrl": "https://imdb.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.imdb.mobile",
     "androidAppId": "com.imdb.mobile",
     "color": "#F5C518",
-    "category": "database",
     "deepLinks": [
       {
         "name": "App - Movie",
@@ -259,17 +275,20 @@ export default [
     "id": "wikidata",
     "name": "Wikidata",
     "description": "Structured knowledge base",
-    "icon": "📚",
+    "icon": wikidataIcon,
     "websiteUrl": "https://wikidata.org",
-    "appUrl": "https://wikidata.org",
-    "androidAppId": "",
+    "appUrl": "https://play.google.com/store/apps/details?id=org.wikipedia",
+    "androidAppId": "org.wikipedia",
     "color": "#006699",
-    "category": "database",
     "deepLinks": [
       {
-        "name": "Website",
+        "name": "Wikidata website",
         "enabled": (data) => !!data.wikidataId,
         "url": (data) => `https://wikidata.org/wiki/${data.wikidataId}`
+      }, {
+        "name": "Wikidata app",
+        "enabled": (data) => !!data.wikidataId,
+        "url": (data) => `wikidata://entity/${data.wikidataId}`
       }
     ]
   },
@@ -277,12 +296,11 @@ export default [
     "id": "plex",
     "name": "Plex",
     "description": "Personal media streaming",
-    "icon": "🎞️",
+    "icon": plexIcon,
     "websiteUrl": "https://plex.tv",
     "appUrl": "https://play.google.com/store/apps/details?id=com.plexapp.android",
     "androidAppId": "com.plexapp.android",
     "color": "#E5A00D",
-    "category": "media_center",
     "deepLinks": [
       {
         "name": "App - Movie",
@@ -302,12 +320,11 @@ export default [
     "id": "jellyfin",
     "name": "Jellyfin",
     "description": "Free media server",
-    "icon": "🟣",
+    "icon": jellyfinIcon,
     "websiteUrl": "https://jellyfin.org",
     "appUrl": "https://play.google.com/store/apps/details?id=org.jellyfin.mobile",
     "androidAppId": "org.jellyfin.mobile",
     "color": "#00A4DC",
-    "category": "media_center",
     "deepLinks": [
       {
         "name": "App - Movie",
@@ -327,12 +344,11 @@ export default [
     "id": "kodi",
     "name": "Kodi",
     "description": "Open source media center",
-    "icon": "📱",
+    "icon": kodiIcon,
     "websiteUrl": "https://kodi.tv",
     "appUrl": "https://play.google.com/store/apps/details?id=org.xbmc.kodi",
     "androidAppId": "org.xbmc.kodi",
     "color": "#17B2E7",
-    "category": "media_center",
     "deepLinks": [
       {
         "name": "App - Movie",
@@ -352,12 +368,11 @@ export default [
     "id": "ava_assistant",
     "name": "AVA Assistant",
     "description": "AI movie recommendations",
-    "icon": "🤖",
+    "icon": avaAssistantIcon,
     "websiteUrl": "https://ava-assistant.app",
     "appUrl": "https://play.google.com/store/apps/details?id=de.ava",
     "androidAppId": "de.ava",
     "color": "#9C27B0",
-    "category": "discovery",
     "deepLinks": [
       {
         "enabled": (data) => data.type === 'movie',
@@ -372,33 +387,14 @@ export default [
     ]
   },
   {
-    "id": "cinemabox",
-    "name": "CinemaBox",
-    "description": "Movie collection manager",
-    "icon": "📦",
-    "websiteUrl": "https://cinemabox.app",
-    "appUrl": "https://play.google.com/store/apps/details?id=com.cinemabox",
-    "androidAppId": "com.cinemabox",
-    "color": "#FF5722",
-    "category": "tracking",
-    "deepLinks": [
-      {
-        "enabled": (data) => data.type === 'movie',
-        "name": "App - Movie",
-        "url": (data) => `cinemabox://movie/${data.tmdbId}`
-      }
-    ]
-  },
-  {
     "id": "tv_time",
     "name": "TV Time",
     "description": "Track TV shows & movies",
-    "icon": "⏰",
+    "icon": tvTimeIcon,
     "websiteUrl": "https://tvtime.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.tozelabs.tvshowtime",
     "androidAppId": "com.tozelabs.tvshowtime",
     "color": "#FF6B6B",
-    "category": "tracking",
     "deepLinks": [
       {
         "enabled": (data) => data.type === 'movie',
@@ -420,12 +416,11 @@ export default [
     "id": "youtube",
     "name": "YouTube",
     "description": "Video platform",
-    "icon": "▶️",
+    "icon": youtubeIcon,
     "websiteUrl": "https://www.youtube.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.google.android.youtube",
     "androidAppId": "com.google.android.youtube",
     "color": "#FF0000",
-    "category": "streaming",
     "deepLinks": [
       {
         "enabled": (data) => data.type === 'movie',
@@ -447,12 +442,11 @@ export default [
     "id": "mubi",
     "name": "MUBI",
     "description": "Curated streaming service for independent films",
-    "icon": "🎞️",
+    "icon": mubiIcon,
     "websiteUrl": "https://mubi.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.mubi",
     "androidAppId": "com.mubi",
     "color": "#FF4B3E",
-    "category": "streaming",
     "deepLinks": [
       {
         "name": "App",
@@ -465,69 +459,14 @@ export default [
     ]
   },
   {
-    "id": "criterion_channel",
-    "name": "Criterion Channel",
-    "description": "Classic and contemporary films",
-    "icon": "🎭",
-    "websiteUrl": "https://www.criterionchannel.com",
-    "appUrl": "https://play.google.com/store/apps/details?id=com.criterionchannel.android",
-    "androidAppId": "com.criterionchannel.android",
-    "color": "#1133AA",
-    "category": "streaming",
-    "deepLinks": [
-      {
-        "enabled": (data) => data.type === 'movie',
-        "name": "Search in App - Movie",
-        "url": (data) => `vnd.youtube://search?query=${encodeURIComponent(data.title || '')}`
-      },
-      {
-        "enabled": (data) => data.type === 'tv',
-        "name": "Search in App - TV Show",
-        "url": (data) => `vnd.youtube://search?query=${encodeURIComponent(data.title || '')}`
-      },
-      {
-        "name": "Website",
-        "url": (data) => `https://www.criterionchannel.com/search?q=${encodeURIComponent(data.title || '')}`
-      }
-    ]
-  },
-  {
-    "id": "kinopoisk",
-    "name": "Kinopoisk",
-    "description": "Russian movie database and streaming",
-    "icon": "🎬",
-    "websiteUrl": "https://www.kinopoisk.ru",
-    "appUrl": "https://play.google.com/store/apps/details?id=ru.kinopoisk",
-    "androidAppId": "ru.kinopoisk",
-    "color": "#FF9A00",
-    "category": "database",
-    "deepLinks": [
-      {
-        "enabled": (data) => data.type === 'movie',
-        "name": "App - Movie",
-        "url": (data) => `kp://film/${data.tmdbId}`
-      },
-      {
-        "enabled": (data) => data.type === 'tv',
-        "name": "App - TV Show",
-        "url": (data) => `kp://serial/${data.tmdbId}`
-      },
-      {
-        "name": "Website",
-        "url": (data) => `https://www.kinopoisk.ru/film/${data.tmdbId}/`
-      }
-    ]
-  },
-  {
     "id": "simkl",
     "name": "SIMKL",
     "description": "Movie & TV show tracker",
-    "icon": "📊",
+    "icon": simklIcon,
     "websiteUrl": "https://simkl.com",
-    "appUrl": "https://play.google.com/store/apps/details?id=com.simkl",
-    "androidAppId": "com.simkl",
+    "appUrl": "https://play.google.com/store/apps/details?id=com.simkl.lists",
+    "androidAppId": "com.simkl.lists",
     "color": "#2DAF38",
-    "category": "tracking",
     "deepLinks": [
       {
         "enabled": (data) => data.type === 'movie',
@@ -549,23 +488,12 @@ export default [
     "id": "the_movie_database",
     "name": "TMDB",
     "description": "The Movie Database",
-    "icon": "🎥",
+    "icon": tmdbIcon,
     "websiteUrl": "https://www.themoviedb.org",
-    "appUrl": "https://play.google.com/store/apps/details?id=com.themoviedb",
-    "androidAppId": "com.themoviedb",
+    "appUrl": "https://www.themoviedb.org",
+    "androidAppId": "",
     "color": "#01B4E4",
-    "category": "database",
     "deepLinks": [
-      {
-        "enabled": (data) => data.type === 'movie',
-        "name": "App - Movie",
-        "url": (data) => `tmdb://movie/${data.tmdbId}`
-      },
-      {
-        "enabled": (data) => data.type === 'tv',
-        "name": "App - TV Show",
-        "url": (data) => `tmdb://tv/${data.tmdbId}`
-      },
       {
         "name": "Website",
         "url": (data) => `https://www.themoviedb.org/movie/${data.tmdbId}`
@@ -576,12 +504,11 @@ export default [
     "id": "tvdb",
     "name": "TheTVDB",
     "description": "TV show database",
-    "icon": "📺",
+    "icon": tvdbIcon,
     "websiteUrl": "https://thetvdb.com",
     "color": "#00B4CC",
-    "category": "database",
-    appUrl: "https://play.google.com/store/apps/details?id=com.thetvdb",
-    androidAppId: "com.thetvdb",
+    appUrl: "https://thetvdb.com",
+    androidAppId: "",
     "deepLinks": [
       {
         "name": "Website",
@@ -590,42 +517,14 @@ export default [
     ]
   },
   {
-    "id": "filmweb",
-    "name": "Filmweb",
-    "description": "Polish movie database",
-    "icon": "🎞️",
-    "websiteUrl": "https://www.filmweb.pl",
-    "appUrl": "https://play.google.com/store/apps/details?id=pl.filmweb.ffw",
-    "androidAppId": "pl.filmweb.ffw",
-    "color": "#FF5A00",
-    "category": "database",
-    "deepLinks": [
-      {
-        "enabled": (data) => data.type === 'movie',
-        "name": "App - Movie",
-        "url": (data) => `filmweb://film/${data.tmdbId}`
-      },
-      {
-        "enabled": (data) => data.type === 'tv',
-        "name": "App - TV Show",
-        "url": (data) => `filmweb://serial/${data.tmdbId}`
-      },
-      {
-        "name": "Website",
-        "url": (data) => `https://www.filmweb.pl/film/${data.tmdbId}`
-      }
-    ]
-  },
-  {
     "id": "allocine",
     "name": "AlloCiné",
     "description": "French movie database",
-    "icon": "🎭",
+    "icon": allocineIcon,
     "websiteUrl": "https://www.allocine.fr",
-    "appUrl": "https://play.google.com/store/apps/details?id=com.allocine.app",
-    "androidAppId": "com.allocine.app",
+    "appUrl": "https://play.google.com/store/apps/details?id=com.allocine.androidapp",
+    "androidAppId": "com.allocine.androidapp",
     "color": "#FFCC00",
-    "category": "database",
     "deepLinks": [
       {
         "enabled": (data) => data.type === 'movie',
@@ -643,12 +542,11 @@ export default [
     "id": "betaseries",
     "name": "BetaSeries",
     "description": "TV show tracking",
-    "icon": "📺",
+    "icon": betaseriesIcon,
     "websiteUrl": "https://www.betaseries.com",
-    "appUrl": "https://play.google.com/store/apps/details?id=com.betaseries.iliad",
-    "androidAppId": "com.betaseries.iliad",
+    "appUrl": "https://play.google.com/store/apps/details?id=com.betaseriesnative",
+    "androidAppId": "com.betaseriesnative",
     "color": "#00A4DC",
-    "category": "tracking",
     "deepLinks": [
       {
         "enabled": (data) => data.type === 'movie',
@@ -670,12 +568,11 @@ export default [
     "id": "dubbingbase",
     "name": "DubbingBase",
     "description": "Voice actors database",
-    "icon": "🎬",
+    "icon": dubbingbaseIcon,
     "websiteUrl": "https://dubbingbase.com",
     "appUrl": "https://play.google.com/store/apps/details?id=xyz.armaldio.dubbingbase.app",
     "androidAppId": "com.dubbingbase.app",
     "color": "#FFCC00",
-    "category": "database",
     "deepLinks": [
       {
         "enabled": (data) => data.type === 'movie',
@@ -693,12 +590,11 @@ export default [
     "id": "nzb360",
     "name": "nzb360",
     "description": "All-in-one download manager for your favorite services",
-    "icon": "📱",
+    "icon": nzb360Icon,
     "websiteUrl": "https://nzb360.com",
     "appUrl": "https://play.google.com/store/apps/details?id=com.kevinforeman.nzb360",
     "androidAppId": "com.kevinforeman.nzb360",
     "color": "#4CAF50",
-    "category": "tracking",
     "deepLinks": [
       {
         "enabled": (data) => data.type === 'movie',

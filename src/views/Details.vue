@@ -111,23 +111,22 @@
         <div class="flex items-center justify-between mb-6">
           <h2 class="text-2xl font-bold text-white">Open in your apps & services</h2>
           <div class="text-sm text-gray-400">
-            {{ availableSelectedServices.length }} of {{ servicesStore.selectedServices.length }} available
+            {{ servicesStore.selectedServices.length }} available
           </div>
         </div>
 
-        <!-- Services by Category -->
-        <div v-for="category in categoriesWithServices" :key="category.id" class="mb-8">
+        <!-- Services -->
+        <div v-for="service in servicesStore.selectedServices" :key="service.id" class="mb-8">
           <div class="flex items-center gap-2 mb-4">
-            <span class="text-xl">{{ category.icon }}</span>
-            <h3 class="text-lg font-semibold text-white">{{ category.name }}</h3>
-            <span class="text-sm text-gray-400">({{ category.services.length }})</span>
+            <span class="text-xl">{{ service.icon }}</span>
+            <h3 class="text-lg font-semibold text-white">{{ service.name }}</h3>
           </div>
           
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             <button
-              v-for="service in category.services"
-              :key="service.id"
-              @click="openInService(service)"
+              v-for="deepLink in service.deepLinks"
+              :key="deepLink.name"
+              @click="openDeepLink(service, deepLink)"
               class="group p-4 glass-effect rounded-xl hover:bg-white hover:bg-opacity-10 transition-all duration-300 text-left relative"
             >
               <!-- Native app availability indicator -->
@@ -145,7 +144,15 @@
               </div>
 
               <div class="flex items-center gap-3">
-                <div class="text-2xl">{{ service.icon }}</div>
+                <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  <img 
+                    v-if="service.icon" 
+                    :src="service.icon" 
+                    :alt="service.name"
+                    class="w-full h-full object-cover"
+                  />
+                  <span v-else class="text-xs text-gray-400">{{ service.name.charAt(0) }}</span>
+                </div>
                 <div class="flex-1">
                   <h4 class="text-white font-semibold group-hover:text-primary-400 transition-colors text-sm">
                     {{ service.name }}
@@ -188,8 +195,13 @@
         </div>
 
         <!-- No services message -->
-        <div v-if="availableSelectedServices.length === 0" class="text-center py-12">
-          <div class="text-6xl mb-4">📱</div>
+        <div v-if="servicesStore.selectedServices.length === 0" class="text-center py-12">
+          <div class="w-16 h-16 mb-4 mx-auto">
+            <img 
+              alt="No services selected"
+              class="w-full h-full object-contain opacity-80"
+            />
+          </div>
           <h3 class="text-xl font-semibold text-white mb-2">No services selected</h3>
           <p class="text-gray-400 mb-6">Go back to the introduction to select your movie apps and services.</p>
           <button
@@ -214,8 +226,7 @@ import { useRouter } from 'vue-router'
 import { ArrowLeft, Star, Film } from 'lucide-vue-next'
 import { useMoviesStore } from '@/stores/movies'
 import { useServicesStore } from '@/stores/services'
-import type { Service, ServiceCategory } from '@/types'
-import safeStringify from 'safe-stringify';
+import type { Service } from '@/types'
 import { FormattedDetails } from '@/models/models'
 import { MediaType } from 'tmdb-ts'
 
@@ -282,32 +293,6 @@ const runtime = computed(() => {
 })
 
 const genres = computed(() => moviesStore.currentDetails?.genres || [])
-
-// All selected services are available by default
-const availableSelectedServices = computed(() => 
-  servicesStore.selectedServices
-)
-
-const categoriesWithServices = computed(() => {
-  const categories: Array<{ id: ServiceCategory; name: string; icon: string; services: Service[] }> = []
-  
-  servicesStore.serviceCategories.forEach(categoryInfo => {
-    const categoryServices = availableSelectedServices.value.filter(
-      service => service.category === categoryInfo.id
-    )
-    
-    if (categoryServices.length > 0) {
-      categories.push({
-        id: categoryInfo.id,
-        name: categoryInfo.name,
-        icon: categoryInfo.icon,
-        services: categoryServices
-      })
-    }
-  })
-  
-  return categories
-})
 
 interface ExternalIds {
   imdb_id?: string;

@@ -1,5 +1,4 @@
 import { CapacitorConfig } from '@capacitor/cli';
-import { isProduction } from './src/utils/env';
 
 // Base configuration shared between environments
 const baseConfig: CapacitorConfig = {
