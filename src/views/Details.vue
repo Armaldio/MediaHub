@@ -43,13 +43,17 @@
         <ArrowLeft class="h-6 w-6" />
       </button>
 
-      <!-- Hero Section -->
-      <div class="relative h-screen">
-        <!-- Backdrop -->
+      <!-- Hero Section with Parallax -->
+      <div class="relative h-screen overflow-hidden backdrop">
+        <!-- Parallax Backdrop -->
         <div
           v-if="backdrop"
-          class="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          :style="{ backgroundImage: `url(${backdrop})` }"
+          ref="parallaxBackdrop"
+          class="absolute inset-0 bg-cover bg-center bg-no-repeat transform scale-110"
+          :style="{
+            backgroundImage: `url(${backdrop})`,
+            transform: `scale(1.1) translateY(${parallaxOffset * 0.5}px)`
+          }"
         >
           <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent"></div>
         </div>
@@ -226,7 +230,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, CSSProperties } from 'vue'
+import { computed, onMounted, onUnmounted, ref, CSSProperties } from 'vue'
 import type { DeepLink } from '@/types'
 import { useRouter } from 'vue-router'
 import { ArrowLeft, Star, Film } from 'lucide-vue-next'
@@ -246,6 +250,24 @@ interface Props {
 const props = defineProps<Props>()
 
 const router = useRouter()
+const parallaxBackdrop = ref<HTMLElement | null>(null)
+const parallaxOffset = ref(0)
+
+// Handle parallax effect on scroll
+const handleScroll = () => {
+  if (!parallaxBackdrop.value) return
+  const scrollPosition = window.scrollY || window.pageYOffset
+  parallaxOffset.value = scrollPosition * 0.8 // Adjust the multiplier to control the parallax intensity
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll)
+  loadDetails()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 
 const backButtonStyle = {
   '--top-offset': 'calc(env(safe-area-inset-top, 0px) + 1rem)',
@@ -400,3 +422,9 @@ onMounted(() => {
   loadDetails();
 });
 </script>
+
+<style scoped>
+.backdrop {
+  box-shadow: 0px 26px 15px -3px rgba(0,0,0,0.1);
+}
+</style>
