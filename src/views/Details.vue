@@ -79,7 +79,7 @@
                 <img
                   v-if="poster"
                   :src="poster"
-                  :alt="title"
+                  :alt="formattedDetails?.title || 'Media poster'"
                   class="w-64 h-96 object-cover rounded-xl shadow-2xl"
                 />
                 <div
@@ -95,7 +95,7 @@
             <div class="flex-1 text-white">
 
                 <h1 class="text-4xl md:text-6xl font-bold mb-4">
-                  {{ moviesStore.currentDetails?.title || moviesStore.currentDetails?.name || 'Untitled' }}
+                  {{ formattedDetails?.title || 'Untitled' }}
                 </h1>
 
                 <!-- Meta Info -->
@@ -144,9 +144,9 @@
         <div class="max-w-7xl mx-auto px-4 py-12">
           <div class="flex items-center justify-between mb-8">
             <div>
-              <h2 class="text-2xl font-bold text-white mb-1">Available on</h2>
+              <h2 class="text-2xl font-bold text-white mb-1">Open with</h2>
               <p class="text-gray-400 text-sm">
-                Your connected streaming services
+                Your connected services
               </p>
             </div>
             <div
@@ -156,14 +156,55 @@
             </div>
           </div>
 
+          <!-- Search Bar -->
+          <div class="mb-6">
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input
+                v-model="searchQuery"
+                type="text"
+                class="block w-full pl-10 pr-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="Search services..."
+              />
+            </div>
+          </div>
+
+          <!-- Quick Access Icons -->
+          <div class="mb-6">
+            <h3 class="text-sm font-medium text-gray-300 mb-3">Quick Access</h3>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="service in filteredServices"
+                :key="service.id"
+                @click="scrollToService(service.id)"
+                class="p-2 bg-gray-800/50 rounded-lg hover:bg-gray-700/50 transition-colors"
+                :title="service.name"
+              >
+                <img
+                  v-if="service.icon"
+                  :src="service.icon"
+                  :alt="service.name"
+                  class="w-6 h-6 object-contain"
+                />
+                <span v-else class="text-xs text-white">{{ service.name.charAt(0) }}</span>
+              </button>
+            </div>
+          </div>
+
           <!-- Services Grid -->
           <div
+            ref="servicesGrid"
             class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
           >
             <div
-              v-for="service in servicesStore.selectedServices"
+              v-for="service in filteredServices"
               :key="service.id"
-              class="group relative"
+              class="group relative transition-all duration-300"
+              :data-service-id="service.id"
             >
               <div
                 class="h-full flex flex-col bg-gray-800/50 rounded-xl overflow-hidden border border-gray-700/50 hover:border-gray-600/50 transition-all duration-300 hover:shadow-lg hover:shadow-black/20"
@@ -321,12 +362,12 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, CSSProperties } from "vue";
-import type { DeepLink } from "@/types";
+import type { DeepLink, Service } from "@/types";
+import type { AppendToResponse, MovieDetails, TvShowDetails } from "tmdb-ts";
 import { useRouter } from "vue-router";
 import { ArrowLeft, Star, Film } from "lucide-vue-next";
 import { useMoviesStore } from "@/stores/movies";
 import { useServicesStore } from "@/stores/services";
-import type { Service } from "@/types";
 import { FormattedDetails } from "@/models/models";
 import { MediaType } from "tmdb-ts";
 
@@ -341,6 +382,8 @@ const props = defineProps<Props>();
 
 const router = useRouter();
 const parallaxBackdrop = ref<HTMLElement | null>(null);
+const servicesGrid = ref<HTMLElement | null>(null);
+const searchQuery = ref('');
 const parallaxOffset = ref(0);
 
 // Handle parallax effect on scroll
@@ -421,39 +464,65 @@ interface ExternalIds {
   twitter_id?: string;
 }
 
-const formattedDetails = computed(() => {
-  const details = moviesStore.currentDetails;
-  const title = details
-    ? "title" in details
-      ? details.title
-      : details.name
-    : "Untitled";
-  const externalIds: ExternalIds = details?.external_ids || {};
+// Filter services based on search query
+const filteredServices = computed<Service[]>(() => {
+  const query = searchQuery.value.toLowerCase();
+  return servicesStore.selectedServices.filter(service => 
+    service.name.toLowerCase().includes(query) ||
+    (service.description && service.description.toLowerCase().includes(query))
+  );
+});
 
-  console.log(details)
-
-  // Ensure we have at least one valid ID
-  const tmdbId = details?.id.toString() || props.id || "";
-  const imdbId = externalIds.imdb_id || "";
-
-  if (!tmdbId && !imdbId) {
-    console.warn("No valid ID found for this media item");
+// Scroll to a specific service
+const scrollToService = (serviceId: string) => {
+  if (!servicesGrid.value) return;
+  
+  const serviceElement = servicesGrid.value.querySelector(`[data-service-id="${serviceId}"]`);
+  if (serviceElement) {
+    serviceElement.scrollIntoView({ 
+      behavior: 'smooth',
+      block: 'center',
+    });
+    
+    // Add highlight effect
+    serviceElement.classList.add('highlight-service');
+    setTimeout(() => {
+      serviceElement.classList.remove('highlight-service');
+    }, 1500);
   }
+};
 
-  const formattedDetails = {
-    type: props.mediaType,
-    title: title,
-    tmdbId: tmdbId,
-    imdbId: imdbId,
-    wikidataId: externalIds.wikidata_id || "",
-    facebookId: externalIds.facebook_id || "",
-    instagramId: externalIds.instagram_id || "",
-    twitterId: externalIds.twitter_id || "",
-  } satisfies FormattedDetails
-
-  console.log(formattedDetails)
-
-  return formattedDetails;
+const formattedDetails = computed<FormattedDetails | null>(() => {
+  const details = moviesStore.currentDetails;
+  if (!details) return null;
+  
+  const title = 'title' in details ? details.title : 'name' in details ? details.name : 'Untitled';
+  const releaseDate = 'release_date' in details ? details.release_date : 
+                   'first_air_date' in details ? details.first_air_date : '';
+  const releaseYear = releaseDate ? new Date(releaseDate).getFullYear().toString() : undefined;
+  const rating = 'vote_average' in details ? details.vote_average : undefined;
+  const runtime = 'runtime' in details ? 
+    `${details.runtime}m` : 
+    'episode_run_time' in details && details.episode_run_time?.length ? 
+      `${details.episode_run_time[0]}m` : undefined;
+  const genres = 'genres' in details ? details.genres : [];
+  const overview = 'overview' in details ? details.overview : '';
+  
+  return {
+    title,
+    releaseYear,
+    rating,
+    runtime,
+    genres,
+    overview,
+    tmdbId: details.id.toString(),
+    imdbId: details.external_ids.imdb_id,
+    wikidataId: details.external_ids.wikidata_id,
+    facebookId: details.external_ids.facebook_id,
+    instagramId: details.external_ids.instagram_id,
+    twitterId: details.external_ids.twitter_id,
+    type: props.mediaType
+  } satisfies FormattedDetails;
 });
 
 const loadingLinks = ref<Record<string, boolean>>({});
@@ -534,6 +603,17 @@ onMounted(() => {
 </script>
 
 <style scoped>
+@keyframes highlight {
+  0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+}
+
+.highlight-service {
+  animation: highlight 1.5s ease-out;
+  border-color: #6366f1 !important;
+}
+
 .backdrop {
   position: relative;
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
