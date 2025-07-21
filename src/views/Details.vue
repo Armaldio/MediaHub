@@ -54,15 +54,14 @@
       </button>
 
       <!-- Hero Section with Parallax -->
-      <div class="relative backdrop">
+      <div class="relative backdrop overflow-hidden">
         <!-- Parallax Backdrop -->
         <div
           v-if="backdrop"
           ref="parallaxBackdrop"
-          class="absolute inset-0 bg-cover bg-center bg-no-repeat transform scale-110"
+          class="absolute inset-0 bg-cover bg-center bg-no-repeat transform scale-110 w-screen"
           :style="{
             backgroundImage: `url(${backdrop})`,
-            transform: `scale(1.1) translateY(${parallaxOffset * 0.5}px)`,
           }"
         >
           <div
@@ -92,19 +91,21 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- Info -->
             <div class="flex-1 text-white">
               <div>
                 <h1 class="text-4xl md:text-6xl font-bold mb-4">
-                  {{ formattedDetails?.title || 'Untitled' }}
+                  {{ formattedDetails?.title || "Untitled" }}
                 </h1>
 
                 <!-- Meta Info -->
                 <div
                   class="flex flex-wrap items-center gap-4 mb-6 text-gray-300"
                 >
-                  <span v-if="releaseYear" class="text-lg">{{ releaseYear }}</span>
+                  <span v-if="releaseYear" class="text-lg">{{
+                    releaseYear
+                  }}</span>
                   <span v-if="rating" class="flex items-center gap-1">
                     <Star class="h-5 w-5 text-yellow-500 fill-current" />
                     {{ rating.toFixed(1) }}
@@ -127,18 +128,23 @@
                 <div class="space-y-4">
                   <!-- Overview -->
                   <div class="relative">
-                    <div 
+                    <div
                       ref="overviewText"
                       class="text-gray-300 leading-relaxed transition-all duration-500 ease-in-out overflow-hidden"
                       :style="{
-                        maxHeight: isOverviewExpanded ? `${overviewHeight}px` : '6rem',
+                        maxHeight: isOverviewExpanded
+                          ? `${overviewHeight}px`
+                          : '6rem',
                         willChange: 'max-height, opacity',
-                        opacity: isOverviewExpanded ? 1 : 0.98
+                        opacity: isOverviewExpanded ? 1 : 0.98,
                       }"
                       @transitionend="onTransitionEnd"
                     >
                       <p v-if="overview" class="mb-8">
-                        {{ formattedDetails?.overview || 'No description available.' }}
+                        {{
+                          formattedDetails?.overview ||
+                          "No description available."
+                        }}
                       </p>
                       <!-- Gradient overlay when collapsed -->
                       <!-- <div 
@@ -146,9 +152,9 @@
                         class="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-gray-900 via-gray-900/90 to-transparent pointer-events-none"
                       ></div> -->
                     </div>
-                    
+
                     <!-- Read More Button -->
-                    <div 
+                    <div
                       v-if="showReadMore"
                       class="relative z-10 mt-2 flex justify-start"
                     >
@@ -156,15 +162,22 @@
                         @click="toggleOverview"
                         class="text-sm font-medium text-blue-400 hover:text-blue-300 transition-all duration-200 flex items-top gap-1 group bg-gray-900/80 px-3 py-1.5 rounded-lg"
                       >
-                        {{ isOverviewExpanded ? 'Show Less' : 'Read More' }}
-                        <svg 
+                        {{ isOverviewExpanded ? "Show Less" : "Read More" }}
+                        <svg
                           class="w-4 h-4 transition-transform duration-300"
-                          :class="{ 'transform rotate-180': isOverviewExpanded }"
-                          fill="none" 
-                          viewBox="0 0 24 24" 
+                          :class="{
+                            'transform rotate-180': isOverviewExpanded,
+                          }"
+                          fill="none"
+                          viewBox="0 0 24 24"
                           stroke="currentColor"
                         >
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M19 9l-7 7-7-7"
+                          />
                         </svg>
                       </button>
                     </div>
@@ -177,19 +190,30 @@
                         v-for="service in filteredServices"
                         :key="`quick-${service.id}`"
                         @click="scrollToService(service.id)"
-                        class="p-2.5 bg-gray-800/60 hover:bg-gray-700/80 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-md hover:shadow-black/20 flex items-center gap-2"
+                        class="p-2.5 bg-gray-800/60 hover:bg-gray-700/80 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-md hover:shadow-black/20 flex items-center gap-2 group"
                         :title="service.name"
                       >
-                        <div class="w-8 h-8 bg-gray-800/80 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <div
+                          class="relative w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
+                        >
+                          <div
+                            class="absolute inset-0 bg-gray-800/80 group-hover:bg-gray-700/80 transition-colors"
+                          ></div>
                           <img
                             v-if="service.icon"
                             :src="service.icon"
                             :alt="service.name"
-                            class="w-5 h-5 object-contain"
+                            class="relative z-10 w-5 h-5 object-contain"
                           />
-                          <span v-else class="text-xs text-white font-medium">{{ service.name.charAt(0) }}</span>
+                          <span
+                            v-else
+                            class="relative z-10 text-xs text-white font-medium"
+                            >{{ service.name.charAt(0) }}</span
+                          >
                         </div>
-                        <span class="text-sm text-gray-200 pr-1">{{ service.name }}</span>
+                        <span class="text-sm text-gray-200 pr-1">{{
+                          service.name
+                        }}</span>
                       </button>
                     </div>
                   </div>
@@ -211,11 +235,11 @@
           <div class="flex items-center justify-between mb-8">
             <div>
               <h2 class="text-2xl font-bold text-white mb-1">Open with</h2>
-              <p class="text-gray-400 text-sm">
-                Your connected services
-              </p>
+              <p class="text-gray-400 text-sm">Your connected services</p>
             </div>
-            <div class="px-3 py-1 bg-white/5 rounded-full text-sm text-gray-300">
+            <div
+              class="px-3 py-1 bg-white/5 rounded-full text-sm text-gray-300"
+            >
               {{ servicesStore.selectedServices.length }} services
             </div>
           </div>
@@ -223,9 +247,21 @@
           <!-- Search Bar -->
           <div class="mb-6">
             <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <div
+                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+              >
+                <svg
+                  class="h-5 w-5 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
                 </svg>
               </div>
               <input
@@ -323,19 +359,53 @@
                           'bg-white/5 hover:bg-white/10 text-white': true,
                           'border border-white/5': true,
                           'active:scale-[0.98]': true,
-                          'cursor-wait': loadingLinks[getLoadingKey(service, link)]
+                          'cursor-wait':
+                            loadingLinks[getLoadingKey(service, link)],
                         }"
                         :title="link.name"
                         :disabled="loadingLinks[getLoadingKey(service, link)]"
                       >
                         <span
+                          v-if="link.mediaType"
+                          class="flex items-center justify-center space-x-0.5"
+                        >
+                          <div
+                            v-if="link.mediaType === 'all'"
+                            class="flex items-center justify-center space-x-0.5"
+                          >
+                            <div class="w-6 h-6 rounded-full bg-gray-900/90 border border-gray-700 flex items-center justify-center">
+                              <MovieIcon class="w-3 h-3 text-gray-300" />
+                            </div>
+                            <div class="w-6 h-6 rounded-full bg-gray-900/90 border border-gray-700 flex items-center justify-center">
+                              <Tv class="w-3 h-3 text-gray-300" />
+                            </div>
+                          </div>
+                          <div
+                            v-else
+                            class="w-6 h-6 rounded-full bg-gray-900/90 border border-gray-700 flex items-center justify-center"
+                          >
+                            <component
+                              :is="link.mediaType === 'tv' ? Tv : MovieIcon"
+                              class="w-3 h-3 text-gray-300"
+                            />
+                          </div>
+                        </span>
+                        <span
                           class="truncate flex-1 text-left text-gray-200 group-hover/link:text-white transition-colors"
-                          :class="{ 'opacity-0': loadingLinks[getLoadingKey(service, link)] }"
+                          :class="{
+                            'opacity-0':
+                              loadingLinks[getLoadingKey(service, link)],
+                          }"
                         >
                           {{ link.name }}
                         </span>
-                        <div v-if="loadingLinks[getLoadingKey(service, link)]" class="absolute inset-0 flex items-center justify-center">
-                          <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <div
+                          v-if="loadingLinks[getLoadingKey(service, link)]"
+                          class="absolute inset-0 flex items-center justify-center"
+                        >
+                          <div
+                            class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
+                          ></div>
                         </div>
                         <span
                           class="text-gray-400 group-hover/link:text-white transition-colors"
@@ -403,11 +473,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, CSSProperties, nextTick } from "vue";
+import {
+  computed,
+  onMounted,
+  onUnmounted,
+  ref,
+  CSSProperties,
+  nextTick,
+} from "vue";
 import type { DeepLink, Service } from "@/types";
 import type { AppendToResponse, MovieDetails, TvShowDetails } from "tmdb-ts";
 import { useRouter } from "vue-router";
-import { ArrowLeft, Star, Film } from "lucide-vue-next";
+import { ArrowLeft, Star, Film, Tv, Film as MovieIcon } from "lucide-vue-next";
 import { useMoviesStore } from "@/stores/movies";
 import { useServicesStore } from "@/stores/services";
 import { FormattedDetails } from "@/models/models";
@@ -430,6 +507,24 @@ const isOverviewExpanded = ref(false);
 const showReadMore = ref(false);
 const isAnimating = ref(false);
 
+// Get unique media types supported by a service's deep links
+const getServiceMediaTypes = (service: Service) => {
+  if (!service.deepLinks || service.deepLinks.length === 0) return [];
+
+  const mediaTypes = new Set<string>();
+
+  service.deepLinks.forEach((link) => {
+    if (link.mediaType === "all") {
+      mediaTypes.add("movie");
+      mediaTypes.add("tv");
+    } else if (link.mediaType === "movie" || link.mediaType === "tv") {
+      mediaTypes.add(link.mediaType);
+    }
+  });
+
+  return Array.from(mediaTypes);
+};
+
 // Check if overview text needs a "Read More" button
 const checkOverviewHeight = async () => {
   await nextTick();
@@ -450,7 +545,7 @@ const onTransitionEnd = () => {
   isAnimating.value = false;
 };
 const servicesGrid = ref<HTMLElement | null>(null);
-const searchQuery = ref('');
+const searchQuery = ref("");
 const parallaxOffset = ref(0);
 
 // Handle parallax effect on scroll
@@ -536,27 +631,30 @@ interface ExternalIds {
 // Filter services based on search query
 const filteredServices = computed<Service[]>(() => {
   const query = searchQuery.value.toLowerCase();
-  return servicesStore.selectedServices.filter(service => 
-    service.name.toLowerCase().includes(query) ||
-    (service.description && service.description.toLowerCase().includes(query))
+  return servicesStore.selectedServices.filter(
+    (service) =>
+      service.name.toLowerCase().includes(query) ||
+      (service.description && service.description.toLowerCase().includes(query))
   );
 });
 
 // Scroll to a specific service
 const scrollToService = (serviceId: string) => {
   if (!servicesGrid.value) return;
-  
-  const serviceElement = servicesGrid.value.querySelector(`[data-service-id="${serviceId}"]`);
+
+  const serviceElement = servicesGrid.value.querySelector(
+    `[data-service-id="${serviceId}"]`
+  );
   if (serviceElement) {
-    serviceElement.scrollIntoView({ 
-      behavior: 'smooth',
-      block: 'center',
+    serviceElement.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
     });
-    
+
     // Add highlight effect
-    serviceElement.classList.add('highlight-service');
+    serviceElement.classList.add("highlight-service");
     setTimeout(() => {
-      serviceElement.classList.remove('highlight-service');
+      serviceElement.classList.remove("highlight-service");
     }, 1500);
   }
 };
@@ -564,19 +662,32 @@ const scrollToService = (serviceId: string) => {
 const formattedDetails = computed<FormattedDetails | null>(() => {
   const details = moviesStore.currentDetails;
   if (!details) return null;
-  
-  const title = 'title' in details ? details.title : 'name' in details ? details.name : 'Untitled';
-  const releaseDate = 'release_date' in details ? details.release_date : 
-                   'first_air_date' in details ? details.first_air_date : '';
-  const releaseYear = releaseDate ? new Date(releaseDate).getFullYear().toString() : undefined;
-  const rating = 'vote_average' in details ? details.vote_average : undefined;
-  const runtime = 'runtime' in details ? 
-    `${details.runtime}m` : 
-    'episode_run_time' in details && details.episode_run_time?.length ? 
-      `${details.episode_run_time[0]}m` : undefined;
-  const genres = 'genres' in details ? details.genres : [];
-  const overview = 'overview' in details ? details.overview : '';
-  
+
+  const title =
+    "title" in details
+      ? details.title
+      : "name" in details
+      ? details.name
+      : "Untitled";
+  const releaseDate =
+    "release_date" in details
+      ? details.release_date
+      : "first_air_date" in details
+      ? details.first_air_date
+      : "";
+  const releaseYear = releaseDate
+    ? new Date(releaseDate).getFullYear().toString()
+    : undefined;
+  const rating = "vote_average" in details ? details.vote_average : undefined;
+  const runtime =
+    "runtime" in details
+      ? `${details.runtime}m`
+      : "episode_run_time" in details && details.episode_run_time?.length
+      ? `${details.episode_run_time[0]}m`
+      : undefined;
+  const genres = "genres" in details ? details.genres : [];
+  const overview = "overview" in details ? details.overview : "";
+
   return {
     title,
     releaseYear,
@@ -590,7 +701,7 @@ const formattedDetails = computed<FormattedDetails | null>(() => {
     facebookId: details.external_ids.facebook_id,
     instagramId: details.external_ids.instagram_id,
     twitterId: details.external_ids.twitter_id,
-    type: props.mediaType
+    type: props.mediaType,
   } satisfies FormattedDetails;
 });
 
@@ -602,9 +713,9 @@ const getLoadingKey = (service: Service, link: DeepLink) => {
 
 const openDeepLink = async (service: Service, link: DeepLink) => {
   const loadingKey = getLoadingKey(service, link);
-  
+
   if (loadingLinks.value[loadingKey]) return;
-  
+
   loadingLinks.value = { ...loadingLinks.value, [loadingKey]: true };
   try {
     const resolvedUrl = await link.url(formattedDetails.value);
@@ -673,9 +784,15 @@ onMounted(() => {
 
 <style scoped>
 @keyframes highlight {
-  0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+  }
 }
 
 .highlight-service {

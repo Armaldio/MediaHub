@@ -15,6 +15,7 @@ export interface Service {
 
 export interface DeepLink {
   name: string;
+  mediaType: 'movie' | 'tv' | 'all';
   enabled?: (data: FormattedDetails) => boolean;
   url: (data: FormattedDetails) => Promise<string> | string;
 }
