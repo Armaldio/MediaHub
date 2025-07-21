@@ -1,8 +1,36 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import { AppendToResponse, MultiSearchResult, TMDB, MovieDetails, TvShowDetails, TrendingResults, Movie, PopularTvShowResult, MediaType, Episode } from 'tmdb-ts';
+import { ref, computed } from 'vue'
+import { 
+  AppendToResponse, 
+  MultiSearchResult, 
+  TMDB, 
+  MovieDetails, 
+  TvShowDetails, 
+  TrendingResults, 
+  Movie, 
+  PopularTvShowResult, 
+  MediaType, 
+  AvailableLanguage
+} from 'tmdb-ts';
+
+// Default language fallback
+const DEFAULT_LANGUAGE = 'en-US';
 
 export const useMoviesStore = defineStore('movies', () => {
+  // Get user's preferred language from browser or use default
+  const userLanguage = ref<AvailableLanguage>(
+    localStorage.getItem('userLanguage') as AvailableLanguage || 
+    navigator.language as AvailableLanguage || 
+    DEFAULT_LANGUAGE
+  );
+
+  // Update language preference
+  const setLanguage = (lang: AvailableLanguage) => {
+    userLanguage.value = lang;
+    localStorage.setItem('userLanguage', lang);
+  };
+
+  const currentLanguage = computed(() => userLanguage.value);
   const popularMovies = ref<Movie[]>([])
   const popularTVShows = ref<PopularTvShowResult[]>([])
   const trending = ref<TrendingResults<any>[]>([])
@@ -13,13 +41,17 @@ export const useMoviesStore = defineStore('movies', () => {
   const error = ref<string | null>(null)
   const currentPage = ref(1)
   const totalPages = ref(1)
-  
+
+  // Initialize TMDB client
   const tmdb = new TMDB(import.meta.env.VITE_TMDB_API_KEY);
 
   const fetchPopularMovies = async (page = 1) => {
     try {
-      loading.value = true
-      const response = await tmdb.movies.popular({ page });
+      loading.value = true;
+      const response = await tmdb.movies.popular({ 
+        page,
+        language: userLanguage.value 
+      });
       
       if (page === 1) {
         popularMovies.value = response.results
@@ -41,8 +73,11 @@ export const useMoviesStore = defineStore('movies', () => {
 
   const fetchPopularTVShows = async (page = 1) => {
     try {
-      loading.value = true
-      const response = await tmdb.tvShows.popular({ page });
+      loading.value = true;
+      const response = await tmdb.tvShows.popular({ 
+        page,
+        language: userLanguage.value 
+      });
       
       if (page === 1) {
         popularTVShows.value = response.results
@@ -69,8 +104,13 @@ export const useMoviesStore = defineStore('movies', () => {
     }
 
     try {
-      loading.value = true
-      const response = await tmdb.search.multi({ query });
+      loading.value = true;
+      const response = await tmdb.search.multi({ 
+        query, 
+        page: 1,
+        language: userLanguage.value,
+        include_adult: false
+      });
       searchResults.value = response.results
     } catch (err) {
       error.value = 'Search failed'
@@ -82,17 +122,22 @@ export const useMoviesStore = defineStore('movies', () => {
 
   const fetchDetails = async (id: number, mediaType: MediaType) => {
     try {
-      loading.value = true
-      error.value = null
-      let detailsResponse: 
-      | AppendToResponse<TvShowDetails, "external_ids"[], "tvShow">
-      | AppendToResponse<MovieDetails, "external_ids"[], "movie">
-      | AppendToResponse<Episode, "external_ids"[], "tvEpisode">;
+      loading.value = true;
+      error.value = null;
+      
+      // Create a type that matches what we actually expect
+      type MediaDetails = 
+        | (TvShowDetails & { external_ids?: ExternalIdsResponse })
+        | (MovieDetails & { external_ids?: ExternalIdsResponse });
+      
+      let detailsResponse: MediaDetails | null = null;
       
       if (mediaType === 'movie') {
-        detailsResponse = await tmdb.movies.details(id, ['external_ids']);
+        const response = await tmdb.movies.details(id, ['external_ids'], userLanguage.value);
+        detailsResponse = response as MovieDetails & { external_ids?: ExternalIdsResponse };
       } else if (mediaType === 'tv') {
-        detailsResponse = await tmdb.tvShows.details(id, ['external_ids']);
+        const response = await tmdb.tvShows.details(id, ['external_ids'], userLanguage.value);
+        detailsResponse = response as TvShowDetails & { external_ids?: ExternalIdsResponse };
       // } else if (mediaType === 'tvEpisode') {
       //   detailsResponse = await tmdb.tvEpisode.details({
       //     tvShowID: id,
@@ -169,8 +214,8 @@ export const useMoviesStore = defineStore('movies', () => {
 
   const fetchTrending = async (mediaType: 'all' | 'movie' | 'tv' = 'all', timeWindow: 'day' | 'week' = 'week') => {
     try {
-      loading.value = true
-      const response = await tmdb.trending.trending(mediaType, timeWindow)
+      loading.value = true;
+      const response = await tmdb.trending(mediaType, timeWindow, { language: userLanguage.value });
       trending.value = response.results.map((item: any) => ({
         ...item,
         media_type: item.media_type || (mediaType === 'all' ? (item.title ? 'movie' : 'tv') : mediaType)
@@ -195,13 +240,15 @@ export const useMoviesStore = defineStore('movies', () => {
     error,
     currentPage,
     totalPages,
+    currentLanguage,
+    setLanguage,
     fetchPopularMovies,
     fetchPopularTVShows,
-    fetchTrending,
     searchMulti,
     fetchDetails,
     fetchDetailsByImdbId,
     getImageUrl,
-    clearSearch
+    clearSearch,
+    fetchTrending
   }
 })

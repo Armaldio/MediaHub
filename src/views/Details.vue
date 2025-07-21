@@ -71,29 +71,31 @@
         </div>
 
         <!-- Content -->
-        <div class="relative h-full flex items-end">
-          <div class="max-w-7xl mx-auto px-4 pb-16 w-full">
-            <div class="flex flex-col lg:flex-row items-start gap-8 mb-8">
+        <div class="relative h-full flex items-center">
+          <div class="max-w-7xl mx-auto px-4 w-full">
+            <div class="flex flex-col lg:flex-row items-start gap-8 py-8">
               <!-- Poster -->
-              <div class="flex-shrink-0">
-                <img
-                  v-if="poster"
-                  :src="poster"
-                  :alt="formattedDetails?.title || 'Media poster'"
-                  class="w-64 h-96 object-cover rounded-xl shadow-2xl"
-                />
-                <div
-                  v-else
-                  class="w-64 h-96 bg-gray-800 rounded-xl flex items-center justify-center"
-                >
-                
-                <Film class="h-16 w-16 text-gray-600" />
+              <div class="flex-shrink-0 mt-12 lg:mt-0 lg:pt-12">
+                <div class="relative group">
+                  <img
+                    v-if="poster"
+                    :src="poster"
+                    :alt="formattedDetails?.title || 'Media poster'"
+                    class="h-48 object-cover rounded-xl shadow-2xl transform transition-transform duration-300 group-hover:scale-102"
+                  />
+                  <div
+                    v-else
+                    class="h-48 bg-gray-800 rounded-xl flex items-center justify-center"
+                  >
+                    <Film class="h-16 w-16 text-gray-600" />
+                  </div>
+                </div>
               </div>
             </div>
             
             <!-- Info -->
             <div class="flex-1 text-white">
-
+              <div>
                 <h1 class="text-4xl md:text-6xl font-bold mb-4">
                   {{ formattedDetails?.title || 'Untitled' }}
                 </h1>
@@ -131,7 +133,6 @@
 
                 <!-- Quick Access Icons - After Description -->
                 <div class="mt-8 mb-6">
-                  <h3 class="text-lg font-semibold text-white mb-3">Quick Access</h3>
                   <div class="flex flex-wrap gap-2">
                     <button
                       v-for="service in filteredServices"
