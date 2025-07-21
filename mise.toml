@@ -5,6 +5,9 @@ node = "latest"
 [env]
 ANDROID_HOME = "/home/armaldio/Android/Sdk"
 
+[tasks.dev]
+run = "pnpm dev"
+
 [tasks.build-prod]
 run = "pnpm build"
 env = { NODE_ENV = "production" }
