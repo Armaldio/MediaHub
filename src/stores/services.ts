@@ -11,11 +11,14 @@ export const useServicesStore = defineStore('services', () => {
   const installedApps = ref<string[]>([])
   const isNative = ref(false)
 
-  const selectedServices = computed(() => 
-    availableServices.value.filter(service => 
-      selectedServiceIds.value.includes(service.id)
-    )
-  )
+  const selectedServices = computed(() => {
+    // Create a map for quick lookup
+    const servicesMap = new Map(availableServices.value.map(s => [s.id, s]));
+    // Return services in the same order as selectedServiceIds
+    return selectedServiceIds.value
+      .map(id => servicesMap.get(id))
+      .filter((service): service is Service => service !== undefined);
+  })
 
   const installedServices = computed(() => 
     availableServices.value // All services are available, we just filter by selection
@@ -38,6 +41,18 @@ export const useServicesStore = defineStore('services', () => {
       selectedServiceIds.value.push(serviceId)
     }
     saveToLocalStorage()
+  }
+
+  const reorderServices = (reorderedServices: Service[]) => {
+    // Create a map of service IDs to their order
+    const newOrder = new Map(reorderedServices.map((service, index) => [service.id, index]));
+    
+    // Sort the selectedServiceIds array based on the new order
+    selectedServiceIds.value = [...selectedServiceIds.value].sort((a, b) => {
+      return (newOrder.get(a) ?? Infinity) - (newOrder.get(b) ?? Infinity);
+    });
+    
+    saveToLocalStorage();
   }
 
   const checkInstalledApps = async () => {
@@ -132,7 +147,7 @@ export const useServicesStore = defineStore('services', () => {
   const initStore = async () => {
     try {
       await checkInstalledApps()
-     // loadFromLocalStorage()
+      loadFromLocalStorage()
     } catch (error) {
       console.error('Error initializing services store:', error)
     }
@@ -151,6 +166,7 @@ export const useServicesStore = defineStore('services', () => {
     isServiceSelected,
     isServiceInstalled,
     toggleService,
+    reorderServices,
     checkInstalledApps,
     loadFromLocalStorage,
     hasSelectedServices,

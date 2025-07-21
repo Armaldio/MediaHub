@@ -22,7 +22,8 @@
     "safe-stringify": "^1.2.0",
     "tmdb-ts": "^2.0.1",
     "vue": "^3.4.38",
-    "vue-router": "^4.2.5"
+    "vue-router": "^4.2.5",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
