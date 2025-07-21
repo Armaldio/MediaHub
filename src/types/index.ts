@@ -16,5 +16,5 @@ export interface Service {
 export interface DeepLink {
   name: string;
   enabled?: (data: FormattedDetails) => boolean;
-  url: (data: FormattedDetails) => string;
+  url: (data: FormattedDetails) => Promise<string> | string;
 }

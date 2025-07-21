@@ -86,21 +86,23 @@
                   v-else
                   class="w-64 h-96 bg-gray-800 rounded-xl flex items-center justify-center"
                 >
-                  <Film class="h-16 w-16 text-gray-600" />
-                </div>
+                
+                <Film class="h-16 w-16 text-gray-600" />
               </div>
+            </div>
+            
+            <!-- Info -->
+            <div class="flex-1 text-white">
 
-              <!-- Info -->
-              <div class="flex-1 text-white">
-                <h1 class="text-4xl md:text-6xl font-bold mb-4">{{ title }}</h1>
+                <h1 class="text-4xl md:text-6xl font-bold mb-4">
+                  {{ moviesStore.currentDetails?.title || moviesStore.currentDetails?.name || 'Untitled' }}
+                </h1>
 
                 <!-- Meta Info -->
                 <div
                   class="flex flex-wrap items-center gap-4 mb-6 text-gray-300"
                 >
-                  <span v-if="releaseYear" class="text-lg">{{
-                    releaseYear
-                  }}</span>
+                  <span v-if="releaseYear" class="text-lg">{{ releaseYear }}</span>
                   <span v-if="rating" class="flex items-center gap-1">
                     <Star class="h-5 w-5 text-yellow-500 fill-current" />
                     {{ rating.toFixed(1) }}
@@ -233,19 +235,25 @@
                           !('enabled' in link)
                         "
                         @click.stop="openDeepLink(service, link)"
-                        class="w-full text-left px-3 py-2 text-sm rounded-lg transition-all duration-200 flex items-center justify-between gap-2 group/link"
+                        class="w-full text-left px-3 py-2 text-sm rounded-lg transition-all duration-200 flex items-center justify-between gap-2 group/link relative overflow-hidden"
                         :class="{
                           'bg-white/5 hover:bg-white/10 text-white': true,
                           'border border-white/5': true,
                           'active:scale-[0.98]': true,
+                          'cursor-wait': loadingLinks[getLoadingKey(service, link)]
                         }"
                         :title="link.name"
+                        :disabled="loadingLinks[getLoadingKey(service, link)]"
                       >
                         <span
                           class="truncate flex-1 text-left text-gray-200 group-hover/link:text-white transition-colors"
+                          :class="{ 'opacity-0': loadingLinks[getLoadingKey(service, link)] }"
                         >
                           {{ link.name }}
                         </span>
+                        <div v-if="loadingLinks[getLoadingKey(service, link)]" class="absolute inset-0 flex items-center justify-center">
+                          <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        </div>
                         <span
                           class="text-gray-400 group-hover/link:text-white transition-colors"
                         >
@@ -422,15 +430,17 @@ const formattedDetails = computed(() => {
     : "Untitled";
   const externalIds: ExternalIds = details?.external_ids || {};
 
+  console.log(details)
+
   // Ensure we have at least one valid ID
-  const tmdbId = props.tmdbId || props.id || "";
-  const imdbId = props.imdbId || externalIds.imdb_id || "";
+  const tmdbId = details?.id.toString() || props.id || "";
+  const imdbId = externalIds.imdb_id || "";
 
   if (!tmdbId && !imdbId) {
     console.warn("No valid ID found for this media item");
   }
 
-  return {
+  const formattedDetails = {
     type: props.mediaType,
     title: title,
     tmdbId: tmdbId,
@@ -439,33 +449,45 @@ const formattedDetails = computed(() => {
     facebookId: externalIds.facebook_id || "",
     instagramId: externalIds.instagram_id || "",
     twitterId: externalIds.twitter_id || "",
-  } satisfies FormattedDetails;
+  } satisfies FormattedDetails
+
+  console.log(formattedDetails)
+
+  return formattedDetails;
 });
 
-const openDeepLink = async (service: Service, link: DeepLink) => {
-  const resolvedUrl = link.url(formattedDetails.value);
+const loadingLinks = ref<Record<string, boolean>>({});
 
-  // Handle different types of deep links
-  if (resolvedUrl.startsWith("http")) {
-    window.open(resolvedUrl, "_blank", "noopener,noreferrer");
-  } else if (service.androidAppId) {
-    try {
-      const { AppLauncher } = await import("@capacitor/app-launcher");
-      await AppLauncher.openUrl({ url: resolvedUrl });
-    } catch (error) {
-      console.error("Error opening app:", error);
-      window.open(service.appUrl, "_blank", "noopener,noreferrer");
-    }
-  }
+const getLoadingKey = (service: Service, link: DeepLink) => {
+  return `${service.id}-${link.name}`;
 };
 
-const openInService = async (service: Service) => {
-  // If there are deep links, open the first one by default
-  if (service.deepLinks?.length > 0) {
-    await openDeepLink(service, service.deepLinks[0]);
-  } else {
-    // Fallback to website
-    window.open(service.websiteUrl, "_blank", "noopener,noreferrer");
+const openDeepLink = async (service: Service, link: DeepLink) => {
+  const loadingKey = getLoadingKey(service, link);
+  
+  if (loadingLinks.value[loadingKey]) return;
+  
+  loadingLinks.value = { ...loadingLinks.value, [loadingKey]: true };
+  try {
+    const resolvedUrl = await link.url(formattedDetails.value);
+    if (!resolvedUrl) return;
+
+    // Handle different types of deep links
+    if (resolvedUrl.startsWith("http")) {
+      window.open(resolvedUrl, "_blank", "noopener,noreferrer");
+    } else if (service.androidAppId) {
+      try {
+        const { AppLauncher } = await import("@capacitor/app-launcher");
+        await AppLauncher.openUrl({ url: resolvedUrl });
+      } catch (error) {
+        console.error("Error opening app:", error);
+        window.open(service.appUrl, "_blank", "noopener,noreferrer");
+      }
+    }
+  } catch (error) {
+    console.error("Error processing deep link:", error);
+  } finally {
+    loadingLinks.value = { ...loadingLinks.value, [loadingKey]: false };
   }
 };
 

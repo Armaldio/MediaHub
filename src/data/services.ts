@@ -285,10 +285,37 @@ export default [
         "name": "Wikidata website",
         "enabled": (data) => !!data.wikidataId,
         "url": (data) => `https://wikidata.org/wiki/${data.wikidataId}`
-      }, {
+      }, 
+      {
         "name": "Wikidata app",
         "enabled": (data) => !!data.wikidataId,
         "url": (data) => `wikidata://entity/${data.wikidataId}`
+      },
+      {
+        "name": "Wikipedia page",
+        "enabled": (data) => !!data.wikidataId,
+        "url": async (data) => {
+          if (!data.wikidataId) return "";
+          try {
+            // First, get the Wikipedia page title from Wikidata
+            const response = await fetch(`https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${data.wikidataId}&props=sitelinks&format=json&origin=*`);
+            const result = await response.json();
+            
+            // Get the English Wikipedia page title if available
+            const pageTitle = result.entities[data.wikidataId]?.sitelinks?.enwiki?.title;
+            
+            if (pageTitle) {
+              return `https://en.wikipedia.org/wiki/${encodeURIComponent(pageTitle.replace(/ /g, '_'))}`;
+            }
+            
+            // Fallback to direct Wikidata ID if no page title found
+            return `https://www.wikidata.org/wiki/${data.wikidataId}`;
+          } catch (error) {
+            console.error('Error fetching Wikipedia page:', error);
+            // Fallback to direct Wikidata link on error
+            return `https://www.wikidata.org/wiki/${data.wikidataId}`;
+          }
+        }
       }
     ]
   },
@@ -377,12 +404,21 @@ export default [
       {
         "enabled": (data) => data.type === 'movie',
         "name": "App - Movie",
-        "url": (data) => `https://ava-assistant.app/movie/${data.tmdbId}`
+        "url": (data) => {
+          const url = `https://ava-assistant.app/movie/${data.tmdbId}`;
+          console.log('url', url)
+          return url;
+        }
       },
       {
         "enabled": (data) => data.type === 'tv',
         "name": "App - TV Show",
-        "url": (data) => `https://ava-assistant.app/show/${data.tmdbId}`
+        "url": (data) => {
+          console.log(data)
+          const url = `https://ava-assistant.app/show/?id=${data.tmdbId}`;
+          console.log('url', url)
+          return url;
+        }
       }
     ]
   },
@@ -495,8 +531,14 @@ export default [
     "color": "#01B4E4",
     "deepLinks": [
       {
-        "name": "Website",
+        "name": "Website - Movie",
+        "enabled": (data) => data.type === 'movie',
         "url": (data) => `https://www.themoviedb.org/movie/${data.tmdbId}`
+      },
+      {
+        "name": "Website - TV Show",
+        "enabled": (data) => data.type === 'tv',
+        "url": (data) => `https://www.themoviedb.org/tv/${data.tmdbId}`
       }
     ]
   },
