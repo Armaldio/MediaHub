@@ -124,10 +124,35 @@
                 <!-- Overview -->
                 <p
                   v-if="overview"
-                  class="text-lg text-gray-200 leading-relaxed max-w-3xl"
+                  class="mt-4 text-gray-300 leading-relaxed"
                 >
-                  {{ overview }}
+                  {{ formattedDetails?.overview || 'No description available.' }}
                 </p>
+
+                <!-- Quick Access Icons - After Description -->
+                <div class="mt-8 mb-6">
+                  <h3 class="text-lg font-semibold text-white mb-3">Quick Access</h3>
+                  <div class="flex flex-wrap gap-2">
+                    <button
+                      v-for="service in filteredServices"
+                      :key="`quick-${service.id}`"
+                      @click="scrollToService(service.id)"
+                      class="p-2.5 bg-gray-800/60 hover:bg-gray-700/80 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-md hover:shadow-black/20 flex items-center gap-2"
+                      :title="service.name"
+                    >
+                      <div class="w-8 h-8 bg-gray-800/80 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <img
+                          v-if="service.icon"
+                          :src="service.icon"
+                          :alt="service.name"
+                          class="w-5 h-5 object-contain"
+                        />
+                        <span v-else class="text-xs text-white font-medium">{{ service.name.charAt(0) }}</span>
+                      </div>
+                      <span class="text-sm text-gray-200 pr-1">{{ service.name }}</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -149,9 +174,7 @@
                 Your connected services
               </p>
             </div>
-            <div
-              class="px-3 py-1 bg-white/5 rounded-full text-sm text-gray-300"
-            >
+            <div class="px-3 py-1 bg-white/5 rounded-full text-sm text-gray-300">
               {{ servicesStore.selectedServices.length }} services
             </div>
           </div>
@@ -170,28 +193,6 @@
                 class="block w-full pl-10 pr-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="Search services..."
               />
-            </div>
-          </div>
-
-          <!-- Quick Access Icons -->
-          <div class="mb-6">
-            <h3 class="text-sm font-medium text-gray-300 mb-3">Quick Access</h3>
-            <div class="flex flex-wrap gap-2">
-              <button
-                v-for="service in filteredServices"
-                :key="service.id"
-                @click="scrollToService(service.id)"
-                class="p-2 bg-gray-800/50 rounded-lg hover:bg-gray-700/50 transition-colors"
-                :title="service.name"
-              >
-                <img
-                  v-if="service.icon"
-                  :src="service.icon"
-                  :alt="service.name"
-                  class="w-6 h-6 object-contain"
-                />
-                <span v-else class="text-xs text-white">{{ service.name.charAt(0) }}</span>
-              </button>
             </div>
           </div>
 
