@@ -54,7 +54,7 @@
       </button>
 
       <!-- Hero Section with Parallax -->
-      <div class="relative h-screen overflow-hidden backdrop">
+      <div class="relative backdrop">
         <!-- Parallax Backdrop -->
         <div
           v-if="backdrop"
@@ -71,7 +71,7 @@
         </div>
 
         <!-- Content -->
-        <div class="relative h-full flex items-center">
+        <div class="relative h-full flex items-top">
           <div class="max-w-7xl mx-auto px-4 w-full">
             <div class="flex flex-col lg:flex-row items-start gap-8 py-8">
               <!-- Poster -->
@@ -123,35 +123,75 @@
                   </span>
                 </div>
 
-                <!-- Overview -->
-                <p
-                  v-if="overview"
-                  class="mt-4 text-gray-300 leading-relaxed"
-                >
-                  {{ formattedDetails?.overview || 'No description available.' }}
-                </p>
-
-                <!-- Quick Access Icons - After Description -->
-                <div class="mt-8 mb-6">
-                  <div class="flex flex-wrap gap-2">
-                    <button
-                      v-for="service in filteredServices"
-                      :key="`quick-${service.id}`"
-                      @click="scrollToService(service.id)"
-                      class="p-2.5 bg-gray-800/60 hover:bg-gray-700/80 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-md hover:shadow-black/20 flex items-center gap-2"
-                      :title="service.name"
+                <!-- Overview and Quick Access Container -->
+                <div class="space-y-4">
+                  <!-- Overview -->
+                  <div class="relative">
+                    <div 
+                      ref="overviewText"
+                      class="text-gray-300 leading-relaxed transition-all duration-500 ease-in-out overflow-hidden"
+                      :style="{
+                        maxHeight: isOverviewExpanded ? `${overviewHeight}px` : '6rem',
+                        willChange: 'max-height, opacity',
+                        opacity: isOverviewExpanded ? 1 : 0.98
+                      }"
+                      @transitionend="onTransitionEnd"
                     >
-                      <div class="w-8 h-8 bg-gray-800/80 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <img
-                          v-if="service.icon"
-                          :src="service.icon"
-                          :alt="service.name"
-                          class="w-5 h-5 object-contain"
-                        />
-                        <span v-else class="text-xs text-white font-medium">{{ service.name.charAt(0) }}</span>
-                      </div>
-                      <span class="text-sm text-gray-200 pr-1">{{ service.name }}</span>
-                    </button>
+                      <p v-if="overview" class="mb-8">
+                        {{ formattedDetails?.overview || 'No description available.' }}
+                      </p>
+                      <!-- Gradient overlay when collapsed -->
+                      <!-- <div 
+                        v-if="!isOverviewExpanded && showReadMore"
+                        class="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-gray-900 via-gray-900/90 to-transparent pointer-events-none"
+                      ></div> -->
+                    </div>
+                    
+                    <!-- Read More Button -->
+                    <div 
+                      v-if="showReadMore"
+                      class="relative z-10 mt-2 flex justify-start"
+                    >
+                      <button
+                        @click="toggleOverview"
+                        class="text-sm font-medium text-blue-400 hover:text-blue-300 transition-all duration-200 flex items-top gap-1 group bg-gray-900/80 px-3 py-1.5 rounded-lg"
+                      >
+                        {{ isOverviewExpanded ? 'Show Less' : 'Read More' }}
+                        <svg 
+                          class="w-4 h-4 transition-transform duration-300"
+                          :class="{ 'transform rotate-180': isOverviewExpanded }"
+                          fill="none" 
+                          viewBox="0 0 24 24" 
+                          stroke="currentColor"
+                        >
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Quick Access Icons - After Description -->
+                  <div class="pt-2 pb-24">
+                    <div class="flex flex-wrap gap-2">
+                      <button
+                        v-for="service in filteredServices"
+                        :key="`quick-${service.id}`"
+                        @click="scrollToService(service.id)"
+                        class="p-2.5 bg-gray-800/60 hover:bg-gray-700/80 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-md hover:shadow-black/20 flex items-center gap-2"
+                        :title="service.name"
+                      >
+                        <div class="w-8 h-8 bg-gray-800/80 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <img
+                            v-if="service.icon"
+                            :src="service.icon"
+                            :alt="service.name"
+                            class="w-5 h-5 object-contain"
+                          />
+                          <span v-else class="text-xs text-white font-medium">{{ service.name.charAt(0) }}</span>
+                        </div>
+                        <span class="text-sm text-gray-200 pr-1">{{ service.name }}</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -363,7 +403,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, CSSProperties } from "vue";
+import { computed, onMounted, onUnmounted, ref, CSSProperties, nextTick } from "vue";
 import type { DeepLink, Service } from "@/types";
 import type { AppendToResponse, MovieDetails, TvShowDetails } from "tmdb-ts";
 import { useRouter } from "vue-router";
@@ -384,6 +424,31 @@ const props = defineProps<Props>();
 
 const router = useRouter();
 const parallaxBackdrop = ref<HTMLElement | null>(null);
+const overviewText = ref<HTMLElement | null>(null);
+const overviewHeight = ref(0);
+const isOverviewExpanded = ref(false);
+const showReadMore = ref(false);
+const isAnimating = ref(false);
+
+// Check if overview text needs a "Read More" button
+const checkOverviewHeight = async () => {
+  await nextTick();
+  if (overviewText.value) {
+    // Store the full height for smooth animation
+    overviewHeight.value = overviewText.value.scrollHeight;
+    showReadMore.value = overviewText.value.scrollHeight > 96; // 6rem = 96px (4 lines of text)
+  }
+};
+
+const toggleOverview = () => {
+  if (isAnimating.value) return;
+  isOverviewExpanded.value = !isOverviewExpanded.value;
+  isAnimating.value = true;
+};
+
+const onTransitionEnd = () => {
+  isAnimating.value = false;
+};
 const servicesGrid = ref<HTMLElement | null>(null);
 const searchQuery = ref('');
 const parallaxOffset = ref(0);
@@ -395,9 +460,11 @@ const handleScroll = () => {
   parallaxOffset.value = scrollPosition * 0.8; // Adjust the multiplier to control the parallax intensity
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await loadDetails();
   window.addEventListener("scroll", handleScroll);
-  loadDetails();
+  await nextTick();
+  checkOverviewHeight();
 });
 
 onUnmounted(() => {
