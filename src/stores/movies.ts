@@ -34,34 +34,24 @@ export const useMoviesStore = defineStore('movies', () => {
   const currentLanguage = computed(() => userLanguage.value);
   const popularMovies = ref<Movie[]>([])
   const popularTVShows = ref<PopularTvShowResult[]>([])
-  const trending = ref<TrendingResults<any>[]>([])
+  const trending = ref<TrendingResults<any>['results']>([])
   const searchResults = ref<MultiSearchResult[]>([])
   const currentDetails = ref<AppendToResponse<TvShowDetails, "external_ids"[], "tvShow">
   | AppendToResponse<MovieDetails, "external_ids"[], "movie"> | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
-  const currentPage = ref(1)
-  const totalPages = ref(1)
 
   // Initialize TMDB client
   const tmdb = new TMDB(import.meta.env.VITE_TMDB_API_KEY);
 
-  const fetchPopularMovies = async (page = 1) => {
+  const fetchPopularMovies = async () => {
     try {
       loading.value = true;
-      const response = await tmdb.movies.popular({ 
-        page,
-        language: userLanguage.value 
+      const response = await tmdb.movies.popular({
+        language: userLanguage.value
       });
-      
-      if (page === 1) {
-        popularMovies.value = response.results
-      } else {
-        popularMovies.value = [...popularMovies.value, ...response.results]
-      }
-      
-      currentPage.value = response.page
-      totalPages.value = response.total_pages
+
+      popularMovies.value = response.results
       return response.results
     } catch (err) {
       error.value = 'Failed to fetch popular movies'
@@ -72,22 +62,14 @@ export const useMoviesStore = defineStore('movies', () => {
     }
   }
 
-  const fetchPopularTVShows = async (page = 1) => {
+  const fetchPopularTVShows = async () => {
     try {
       loading.value = true;
-      const response = await tmdb.tvShows.popular({ 
-        page,
-        language: userLanguage.value 
+      const response = await tmdb.tvShows.popular({
+        language: userLanguage.value
       });
-      
-      if (page === 1) {
-        popularTVShows.value = response.results
-      } else {
-        popularTVShows.value = [...popularTVShows.value, ...response.results]
-      }
-      
-      currentPage.value = response.page
-      totalPages.value = response.total_pages
+
+      popularTVShows.value = response.results
       return response.results
     } catch (err) {
       error.value = 'Failed to fetch popular TV shows'
@@ -217,11 +199,8 @@ export const useMoviesStore = defineStore('movies', () => {
     try {
       loading.value = true;
       const response = await tmdb.trending.trending(mediaType, timeWindow, { language: userLanguage.value });
-      trending.value = response.results.map((item: any) => ({
-        ...item,
-        media_type: item.media_type || (mediaType === 'all' ? (item.title ? 'movie' : 'tvShow') : mediaType)
-      }))
-      return trending.value
+      trending.value = response.results
+      return response.results
     } catch (err) {
       error.value = 'Failed to fetch trending content'
       console.error(err)
@@ -239,8 +218,6 @@ export const useMoviesStore = defineStore('movies', () => {
     currentDetails,
     loading,
     error,
-    currentPage,
-    totalPages,
     currentLanguage,
     setLanguage,
     fetchPopularMovies,

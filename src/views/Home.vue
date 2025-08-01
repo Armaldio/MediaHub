@@ -256,8 +256,8 @@ const goToIntroduction = () => {
 const fetchInitialData = async () => {
   try {
     await Promise.all([
-      moviesStore.fetchPopularMovies(1),
-      moviesStore.fetchPopularTVShows(1),
+      moviesStore.fetchPopularMovies(),
+      moviesStore.fetchPopularTVShows(),
       moviesStore.fetchTrending('all', 'week')
     ])
   } catch (error) {
