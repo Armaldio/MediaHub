@@ -418,13 +418,28 @@ export default [
   {
     "id": "plex",
     "name": "Plex",
-    "description": "Personal media streaming",
+    "description": "Stream your media library",
     "icon": plexIcon,
     "websiteUrl": "https://plex.tv",
     "appUrl": "https://play.google.com/store/apps/details?id=com.plexapp.android",
     "androidAppId": "com.plexapp.android",
-    "color": "#E5A00D",
+    "color": "#e5a00d",
+    "supportsCustomInstances": true,
+    "customInstances": [],
     "deepLinks": [
+      {
+        "name": "App",
+        "mediaType": "all",
+        "url": (data, instance) => {
+          if (instance) {
+            return `${instance.baseUrl}/web/index.html`
+          }
+          return `plex://preferences`
+        },
+        "customUrlBuilder": (data, instance) => {
+          return `${instance.baseUrl}/web/index.html`
+        }
+      },
       {
         "name": "App",
         "mediaType": "movie",
@@ -448,13 +463,28 @@ export default [
   {
     "id": "jellyfin",
     "name": "Jellyfin",
-    "description": "Free media server",
+    "description": "Open source media system",
     "icon": jellyfinIcon,
     "websiteUrl": "https://jellyfin.org",
     "appUrl": "https://play.google.com/store/apps/details?id=org.jellyfin.mobile",
     "androidAppId": "org.jellyfin.mobile",
     "color": "#00A4DC",
+    "supportsCustomInstances": true,
+    "customInstances": [],
     "deepLinks": [
+      {
+        "name": "App",
+        "mediaType": "all",
+        "url": (data, instance) => {
+          if (instance) {
+            return instance.baseUrl
+          }
+          return `jellyfin://`
+        },
+        "customUrlBuilder": (data, instance) => {
+          return instance.baseUrl
+        }
+      },
       {
         "name": "App",
         "mediaType": "movie",
@@ -484,7 +514,22 @@ export default [
     "appUrl": "https://play.google.com/store/apps/details?id=org.xbmc.kodi",
     "androidAppId": "org.xbmc.kodi",
     "color": "#17B2E7",
+    "supportsCustomInstances": true,
+    "customInstances": [],
     "deepLinks": [
+      {
+        "name": "App",
+        "mediaType": "all",
+        "url": (data, instance) => {
+          if (instance) {
+            return `kodi://${instance.baseUrl}`
+          }
+          return `kodi://`
+        },
+        "customUrlBuilder": (data, instance) => {
+          return `http://${instance.baseUrl}`
+        }
+      },
       {
         "name": "App",
         "mediaType": "movie",

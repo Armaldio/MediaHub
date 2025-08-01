@@ -41,6 +41,8 @@
             v-model="selectedServices"
             item-key="id"
             class="flex flex-wrap gap-3"
+            :delay-on-touch-only="true"
+            delay="100"
             v-bind="dragOptions"
             @start="drag = true"
             @end="onDragEnd"

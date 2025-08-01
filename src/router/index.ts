@@ -2,6 +2,7 @@ import { createRouter, createWebHistory, type NavigationGuard } from 'vue-router
 import Introduction from '@/views/Introduction.vue'
 import Home from '@/views/Home.vue'
 import Details from '@/views/Details.vue'
+import Settings from '@/views/Settings.vue'
 import { useServicesStore } from '@/stores/services'
 import { parseDeepLink, navigateFromDeepLink } from '@/utils/deepLink'
 
@@ -87,6 +88,12 @@ const router = createRouter({
           props: true
         }
       ]
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: Settings,
+      meta: { requiresServices: true }
     },
     // Catch-all route for web-based deep links
     {

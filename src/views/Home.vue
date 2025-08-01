@@ -8,12 +8,21 @@
       <div class="max-w-7xl mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
           <h1 class="text-2xl font-bold gradient-text">Movie Hub</h1>
+          <div class="flex space-x-2"> 
           <button
             @click="goToIntroduction"
             class="px-4 py-2 text-gray-300 hover:text-white transition-colors bg-gray-800 rounded-lg hover:bg-gray-700"
           >
             Manage Services
           </button>
+          <button
+            @click="goToSettings"
+            class="px-4 py-2 text-gray-300 hover:text-white transition-colors bg-gray-800 rounded-lg hover:bg-gray-700"
+          >
+            <Cog class="h-6 w-6 text-gray-400 hover:text-white transition-colors" />
+            
+          </button>
+        </div>
         </div>
         
         <!-- Search Bar -->
@@ -201,7 +210,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, X, ChevronRight } from 'lucide-vue-next'
+import { Search, X, Cog } from 'lucide-vue-next'
 import { useMoviesStore } from '@/stores/movies'
 import MediaCard from '@/components/MediaCard.vue'
 import { MultiSearchResult } from 'tmdb-ts'
@@ -226,6 +235,12 @@ const clearSearch = () => {
 const goToDetails = (item: MultiSearchResult) => {
   const mediaType = item.media_type
   router.push({name: 'details-tmdb', params: { mediaType, tmdbId: item.id }})
+}
+
+const goToSettings = () => {
+  router.push({
+    name: 'settings'
+  })
 }
 
 const goToIntroduction = () => {

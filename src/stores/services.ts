@@ -1,15 +1,20 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { Device } from '@capacitor/device'
-import type { Service } from '@/types'
+import { v4 as uuidv4 } from 'uuid'
+import type { Service, CustomServiceInstance } from '@/types'
 import servicesData from '@/data/services'
 
 export const useServicesStore = defineStore('services', () => {
   // Initialize with clean services data
-  const availableServices = ref<Service[]>(servicesData)
+  const availableServices = ref<Service[]>(servicesData.map(service => ({
+    ...service,
+    customInstances: service.customInstances || []
+  })))
   const selectedServiceIds = ref<string[]>([])
   const installedApps = ref<string[]>([])
   const isNative = ref(false)
+  const customInstances = ref<Record<string, CustomServiceInstance[]>>({})
 
   const selectedServices = computed(() => {
     // Create a map for quick lookup
@@ -112,9 +117,18 @@ export const useServicesStore = defineStore('services', () => {
 
   const saveToLocalStorage = () => {
     try {
-      // Only save the essential data (selected service IDs)
+      // Prepare custom instances data
+      const customInstancesToSave: Record<string, CustomServiceInstance[]> = {}
+      availableServices.value.forEach(service => {
+        if (service.customInstances?.length) {
+          customInstancesToSave[service.id] = service.customInstances
+        }
+      })
+
+      // Save all data
       const dataToSave = {
         selectedServiceIds: selectedServiceIds.value,
+        customInstances: customInstancesToSave
       }
       localStorage.setItem('servicesState', JSON.stringify(dataToSave))
     } catch (error) {
@@ -127,16 +141,25 @@ export const useServicesStore = defineStore('services', () => {
       const stored = localStorage.getItem('servicesState')
       if (stored) {
         const parsed = JSON.parse(stored)
-        // Only restore the data we need
+        // Restore selected service IDs
         if (Array.isArray(parsed.selectedServiceIds)) {
           selectedServiceIds.value = parsed.selectedServiceIds.filter((id: string) => 
             availableServices.value.some(s => s.id === id)
           )
         }
+        // Restore custom instances
+        if (parsed.customInstances) {
+          customInstances.value = parsed.customInstances
+          // Update services with their custom instances
+          availableServices.value = availableServices.value.map(service => ({
+            ...service,
+            customInstances: parsed.customInstances?.[service.id] || []
+          }))
+        }
       }
     } catch (error) {
       console.error('Error loading from localStorage:', error)
-      // Clear corrupted data
+      // Clear corrupted data but preserve custom instances
       localStorage.removeItem('servicesState')
     }
   }
@@ -156,6 +179,89 @@ export const useServicesStore = defineStore('services', () => {
   // Call init immediately
   initStore()
 
+  // Custom instance management
+  const addCustomInstance = (serviceId: string, instance: Omit<CustomServiceInstance, 'id'>) => {
+    const service = availableServices.value.find(s => s.id === serviceId)
+    if (!service) return null
+
+    const newInstance: CustomServiceInstance = {
+      ...instance,
+      id: uuidv4(),
+      isDefault: instance.isDefault ?? false
+    }
+
+    if (!service.customInstances) {
+      service.customInstances = []
+    }
+
+    // If this is set as default, unset any existing default
+    if (newInstance.isDefault) {
+      service.customInstances.forEach(i => { i.isDefault = false })
+    } else if (service.customInstances.length === 0) {
+      // If this is the first instance, make it default
+      newInstance.isDefault = true
+    }
+
+    service.customInstances.push(newInstance)
+    saveToLocalStorage()
+    return newInstance
+  }
+
+  const updateCustomInstance = (serviceId: string, instanceId: string, updates: Partial<CustomServiceInstance>) => {
+    const service = availableServices.value.find(s => s.id === serviceId)
+    if (!service?.customInstances) return null
+
+    const instanceIndex = service.customInstances.findIndex(i => i.id === instanceId)
+    if (instanceIndex === -1) return null
+
+    const updatedInstance = {
+      ...service.customInstances[instanceIndex],
+      ...updates,
+      id: instanceId // Ensure ID can't be changed
+    }
+
+    // If this is being set as default, unset any existing default
+    if (updates.isDefault) {
+      service.customInstances.forEach((i, idx) => {
+        if (i.id !== instanceId) {
+          service.customInstances![idx].isDefault = false
+        }
+      })
+    }
+
+    service.customInstances[instanceIndex] = updatedInstance
+    saveToLocalStorage()
+    return updatedInstance
+  }
+
+  const removeCustomInstance = (serviceId: string, instanceId: string) => {
+    const service = availableServices.value.find(s => s.id === serviceId)
+    if (!service?.customInstances) return false
+
+    const instanceIndex = service.customInstances.findIndex(i => i.id === instanceId)
+    if (instanceIndex === -1) return false
+
+    const wasDefault = service.customInstances[instanceIndex].isDefault
+    const wasLastInstance = service.customInstances.length === 1
+
+    service.customInstances.splice(instanceIndex, 1)
+
+    // If we removed the default and there are other instances, make the first one default
+    if (wasDefault && !wasLastInstance && service.customInstances.length > 0) {
+      service.customInstances[0].isDefault = true
+    }
+
+    saveToLocalStorage()
+    return true
+  }
+
+  const getDefaultInstance = (serviceId: string): CustomServiceInstance | null => {
+    const service = availableServices.value.find(s => s.id === serviceId)
+    if (!service?.customInstances?.length) return null
+    
+    return service.customInstances.find(i => i.isDefault) || service.customInstances[0] || null
+  }
+
   return {
     availableServices,
     selectedServices,
@@ -170,6 +276,11 @@ export const useServicesStore = defineStore('services', () => {
     checkInstalledApps,
     loadFromLocalStorage,
     hasSelectedServices,
-    initStore // Expose initStore in case it needs to be called manually
+    initStore,
+    // Custom instance methods
+    addCustomInstance,
+    updateCustomInstance,
+    removeCustomInstance,
+    getDefaultInstance
   }
 })
