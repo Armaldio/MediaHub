@@ -10,7 +10,8 @@ import {
   Movie, 
   PopularTvShowResult, 
   MediaType, 
-  AvailableLanguage
+  AvailableLanguage,
+  TrendingMediaType
 } from 'tmdb-ts';
 
 // Default language fallback
@@ -212,13 +213,13 @@ export const useMoviesStore = defineStore('movies', () => {
     searchResults.value = []
   }
 
-  const fetchTrending = async (mediaType: 'all' | 'movie' | 'tv' = 'all', timeWindow: 'day' | 'week' = 'week') => {
+  const fetchTrending = async (mediaType: TrendingMediaType, timeWindow: 'day' | 'week' = 'week') => {
     try {
       loading.value = true;
-      const response = await tmdb.trending(mediaType, timeWindow, { language: userLanguage.value });
+      const response = await tmdb.trending.trending(mediaType, timeWindow, { language: userLanguage.value });
       trending.value = response.results.map((item: any) => ({
         ...item,
-        media_type: item.media_type || (mediaType === 'all' ? (item.title ? 'movie' : 'tv') : mediaType)
+        media_type: item.media_type || (mediaType === 'all' ? (item.title ? 'movie' : 'tvShow') : mediaType)
       }))
       return trending.value
     } catch (err) {
