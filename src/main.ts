@@ -5,6 +5,7 @@ import App from './App.vue'
 import './style.css'
 
 import { SafeArea } from '@capacitor-community/safe-area';
+import { setupPurchase } from './plugins/purchase';
 
 SafeArea.enable({
   config: {
@@ -22,3 +23,13 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(router)
 app.mount('#app')
+
+// // Initialize purchase plugin
+// const purchase = setupPurchase();
+
+// // Test the purchase functionality
+// purchase.testPurchase().then(products => {
+//   console.log('Products loaded successfully:', products);
+// }).catch(error => {
+//   console.error('Failed to load products:', error);
+// });

@@ -5,12 +5,51 @@ import { v4 as uuidv4 } from 'uuid'
 import type { Service, CustomServiceInstance } from '@/types'
 import servicesData from '@/data/services'
 
+// Extend Service type for instance services
+interface InstanceService extends Service {
+  isInstance: true
+  instanceId: string
+  parentServiceId: string
+  instanceData: CustomServiceInstance
+}
+
 export const useServicesStore = defineStore('services', () => {
-  // Initialize with clean services data
-  const availableServices = ref<Service[]>(servicesData.map(service => ({
-    ...service,
-    customInstances: service.customInstances || []
-  })))
+  // Initialize with clean services data and convert instances to separate services
+  const initializeServices = (): (Service | InstanceService)[] => {
+    const services: (Service | InstanceService)[] = []
+
+    // Add all regular services
+    servicesData.forEach(service => {
+      // Ensure customInstances is always an array
+      const serviceWithInstances: Service = {
+        ...service,
+        customInstances: service.customInstances || []
+      }
+
+      services.push(serviceWithInstances)
+
+      // Add all instances as separate services
+      if (service.supportsCustomInstances && service.customInstances?.length > 0) {
+        service.customInstances.forEach(instance => {
+          services.push({
+            ...serviceWithInstances,
+            id: `${serviceWithInstances.id}-${instance.id}`,
+            name: `${serviceWithInstances.name} (${instance.name})`,
+            description: `Instance of ${serviceWithInstances.name}`,
+            isInstance: true,
+            instanceId: instance.id,
+            parentServiceId: serviceWithInstances.id,
+            instanceData: instance
+          } as InstanceService)
+        })
+      }
+    })
+
+    return services
+  }
+
+  const availableServices = ref<(Service | InstanceService)[]>(initializeServices())
+
   const selectedServiceIds = ref<string[]>([])
   const installedApps = ref<string[]>([])
   const isNative = ref(false)
@@ -181,8 +220,8 @@ export const useServicesStore = defineStore('services', () => {
 
   // Custom instance management
   const addCustomInstance = (serviceId: string, instance: Omit<CustomServiceInstance, 'id'>) => {
-    const service = availableServices.value.find(s => s.id === serviceId)
-    if (!service) return null
+    const parentService = availableServices.value.find(s => s.id === serviceId && !('isInstance' in s)) as Service | undefined
+    if (!parentService) return null
 
     const newInstance: CustomServiceInstance = {
       ...instance,
@@ -190,65 +229,114 @@ export const useServicesStore = defineStore('services', () => {
       isDefault: instance.isDefault ?? false
     }
 
-    if (!service.customInstances) {
-      service.customInstances = []
+    // Ensure customInstances is initialized
+    if (!parentService.customInstances) {
+      parentService.customInstances = []
     }
 
     // If this is set as default, unset any existing default
     if (newInstance.isDefault) {
-      service.customInstances.forEach(i => { i.isDefault = false })
-    } else if (service.customInstances.length === 0) {
+      parentService.customInstances.forEach(i => { i.isDefault = false })
+    } else if (parentService.customInstances.length === 0) {
       // If this is the first instance, make it default
       newInstance.isDefault = true
     }
 
-    service.customInstances.push(newInstance)
+    // Create the instance service
+    const instanceService: InstanceService = {
+      ...parentService,
+      id: `${parentService.id}-${newInstance.id}`,
+      name: `${parentService.name} (${newInstance.name})`,
+      description: `Instance of ${parentService.name}`,
+      isInstance: true,
+      instanceId: newInstance.id,
+      parentServiceId: parentService.id,
+      instanceData: newInstance
+    }
+
+    // Add to available services and update parent
+    parentService.customInstances.push(newInstance)
+    availableServices.value.push(instanceService)
+
     saveToLocalStorage()
     return newInstance
   }
 
   const updateCustomInstance = (serviceId: string, instanceId: string, updates: Partial<CustomServiceInstance>) => {
-    const service = availableServices.value.find(s => s.id === serviceId)
-    if (!service?.customInstances) return null
+    const parentService = availableServices.value.find(s => s.id === serviceId && !('isInstance' in s)) as Service | undefined
+    if (!parentService) return null
 
-    const instanceIndex = service.customInstances.findIndex(i => i.id === instanceId)
+    // Ensure customInstances is initialized
+    if (!parentService.customInstances) {
+      parentService.customInstances = []
+    }
+
+    // Find the instance in the parent service
+    const instanceIndex = parentService.customInstances.findIndex(i => i.id === instanceId)
     if (instanceIndex === -1) return null
 
     const updatedInstance = {
-      ...service.customInstances[instanceIndex],
+      ...parentService.customInstances[instanceIndex],
       ...updates,
       id: instanceId // Ensure ID can't be changed
     }
 
     // If this is being set as default, unset any existing default
     if (updates.isDefault) {
-      service.customInstances.forEach((i, idx) => {
+      parentService.customInstances.forEach((i, idx) => {
         if (i.id !== instanceId) {
-          service.customInstances![idx].isDefault = false
+          parentService.customInstances[idx].isDefault = false
         }
       })
     }
 
-    service.customInstances[instanceIndex] = updatedInstance
+    parentService.customInstances[instanceIndex] = updatedInstance
+
+    // Update the corresponding instance service
+    const instanceServiceIndex = availableServices.value.findIndex(s =>
+      s.id === `${serviceId}-${instanceId}` && 'isInstance' in s
+    )
+
+    if (instanceServiceIndex !== -1) {
+      const instanceService = availableServices.value[instanceServiceIndex] as InstanceService
+      instanceService.instanceData = updatedInstance
+      instanceService.name = `${parentService.name} (${updatedInstance.name})`
+    }
+
     saveToLocalStorage()
     return updatedInstance
   }
 
   const removeCustomInstance = (serviceId: string, instanceId: string) => {
-    const service = availableServices.value.find(s => s.id === serviceId)
-    if (!service?.customInstances) return false
+    const parentService = availableServices.value.find(s => s.id === serviceId && !('isInstance' in s)) as Service | undefined
+    if (!parentService) return false
 
-    const instanceIndex = service.customInstances.findIndex(i => i.id === instanceId)
+    // Ensure customInstances is initialized
+    if (!parentService.customInstances) {
+      parentService.customInstances = []
+    }
+
+    const instanceIndex = parentService.customInstances.findIndex(i => i.id === instanceId)
     if (instanceIndex === -1) return false
 
-    const wasDefault = service.customInstances[instanceIndex].isDefault
-    const wasLastInstance = service.customInstances.length === 1
+    const wasDefault = parentService.customInstances[instanceIndex].isDefault
+    const wasLastInstance = parentService.customInstances.length === 1
 
-    service.customInstances.splice(instanceIndex, 1)
+    // Remove from parent service
+    parentService.customInstances.splice(instanceIndex, 1)
+
+    // Remove the corresponding instance service
+    const instanceServiceIndex = availableServices.value.findIndex(s =>
+      s.id === `${serviceId}-${instanceId}` && 'isInstance' in s
+    )
+
+    if (instanceServiceIndex !== -1) {
+      availableServices.value.splice(instanceServiceIndex, 1)
+    }
 
     // If we removed the default and there are other instances, make the first one default
-    if (wasDefault && !wasLastInstance && service.customInstances.length > 0) {
-      service.customInstances[0].isDefault = true
+    if (wasDefault && !wasLastInstance && parentService.customInstances.length > 0) {
+      parentService.customInstances[0].isDefault = true
     }
 
     saveToLocalStorage()
@@ -256,10 +344,15 @@ export const useServicesStore = defineStore('services', () => {
   }
 
   const getDefaultInstance = (serviceId: string): CustomServiceInstance | null => {
-    const service = availableServices.value.find(s => s.id === serviceId)
-    if (!service?.customInstances?.length) return null
-    
-    return service.customInstances.find(i => i.isDefault) || service.customInstances[0] || null
+    const parentService = availableServices.value.find(s => s.id === serviceId && !('isInstance' in s)) as Service | undefined
+    if (!parentService) return null
+
+    // Ensure customInstances is initialized
+    if (!parentService.customInstances) {
+      parentService.customInstances = []
+    }
+
+    return parentService.customInstances.find(i => i.isDefault) || parentService.customInstances[0] || null
   }
 
   return {

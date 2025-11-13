@@ -73,7 +73,7 @@
                     </h3>
                   </div>
                   <button
-                    @click.stop="servicesStore.toggleService(service.id)"
+                    @click.stop="toggleService(service.id)"
                     class="text-gray-400 hover:text-white transition-colors"
                     title="Remove service"
                   >
@@ -106,7 +106,7 @@
         <div
           v-for="service in availableServices"
           :key="service.id"
-          @click="servicesStore.toggleService(service.id)"
+          @click="toggleService(service.id)"
           class="service-card glass-effect rounded-lg p-2.5 cursor-pointer animate-slide-up relative transition-all"
           :class="{
             selected: servicesStore.isServiceSelected(service.id),
@@ -350,10 +350,12 @@ const selectedServices = computed({
 });
 
 const availableServices = computed(() => {
-  return servicesStore.availableServices.filter(
-    (service) =>
-      !showInstalledOnly.value || servicesStore.isServiceInstalled(service)
-  );
+  if (!showInstalledOnly.value) {
+    return servicesStore.availableServices
+  }
+  return servicesStore.availableServices.filter(service =>
+    !service.isInstance || servicesStore.isServiceInstalled(service)
+  )
 });
 
 const dragOptions = computed(() => ({
@@ -373,6 +375,11 @@ const goToHome = () => {
     router.push("/home");
   }
 };
+
+// Custom toggle method to handle instances
+function toggleService(serviceId: string) {
+  servicesStore.toggleService(serviceId)
+}
 
 onMounted(async () => {
   await servicesStore.checkInstalledApps();
