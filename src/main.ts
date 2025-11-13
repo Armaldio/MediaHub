@@ -24,12 +24,12 @@ app.use(pinia)
 app.use(router)
 app.mount('#app')
 
-// // Initialize purchase plugin
-// const purchase = setupPurchase();
+// Initialize purchase plugin
+const purchase = setupPurchase();
 
-// // Test the purchase functionality
-// purchase.testPurchase().then(products => {
-//   console.log('Products loaded successfully:', products);
-// }).catch(error => {
-//   console.error('Failed to load products:', error);
-// });
+// Test the purchase functionality
+purchase.testPurchase().then(products => {
+  console.log('Products loaded successfully:', products);
+}).catch(error => {
+  console.error('Failed to load products:', error);
+});
