@@ -147,7 +147,7 @@
                         }}
                       </p>
                       <!-- Gradient overlay when collapsed -->
-                      <!-- <div 
+                      <!-- <div
                         v-if="!isOverviewExpanded && showReadMore"
                         class="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-gray-900 via-gray-900/90 to-transparent pointer-events-none"
                       ></div> -->
@@ -374,10 +374,14 @@
                             v-if="link.mediaType === 'all'"
                             class="flex items-center justify-center space-x-0.5"
                           >
-                            <div class="w-6 h-6 rounded-full bg-gray-900/90 border border-gray-700 flex items-center justify-center">
+                            <div
+                              class="w-6 h-6 rounded-full bg-gray-900/90 border border-gray-700 flex items-center justify-center"
+                            >
                               <MovieIcon class="w-3 h-3 text-gray-300" />
                             </div>
-                            <div class="w-6 h-6 rounded-full bg-gray-900/90 border border-gray-700 flex items-center justify-center">
+                            <div
+                              class="w-6 h-6 rounded-full bg-gray-900/90 border border-gray-700 flex items-center justify-center"
+                            >
                               <Tv class="w-3 h-3 text-gray-300" />
                             </div>
                           </div>
@@ -491,6 +495,7 @@ import { useMoviesStore } from "@/stores/movies";
 import { useServicesStore } from "@/stores/services";
 import { FormattedDetails } from "@/models/models";
 import { MediaType } from "tmdb-ts";
+import { fetchTVDBData } from "@/data/services";
 
 interface Props {
   mediaType: MediaType;
@@ -673,14 +678,18 @@ watch(
 
     const details = newDetails;
     const externalIds = details.external_ids;
-    let tvdbId = externalIds.tvdb_id;
+    let tvdbId = externalIds.tvdb_id?.toString();
+
+    console.log("externalIds", externalIds);
+
+    console.log("tvdbId", tvdbId);
 
     if (!tvdbId && externalIds.wikidata_id) {
       try {
-        const property = props.mediaType === 'movie' ? 'P4836' : 'P4835';
-        const response = await fetch(
-          `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${externalIds.wikidata_id}&property=${property}&format=json&origin=*`
-        );
+        const property = props.mediaType === "movie" ? "P12196" : "P4835";
+        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${externalIds.wikidata_id}&property=${property}&format=json&origin=*`;
+        console.log("url", url);
+        const response = await fetch(url);
         const data = await response.json();
         tvdbId = data?.claims?.[property]?.[0]?.mainsnak?.datavalue?.value;
       } catch (error) {
@@ -713,7 +722,7 @@ watch(
     const genres = "genres" in details ? details.genres : [];
     const overview = "overview" in details ? details.overview : "";
 
-    formattedDetails.value = {
+    const baseFormattedDetails = {
       title,
       releaseYear,
       rating,
@@ -729,6 +738,9 @@ watch(
       twitterId: details.external_ids.twitter_id,
       type: props.mediaType,
     };
+
+    // Fetch TVDB data and enhance the formatted details
+    formattedDetails.value = await fetchTVDBData(baseFormattedDetails);
   },
   { immediate: true }
 );
@@ -746,7 +758,7 @@ const openDeepLink = async (service: Service, link: DeepLink) => {
 
   loadingLinks.value = { ...loadingLinks.value, [loadingKey]: true };
   try {
-    const resolvedUrl = await link.url(formattedDetails.value);
+    const resolvedUrl = await link.url(formattedDetails.value!);
     if (!resolvedUrl) return;
 
     // Handle different types of deep links

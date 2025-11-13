@@ -16,4 +16,10 @@ export interface FormattedDetails {
         name: string;
     }[]
     overview?: string
+    // TVDB-specific fields
+    tvdbPoster?: string
+    tvdbBackdrop?: string
+    tvdbBanner?: string
+    tvdbLogo?: string
+    tvdbSlug?: string
 }

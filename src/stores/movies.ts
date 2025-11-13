@@ -1,15 +1,15 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { 
-  AppendToResponse, 
-  MultiSearchResult, 
-  TMDB, 
-  MovieDetails, 
-  TvShowDetails, 
-  TrendingResults, 
-  Movie, 
-  PopularTvShowResult, 
-  MediaType, 
+import {
+  AppendToResponse,
+  MultiSearchResult,
+  TMDB,
+  MovieDetails,
+  TvShowDetails,
+  TrendingResults,
+  Movie,
+  PopularTvShowResult,
+  MediaType,
   AvailableLanguage,
   TrendingMediaType
 } from 'tmdb-ts';
@@ -107,20 +107,15 @@ export const useMoviesStore = defineStore('movies', () => {
     try {
       loading.value = true;
       error.value = null;
-      
-      // Create a type that matches what we actually expect
-      type MediaDetails = 
-        | (TvShowDetails & { external_ids?: ExternalIdsResponse })
-        | (MovieDetails & { external_ids?: ExternalIdsResponse });
-      
-      let detailsResponse: MediaDetails | null = null;
-      
+
+      let detailsResponse: AppendToResponse<TvShowDetails, "external_ids"[], "tvShow"> | AppendToResponse<MovieDetails, "external_ids"[], "movie"> | null = null;
+
       if (mediaType === 'movie') {
         const response = await tmdb.movies.details(id, ['external_ids'], userLanguage.value);
-        detailsResponse = response as MovieDetails & { external_ids?: ExternalIdsResponse };
+        detailsResponse = response;
       } else if (mediaType === 'tv') {
         const response = await tmdb.tvShows.details(id, ['external_ids'], userLanguage.value);
-        detailsResponse = response as TvShowDetails & { external_ids?: ExternalIdsResponse };
+        detailsResponse = response;
       // } else if (mediaType === 'tvEpisode') {
       //   detailsResponse = await tmdb.tvEpisode.details({
       //     tvShowID: id,
@@ -130,12 +125,13 @@ export const useMoviesStore = defineStore('movies', () => {
       } else {
         throw new Error('Invalid media type');
       }
-      
+
       if (!detailsResponse) {
         throw new Error('No data returned from API');
       }
-      
+
       currentDetails.value = detailsResponse
+
       return detailsResponse;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch details';
@@ -173,7 +169,7 @@ export const useMoviesStore = defineStore('movies', () => {
       } else if (mediaType === 'tv') {
         const tvResults = searchResponse.tv_results?.[0] ?? searchResponse.tv_episode_results?.[0] ?? searchResponse.tv_season_results?.[0];
         if (!tvResults) throw new Error('No TV show found with this IMDB ID');
-        return await fetchDetails(tvResults.show_id, 'tv');
+        return await fetchDetails(tvResults.id, 'tv');
       } else {
         throw new Error('Invalid media type');
       }
@@ -190,6 +186,7 @@ export const useMoviesStore = defineStore('movies', () => {
   const getImageUrl = (path: string, size = 'w500') => {
     return path ? `https://image.tmdb.org/t/p/${size}${path}` : null
   }
+
 
   const clearSearch = () => {
     searchResults.value = []
