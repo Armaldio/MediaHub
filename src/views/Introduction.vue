@@ -31,73 +31,6 @@
         </label>
       </div>
 
-      <!-- Selected Services (Reorderable) -->
-      <div v-if="selectedServices.length > 0" class="mb-8">
-        <h3 class="text-lg font-medium text-gray-300 mb-4">
-          Selected Services (Drag to reorder)
-        </h3>
-        <div class="bg-gray-800/50 rounded-xl p-4">
-          <draggable
-            v-model="selectedServices"
-            item-key="id"
-            class="flex flex-wrap gap-3"
-            :delay-on-touch-only="true"
-            delay="100"
-            v-bind="dragOptions"
-            @start="drag = true"
-            @end="onDragEnd"
-          >
-            <template #item="{ element: service }">
-              <div
-                class="service-card glass-effect rounded-lg p-2.5 cursor-move flex-shrink-0 w-40"
-                :class="{ selected: true }"
-                @click.stop
-              >
-                <div class="flex items-center gap-2 w-full relative z-10">
-                  <div
-                    class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden"
-                  >
-                    <img
-                      v-if="service.icon"
-                      :src="service.icon"
-                      :alt="service.name"
-                      class="w-full h-full object-cover"
-                    />
-                    <span v-else class="text-xs text-gray-400">{{
-                      service.name.charAt(0)
-                    }}</span>
-                  </div>
-                  <div class="min-w-0 flex-1">
-                    <h3 class="font-medium text-xs text-white truncate">
-                      {{ service.name }}
-                    </h3>
-                  </div>
-                  <button
-                    @click.stop="toggleService(service.id)"
-                    class="text-gray-400 hover:text-white transition-colors"
-                    title="Remove service"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-4 w-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            </template>
-          </draggable>
-        </div>
-      </div>
 
       <!-- Available Services -->
       <div
@@ -187,6 +120,74 @@
               </p>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Selected Services (Reorderable) -->
+      <div v-if="selectedServices.length > 0" class="mb-8">
+        <h3 class="text-lg font-medium text-gray-300 mb-4">
+          Selected Services (Drag to reorder)
+        </h3>
+        <div class="bg-gray-800/50 rounded-xl p-4">
+          <draggable
+            v-model="selectedServices"
+            item-key="id"
+            class="flex flex-wrap gap-3"
+            :delay-on-touch-only="true"
+            delay="100"
+            v-bind="dragOptions"
+            @start="drag = true"
+            @end="onDragEnd"
+          >
+            <template #item="{ element: service }">
+              <div
+                class="service-card glass-effect rounded-lg p-2.5 cursor-move flex-shrink-0 w-40"
+                :class="{ selected: true }"
+                @click.stop
+              >
+                <div class="flex items-center gap-2 w-full relative z-10">
+                  <div
+                    class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden"
+                  >
+                    <img
+                      v-if="service.icon"
+                      :src="service.icon"
+                      :alt="service.name"
+                      class="w-full h-full object-cover"
+                    />
+                    <span v-else class="text-xs text-gray-400">{{
+                      service.name.charAt(0)
+                    }}</span>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h3 class="font-medium text-xs text-white truncate">
+                      {{ service.name }}
+                    </h3>
+                  </div>
+                  <button
+                    @click.stop="toggleService(service.id)"
+                    class="text-gray-400 hover:text-white transition-colors"
+                    title="Remove service"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </template>
+          </draggable>
         </div>
       </div>
 
