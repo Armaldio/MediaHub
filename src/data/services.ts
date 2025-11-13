@@ -757,9 +757,15 @@ export default [
     "deepLinks": [
       {
         "mediaType": "movie",
-        "enabled": (data) => data.type === 'movie',
+        "enabled": (data) => data.type === 'movie' && !!data.tvdbId,
         "name": "Website",
-        "url": (data) => `https://thetvdb.com/movies/${data.title?.toLowerCase().replace(/\s+/g, '-')}`
+        "url": (data) => `https://thetvdb.com/?tab=movie&id=${data.tvdbId}`
+      },
+      {
+        "mediaType": "tv",
+        "enabled": (data) => data.type === 'tv' && !!data.tvdbId,
+        "name": "Website",
+        "url": (data) => `https://thetvdb.com/?tab=series&id=${data.tvdbId}`
       }
     ]
   },

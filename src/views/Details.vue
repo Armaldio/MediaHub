@@ -349,9 +349,10 @@
                     >
                       <button
                         v-if="
-                          ('enabled' in link &&
+                          formattedDetails &&
+                          (('enabled' in link &&
                             link.enabled?.(formattedDetails)) ||
-                          !('enabled' in link)
+                            !('enabled' in link))
                         "
                         @click.stop="openDeepLink(service, link)"
                         class="w-full text-left px-3 py-2 text-sm rounded-lg transition-all duration-200 flex items-center justify-between gap-2 group/link relative overflow-hidden"
@@ -480,6 +481,7 @@ import {
   ref,
   CSSProperties,
   nextTick,
+  watch,
 } from "vue";
 import type { DeepLink, Service } from "@/types";
 import type { AppendToResponse, MovieDetails, TvShowDetails } from "tmdb-ts";
@@ -659,51 +661,77 @@ const scrollToService = (serviceId: string) => {
   }
 };
 
-const formattedDetails = computed<FormattedDetails | null>(() => {
-  const details = moviesStore.currentDetails;
-  if (!details) return null;
+const formattedDetails = ref<FormattedDetails | null>(null);
 
-  const title =
-    "title" in details
-      ? details.title
-      : "name" in details
-      ? details.name
-      : "Untitled";
-  const releaseDate =
-    "release_date" in details
-      ? details.release_date
-      : "first_air_date" in details
-      ? details.first_air_date
-      : "";
-  const releaseYear = releaseDate
-    ? new Date(releaseDate).getFullYear().toString()
-    : undefined;
-  const rating = "vote_average" in details ? details.vote_average : undefined;
-  const runtime =
-    "runtime" in details
-      ? `${details.runtime}m`
-      : "episode_run_time" in details && details.episode_run_time?.length
-      ? `${details.episode_run_time[0]}m`
+watch(
+  () => moviesStore.currentDetails,
+  async (newDetails) => {
+    if (!newDetails) {
+      formattedDetails.value = null;
+      return;
+    }
+
+    const details = newDetails;
+    const externalIds = details.external_ids;
+    let tvdbId = externalIds.tvdb_id;
+
+    if (!tvdbId && externalIds.wikidata_id) {
+      try {
+        const property = props.mediaType === 'movie' ? 'P4836' : 'P4835';
+        const response = await fetch(
+          `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${externalIds.wikidata_id}&property=${property}&format=json&origin=*`
+        );
+        const data = await response.json();
+        tvdbId = data?.claims?.[property]?.[0]?.mainsnak?.datavalue?.value;
+      } catch (error) {
+        console.error("Error fetching TVDB ID from Wikidata:", error);
+      }
+    }
+
+    const title =
+      "title" in details
+        ? details.title
+        : "name" in details
+        ? details.name
+        : "Untitled";
+    const releaseDate =
+      "release_date" in details
+        ? details.release_date
+        : "first_air_date" in details
+        ? details.first_air_date
+        : "";
+    const releaseYear = releaseDate
+      ? new Date(releaseDate).getFullYear().toString()
       : undefined;
-  const genres = "genres" in details ? details.genres : [];
-  const overview = "overview" in details ? details.overview : "";
+    const rating = "vote_average" in details ? details.vote_average : undefined;
+    const runtime =
+      "runtime" in details
+        ? `${details.runtime}m`
+        : "episode_run_time" in details && details.episode_run_time?.length
+        ? `${details.episode_run_time[0]}m`
+        : undefined;
+    const genres = "genres" in details ? details.genres : [];
+    const overview = "overview" in details ? details.overview : "";
 
-  return {
-    title,
-    releaseYear,
-    rating,
-    runtime,
-    genres,
-    overview,
-    tmdbId: details.id.toString(),
-    imdbId: details.external_ids.imdb_id,
-    wikidataId: details.external_ids.wikidata_id,
-    facebookId: details.external_ids.facebook_id,
-    instagramId: details.external_ids.instagram_id,
-    twitterId: details.external_ids.twitter_id,
-    type: props.mediaType,
-  } satisfies FormattedDetails;
-});
+    formattedDetails.value = {
+      title,
+      releaseYear,
+      rating,
+      runtime,
+      genres,
+      overview,
+      tmdbId: details.id.toString(),
+      imdbId: details.external_ids.imdb_id,
+      tvdbId: tvdbId,
+      wikidataId: details.external_ids.wikidata_id,
+      facebookId: details.external_ids.facebook_id,
+      instagramId: details.external_ids.instagram_id,
+      twitterId: details.external_ids.twitter_id,
+      type: props.mediaType,
+    };
+  },
+  { immediate: true }
+);
 
 const loadingLinks = ref<Record<string, boolean>>({});
 
