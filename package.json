@@ -1,7 +1,7 @@
 {
   "name": "movie-hub-app",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "packageManager": "pnpm@9.14.2",
   "scripts": {
