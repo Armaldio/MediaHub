@@ -43,12 +43,12 @@ const baseConfig: CapacitorConfig = {
 // Development configuration
 const devConfig: CapacitorConfig = {
   ...baseConfig,
-  server: {
-    androidScheme: "http",
-    // Update this to your local development server IP
-    url: "http://192.168.1.94:5173",
-    cleartext: true,
-  },
+  // server: {
+  //   androidScheme: "http",
+  //   // Update this to your local development server IP
+  //   url: "http://192.168.1.94:5173",
+  //   cleartext: true,
+  // },
 };
 
 // Production configuration
@@ -56,6 +56,9 @@ const prodConfig: CapacitorConfig = {
   ...baseConfig,
   // Production-specific overrides can go here
 };
+
+console.log("import.meta.env", import.meta.env);
+console.log("process.env.NODE_ENV", process.env.NODE_ENV);
 
 // Use NODE_ENV to determine which config to use
 const isProduction = process.env.NODE_ENV === "production";

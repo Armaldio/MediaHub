@@ -1,6 +1,6 @@
 [tools]
 java = "openjdk-21"
-node = "latest"
+node = "20"
 
 [env]
 ANDROID_HOME = "/home/armaldio/Android/Sdk"
@@ -15,11 +15,11 @@ env = { NODE_ENV = "production" }
 [tasks.build-dev]
 run = "pnpm build"
 
-[tasks.sync-dev]    
+[tasks.sync-dev]
 run = "pnpm cap sync"
 depends = ["build-dev"]
 
-[tasks.sync-prod]    
+[tasks.sync-prod]
 run = "pnpm cap sync"
 depends = ["build-prod"]
 
