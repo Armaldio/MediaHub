@@ -50,6 +50,8 @@ jobs:
           KEY_PASSWORD: ${{secrets.KEY_PASSWORD}}
           KEYSTORE_PASSWORD: ${{secrets.KEYSTORE_PASSWORD}}
           KEYSTORE_FILE: ${{secrets.KEYSTORE_FILE}}
+          VITE_TMDB_API_KEY: ${{secrets.VITE_TMDB_API_KEY}}
+          VITE_TVDB_API_KEY: ${{secrets.VITE_TVDB_API_KEY}}
         run: |
           pnpm build
           pnpm cap sync
