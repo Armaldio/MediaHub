@@ -57,8 +57,8 @@ const prodConfig: CapacitorConfig = {
   // Production-specific overrides can go here
 };
 
-console.log("import.meta.env", import.meta.env);
-console.log("process.env.NODE_ENV", process.env.NODE_ENV);
+// console.log("import.meta.env", import.meta.env);
+// console.log("process.env.NODE_ENV", process.env.NODE_ENV);
 
 // Use NODE_ENV to determine which config to use
 const isProduction = process.env.NODE_ENV === "production";
