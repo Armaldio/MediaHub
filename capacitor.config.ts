@@ -10,7 +10,7 @@ const buildOptions: NonNullable<CapacitorConfig["android"]>["buildOptions"] =
 // if (process.env.CI) {
 buildOptions.keystoreAlias = keyAlias;
 buildOptions.keystoreAliasPassword = keyPassword;
-buildOptions.keystorePath = "./dubbing-base-keystore.jks"; // generated at runtie by CI using KEYSTORE_FILE;
+buildOptions.keystorePath = "./media-hub-keystore.jks"; // generated at runtie by CI using KEYSTORE_FILE;
 buildOptions.keystorePassword = storePassword;
 // }
 
