@@ -1,6 +1,6 @@
 [tools]
 java = "openjdk-21"
-node = "20"
+node = "24"
 
 [env]
 ANDROID_HOME = "/home/armaldio/Android/Sdk"
