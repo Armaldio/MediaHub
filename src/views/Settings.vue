@@ -175,10 +175,10 @@
       </div>
 
       <!-- Subscription Section -->
-      <!--<div class="bg-gray-800 rounded-lg p-6 mb-6">
+      <div class="bg-gray-800 rounded-lg p-6 mb-6">
         <h2 class="text-xl font-semibold mb-4">Subscription</h2>
 
-        <!~~ Subscription Status ~~>
+        <!-- Subscription Status -->
         <div class="mb-4">
           <div class="flex items-center mb-2">
             <div
@@ -197,35 +197,78 @@
           </p>
         </div>
 
-        <!~~ Product Details ~~>
-        <div class="bg-gray-700 rounded-lg p-4 mb-4">
-          <h3 class="text-lg font-medium mb-2">Basic Subscription</h3>
-          <p class="text-gray-300 mb-2">Unlock all features:</p>
+        <!-- Product Details -->
+        <div
+          v-if="currentOffering && currentOffering.availablePackages.length > 0"
+          class="bg-gray-700 rounded-lg p-4 mb-4"
+        >
+          <h3 class="text-lg font-medium mb-2">
+            {{ currentOffering.serverDescription }}
+          </h3>
+          <p class="text-gray-300 mb-2">
+            {{ currentOffering.availablePackages[0].product.description }}
+          </p>
           <ul class="text-sm text-gray-400 mb-3 space-y-1">
             <li>• Unlimited service selection</li>
             <li>• Custom service instances</li>
-            <li>• Priority support</li>
           </ul>
-          <p class="text-xl font-bold text-white">4.99€</p>
+          <p class="text-xl font-bold text-white">
+            {{ currentOffering.availablePackages[0].product.priceString }}
+          </p>
         </div>
 
-        <!~~ Error Message ~~>
+        <!-- Loading State -->
         <div
-          v-if="false"
+          v-else-if="loadingOfferings"
+          class="bg-gray-700 rounded-lg p-4 mb-4"
+        >
+          <div class="flex items-center justify-center">
+            <svg
+              class="animate-spin h-6 w-6 text-gray-400"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            <span class="ml-2 text-gray-400"
+              >Loading subscription details...</span
+            >
+          </div>
+        </div>
+
+        <!-- Error Message -->
+        <div
+          v-if="offeringsError"
           class="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-lg"
         >
-          <p class="text-red-400 text-sm">{{ false }}</p>
+          <p class="text-red-400 text-sm">{{ offeringsError }}</p>
         </div>
 
-        <!~~ Action Buttons ~~>
+        <!-- Action Buttons -->
         <div class="flex space-x-3">
           <button
             v-if="!isPro"
             @click="handlePurchase"
-            :disabled="false"
+            :disabled="loadingOfferings || !currentOffering"
             class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <span v-if="false" class="flex items-center justify-center">
+            <span
+              v-if="purchaseLoading"
+              class="flex items-center justify-center"
+            >
               <svg
                 class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
                 xmlns="http://www.w3.org/2000/svg"
@@ -253,10 +296,13 @@
 
           <button
             @click="handleRestorePurchases"
-            :disabled="false"
+            :disabled="restoreLoading"
             class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <span v-if="false" class="flex items-center justify-center">
+            <span
+              v-if="restoreLoading"
+              class="flex items-center justify-center"
+            >
               <svg
                 class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
                 xmlns="http://www.w3.org/2000/svg"
@@ -282,7 +328,7 @@
             <span v-else>Restore Purchases</span>
           </button>
         </div>
-      </div>-->
+      </div>
     </div>
 
     <!-- Add/Edit Instance Modal -->
@@ -565,6 +611,11 @@ const isDeleting = ref(false);
 const userCustomInstances = ref<Record<string, CustomServiceInstance[]>>({});
 
 const isPro = ref(false);
+const currentOffering = ref<any>(null);
+const loadingOfferings = ref(false);
+const offeringsError = ref<string | null>(null);
+const purchaseLoading = ref(false);
+const restoreLoading = ref(false);
 
 const instanceForm = ref({
   name: "",
@@ -620,6 +671,23 @@ const filteredServices = computed(() => {
   );
 });
 
+const fetchOfferings = async () => {
+  loadingOfferings.value = true;
+  offeringsError.value = null;
+  try {
+    const offerings = await Purchases.getOfferings();
+    console.log("offerings", JSON.stringify(offerings, null, 2));
+    // Get the current offering (usually the first one)
+    currentOffering.value = offerings.current;
+  } catch (error) {
+    console.error("Error fetching offerings:", error);
+    offeringsError.value =
+      "Failed to load subscription details. Please try again.";
+  } finally {
+    loadingOfferings.value = false;
+  }
+};
+
 onMounted(async () => {
   // Load user instances from localStorage
   loadUserInstances();
@@ -630,6 +698,9 @@ onMounted(async () => {
   }
 
   isPro.value = await hasPro();
+
+  // Fetch offerings for subscription details
+  await fetchOfferings();
 });
 
 function toggleServiceInstances(serviceId: string) {
@@ -833,28 +904,40 @@ async function deleteInstance() {
 }
 
 const handlePurchase = async () => {
-  // Present paywall for current offering:
-  const { result } = await RevenueCatUI.presentPaywall();
+  purchaseLoading.value = true;
+  try {
+    // Present paywall for current offering:
+    const { result } = await RevenueCatUI.presentPaywall();
 
-  // Handle result if needed.
-  switch (result) {
-    case PAYWALL_RESULT.NOT_PRESENTED:
-    case PAYWALL_RESULT.ERROR:
-    case PAYWALL_RESULT.CANCELLED:
-      return false;
-    case PAYWALL_RESULT.PURCHASED:
-    case PAYWALL_RESULT.RESTORED:
-      return true;
-    default:
-      return false;
+    // Handle result if needed.
+    switch (result) {
+      case PAYWALL_RESULT.NOT_PRESENTED:
+      case PAYWALL_RESULT.ERROR:
+      case PAYWALL_RESULT.CANCELLED:
+        return false;
+      case PAYWALL_RESULT.PURCHASED:
+      case PAYWALL_RESULT.RESTORED:
+        // Refresh subscription status
+        isPro.value = await hasPro();
+        return true;
+      default:
+        return false;
+    }
+  } finally {
+    purchaseLoading.value = false;
   }
 };
 
 const handleRestorePurchases = async () => {
+  restoreLoading.value = true;
   try {
     await Purchases.restorePurchases();
+    // Refresh subscription status after restore
+    isPro.value = await hasPro();
   } catch (error) {
     console.error("Error restoring purchases:", error);
+  } finally {
+    restoreLoading.value = false;
   }
 };
 </script>
