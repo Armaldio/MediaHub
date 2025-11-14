@@ -1,4 +1,4 @@
-import { Service } from "../types/index.ts";
+import { Service } from "../types/index";
 import { FormattedDetails } from "../models/models";
 
 import netflixIcon from "../assets/apps/images/netflix/assets/play_store.png";
@@ -92,7 +92,14 @@ export default [
       {
         name: "App",
         mediaType: "all",
-        url: (data) => `netflix://title/${data.tmdbId}`,
+        enabled: (data) => !!data.netflixId,
+        url: (data) => `netflix://title/${data.netflixId}`,
+      },
+      {
+        name: "Website",
+        mediaType: "all",
+        enabled: (data) => !!data.netflixId,
+        url: (data) => `https://www.netflix.com/title/${data.netflixId}`,
       },
     ],
   },
@@ -110,7 +117,15 @@ export default [
       {
         name: "App",
         mediaType: "all",
-        url: (data) => `aiv://aiv/resume?asin=${data.tmdbId}`,
+        enabled: (data) => !!data.amazonPrimeId,
+        url: (data) => `aiv://aiv/resume?asin=${data.amazonPrimeId}`,
+      },
+      {
+        name: "Website",
+        mediaType: "all",
+        enabled: (data) => !!data.amazonPrimeId,
+        url: (data) =>
+          `https://www.amazon.com/gp/video/detail/${data.amazonPrimeId}/`,
       },
     ],
   },
@@ -129,42 +144,35 @@ export default [
         name: "App",
         mediaType: "movie",
         enabled: (data) => data.type === "movie",
-        url: (data) => `disneyplus://content/${data.tmdbId}`,
+        url: (data) => {
+          const id = data.disneyPlusId || data.tmdbId;
+          console.log("Disney+ movie deep link ID:", id, "Type:", typeof id);
+          return `disneyplus://content/${id}`;
+        },
       },
       {
         name: "App",
         mediaType: "tv",
         enabled: (data) => data.type === "tv",
-        url: (data) => `disneyplus://content/${data.tmdbId}`,
+        url: (data) => {
+          const id = data.disneyPlusId || data.tmdbId;
+          console.log("Disney+ tv deep link ID:", id, "Type:", typeof id);
+          return `disneyplus://content/${id}`;
+        },
       },
       {
         name: "Website",
         mediaType: "movie",
         enabled: (data) => data.type === "movie",
-        url: (data) => `https://www.disneyplus.com/movies//${data.tmdbId}`,
+        url: (data) =>
+          `https://www.disneyplus.com/movies/wd/${data.disneyPlusId}`,
       },
       {
         name: "Website",
         mediaType: "tv",
         enabled: (data) => data.type === "tv",
-        url: (data) => `https://www.disneyplus.com/movies//${data.tmdbId}`,
-      },
-    ],
-  },
-  {
-    id: "hulu",
-    name: "Hulu",
-    description: "Stream current shows and movies",
-    icon: huluIcon,
-    websiteUrl: "https://hulu.com",
-    appUrl: "https://play.google.com/store/apps/details?id=com.hulu.plus",
-    androidAppId: "com.hulu.plus",
-    color: "#1CE783",
-    deepLinks: [
-      {
-        name: "App",
-        mediaType: "all",
-        url: (data) => `hulu://watch/${data.tmdbId}`,
+        url: (data) =>
+          `https://www.disneyplus.com/series/wd/${data.disneyPlusId}`,
       },
     ],
   },
@@ -181,26 +189,20 @@ export default [
       {
         name: "App",
         mediaType: "movie",
-        enabled: (data) => data.type === "movie",
-        url: (data) => `max://content/${data.tmdbId}`,
+        enabled: (data) => data.type === "movie" && !!data.hboMaxId,
+        url: (data) => `max://content/${data.hboMaxId}`,
       },
       {
         name: "App",
         mediaType: "tv",
-        enabled: (data) => data.type === "tv",
-        url: (data) => `max://content/${data.tmdbId}`,
+        enabled: (data) => data.type === "tv" && !!data.hboMaxId,
+        url: (data) => `max://content/${data.hboMaxId}`,
       },
       {
         name: "Website",
-        mediaType: "movie",
-        enabled: (data) => data.type === "movie",
-        url: (data) => `https://play.max.com/movie/${data.tmdbId}`,
-      },
-      {
-        name: "Website",
-        mediaType: "tv",
-        enabled: (data) => data.type === "tv",
-        url: (data) => `https://play.max.com/movie/${data.tmdbId}`,
+        mediaType: "all",
+        enabled: (data) => !!data.hboMaxId,
+        url: (data) => `https://play.max.com/${data.hboMaxId}`,
       },
     ],
   },
@@ -217,14 +219,28 @@ export default [
       {
         name: "App",
         mediaType: "movie",
-        enabled: (data) => data.type === "movie",
-        url: (data) => `https://tv.apple.com/movie/${data.tmdbId}`,
+        enabled: (data) => data.type === "movie" && !!data.appleTvId,
+        url: (data) => `apple-tv://movie/${data.appleTvId}`,
       },
       {
         name: "App",
         mediaType: "tv",
+        enabled: (data) => data.type === "tv" && !!data.appleTvId,
+        url: (data) => `apple-tv://show/${data.appleTvId}`,
+      },
+      {
+        name: "Website",
+        mediaType: "movie",
+        enabled: (data) => data.type === "movie",
+        url: (data) =>
+          `https://tv.apple.com/movie/${data.appleTvId || data.tmdbId}`,
+      },
+      {
+        name: "Website",
+        mediaType: "tv",
         enabled: (data) => data.type === "tv",
-        url: (data) => `https://tv.apple.com/movie/${data.tmdbId}`,
+        url: (data) =>
+          `https://tv.apple.com/show/${data.appleTvId || data.tmdbId}`,
       },
     ],
   },
@@ -242,38 +258,29 @@ export default [
         name: "App",
         mediaType: "movie",
         enabled: (data) => data.type === "movie",
-        url: (data) => `paramountplus://content/${data.tmdbId}`,
+        url: (data) =>
+          `paramountplus://content/${data.paramountPlusId || data.tmdbId}`,
       },
       {
         name: "App",
         mediaType: "tv",
         enabled: (data) => data.type === "tv",
-        url: (data) => `paramountplus://content/${data.tmdbId}`,
+        url: (data) =>
+          `paramountplus://content/${data.paramountPlusId || data.tmdbId}`,
       },
-    ],
-  },
-  {
-    id: "peacock",
-    name: "Peacock",
-    description: "NBCUniversal's streaming service",
-    icon: peacockIcon,
-    websiteUrl: "https://peacocktv.com",
-    appUrl:
-      "https://play.google.com/store/apps/details?id=com.peacocktv.peacockandroid",
-    androidAppId: "com.peacocktv.peacockandroid",
-    color: "#673AB7",
-    deepLinks: [
       {
-        name: "App",
+        name: "Website",
         mediaType: "movie",
-        enabled: (data) => data.type === "movie",
-        url: (data) => `peacock://watch/${data.tmdbId}`,
+        enabled: (data) => data.type === "movie" && !!data.paramountPlusId,
+        url: (data) =>
+          `https://www.paramountplus.com/movies/video/${data.paramountPlusId}`,
       },
       {
-        name: "App",
+        name: "Website",
         mediaType: "tv",
-        enabled: (data) => data.type === "tv",
-        url: (data) => `peacock://watch/${data.tmdbId}`,
+        enabled: (data) => data.type === "tv" && !!data.paramountPlusId,
+        url: (data) =>
+          `https://www.paramountplus.com/shows/video/${data.paramountPlusId}`,
       },
     ],
   },
@@ -315,13 +322,19 @@ export default [
         name: "App",
         mediaType: "movie",
         enabled: (data) => data.type === "movie",
-        url: (data) => `letterboxd://film/tmdb/${data.tmdbId}`,
+        url: (data) => `letterboxd://film/${data.letterboxdId || data.tmdbId}`,
       },
       {
         name: "App",
         mediaType: "tv",
         enabled: (data) => data.type === "tv",
-        url: (data) => `letterboxd://film/${data.imdbId}`,
+        url: (data) => `letterboxd://film/${data.letterboxdId || data.imdbId}`,
+      },
+      {
+        name: "Website",
+        mediaType: "all",
+        enabled: (data) => !!data.letterboxdId,
+        url: (data) => `https://letterboxd.com/film/${data.letterboxdId}`,
       },
     ],
   },
@@ -737,19 +750,25 @@ export default [
         mediaType: "movie",
         enabled: (data) => data.type === "movie",
         name: "App",
-        url: (data) => `mubi://films/${data.tmdbId}`,
+        url: (data) => `mubi://films/${data.mubiId}`,
       },
       {
         mediaType: "tv",
         enabled: (data) => data.type === "tv",
         name: "App",
-        url: (data) => `mubi://films/${data.tmdbId}`,
+        url: (data) => `mubi://films/${data.mubiId}`,
       },
       {
         mediaType: "movie",
-        enabled: (data) => data.type === "movie",
+        enabled: (data) => data.type === "movie" && !!data.mubiId,
         name: "Website",
-        url: (data) => `https://mubi.com/films/${data.tmdbId}`,
+        url: (data) => `https://mubi.com/films/${data.mubiId}`,
+      },
+      {
+        mediaType: "tv",
+        enabled: (data) => data.type === "tv" && !!data.mubiId,
+        name: "Website",
+        url: (data) => `https://mubi.com/films/${data.mubiId}`,
       },
     ],
   },
@@ -911,8 +930,7 @@ export default [
     description: "Voice actors database",
     icon: dubbingbaseIcon,
     websiteUrl: "https://dubbingbase.com",
-    appUrl:
-      "https://play.google.com/store/apps/details?id=xyz.armaldio.dubbingbase.app",
+    appUrl: "https://play.google.com/store/apps/details?id=com.dubbingbase.app",
     androidAppId: "com.dubbingbase.app",
     color: "#FFCC00",
     deepLinks: [
