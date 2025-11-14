@@ -49,18 +49,9 @@
               />
               {{ service.name }}
             </h3>
-            <button
-              @click="toggleServiceInstances(service.id)"
-              class="text-sm text-blue-400 hover:text-blue-300 transition-colors"
-              :aria-expanded="expandedService === service.id"
-              :aria-controls="`service-instances-${service.id}`"
-            >
-              {{ expandedService === service.id ? "Hide" : "Show" }} instances
-            </button>
           </div>
 
           <div
-            v-if="expandedService === service.id"
             :id="`service-instances-${service.id}`"
             class="pl-2 border-l-2 border-gray-700"
           >
@@ -593,7 +584,6 @@ import {
 const servicesStore = useServicesStore();
 const { hasPro } = useProducts();
 
-const expandedService = ref<string | null>(null);
 const showInstanceModal = ref(false);
 const showDeleteModal = ref(false);
 const showDefaultConfirmModal = ref(false);
@@ -682,7 +672,7 @@ const fetchOfferings = async () => {
   } catch (error) {
     console.error("Error fetching offerings:", error);
     offeringsError.value =
-      "Failed to load subscription details. Please try again.";
+      "Failed to load subscription details. Please try again." + error;
   } finally {
     loadingOfferings.value = false;
   }
@@ -692,21 +682,11 @@ onMounted(async () => {
   // Load user instances from localStorage
   loadUserInstances();
 
-  // Expand the first service with custom instances if any
-  if (servicesWithCustomInstances.value.length > 0) {
-    expandedService.value = servicesWithCustomInstances.value[0].id;
-  }
-
   isPro.value = await hasPro();
 
   // Fetch offerings for subscription details
   await fetchOfferings();
 });
-
-function toggleServiceInstances(serviceId: string) {
-  expandedService.value =
-    expandedService.value === serviceId ? null : serviceId;
-}
 
 function addNewInstance(service: Service) {
   currentService.value = service;
