@@ -627,14 +627,22 @@ const runtime = computed(() => {
 
 const genres = computed(() => moviesStore.currentDetails?.genres || []);
 
-// Filter services based on search query
+// Filter services based on search query and ensure at least one deep link is enabled
 const filteredServices = computed<Service[]>(() => {
   const query = searchQuery.value.toLowerCase();
-  return servicesStore.selectedServices.filter(
-    (service) =>
-      service.name.toLowerCase().includes(query) ||
-      (service.description && service.description.toLowerCase().includes(query))
-  );
+  const details = formattedDetails.value;
+  return servicesStore.selectedServices.filter((service) => {
+    // Check if at least one deep link is enabled
+    const hasEnabledLink = service.deepLinks?.some((link) =>
+      details && (('enabled' in link && link.enabled?.(details)) || !('enabled' in link))
+    ) ?? false;
+
+    // Check search match
+    const matchesSearch = service.name.toLowerCase().includes(query) ||
+      (service.description && service.description.toLowerCase().includes(query));
+
+    return hasEnabledLink && matchesSearch;
+  });
 });
 
 // Scroll to a specific service
