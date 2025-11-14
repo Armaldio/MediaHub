@@ -13,3 +13,9 @@ project(':capacitor-app-launcher').projectDir = new File('../node_modules/.pnpm/
 
 include ':capacitor-device'
 project(':capacitor-device').projectDir = new File('../node_modules/.pnpm/@capacitor+device@7.0.2_@capacitor+core@7.4.0/node_modules/@capacitor/device/android')
+
+include ':revenuecat-purchases-capacitor'
+project(':revenuecat-purchases-capacitor').projectDir = new File('../node_modules/.pnpm/@revenuecat+purchases-capacitor@11.2.13_@capacitor+core@7.4.0/node_modules/@revenuecat/purchases-capacitor/android')
+
+include ':revenuecat-purchases-capacitor-ui'
+project(':revenuecat-purchases-capacitor-ui').projectDir = new File('../node_modules/.pnpm/@revenuecat+purchases-capacitor-ui@11.2.13_@capacitor+core@7.4.0/node_modules/@revenuecat/purchases-capacitor-ui/android')

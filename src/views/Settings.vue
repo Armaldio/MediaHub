@@ -175,10 +175,10 @@
       </div>
 
       <!-- Subscription Section -->
-      <div class="bg-gray-800 rounded-lg p-6 mb-6">
+      <!--<div class="bg-gray-800 rounded-lg p-6 mb-6">
         <h2 class="text-xl font-semibold mb-4">Subscription</h2>
 
-        <!-- Subscription Status -->
+        <!~~ Subscription Status ~~>
         <div class="mb-4">
           <div class="flex items-center mb-2">
             <div
@@ -197,7 +197,7 @@
           </p>
         </div>
 
-        <!-- Product Details -->
+        <!~~ Product Details ~~>
         <div class="bg-gray-700 rounded-lg p-4 mb-4">
           <h3 class="text-lg font-medium mb-2">Basic Subscription</h3>
           <p class="text-gray-300 mb-2">Unlock all features:</p>
@@ -209,7 +209,7 @@
           <p class="text-xl font-bold text-white">4.99€</p>
         </div>
 
-        <!-- Error Message -->
+        <!~~ Error Message ~~>
         <div
           v-if="false"
           class="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-lg"
@@ -217,7 +217,7 @@
           <p class="text-red-400 text-sm">{{ false }}</p>
         </div>
 
-        <!-- Action Buttons -->
+        <!~~ Action Buttons ~~>
         <div class="flex space-x-3">
           <button
             v-if="!isPro"
@@ -282,7 +282,7 @@
             <span v-else>Restore Purchases</span>
           </button>
         </div>
-      </div>
+      </div>-->
     </div>
 
     <!-- Add/Edit Instance Modal -->
