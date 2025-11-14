@@ -12,12 +12,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@capacitor-community/safe-area": "7.0.0-beta.4",
     "@capacitor/android": "7.4.4",
     "@capacitor/app": "7.1.0",
     "@capacitor/app-launcher": "^7.0.2",
     "@capacitor/core": "7.4.4",
     "@capacitor/device": "^7.0.2",
+    "@capacitor/status-bar": "^7.0.3",
+    "@capawesome/capacitor-android-edge-to-edge-support": "^7.2.3",
     "@revenuecat/purchases-capacitor": "^11.2.13",
     "@revenuecat/purchases-capacitor-ui": "^11.2.13",
     "@tailwindcss/vite": "^4.1.17",

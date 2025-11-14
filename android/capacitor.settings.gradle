@@ -2,9 +2,6 @@
 include ':capacitor-android'
 project(':capacitor-android').projectDir = new File('../node_modules/.pnpm/@capacitor+android@7.4.4_@capacitor+core@7.4.4/node_modules/@capacitor/android/capacitor')
 
-include ':capacitor-community-safe-area'
-project(':capacitor-community-safe-area').projectDir = new File('../node_modules/.pnpm/@capacitor-community+safe-area@7.0.0-beta.4_@capacitor+core@7.4.4/node_modules/@capacitor-community/safe-area/android')
-
 include ':capacitor-app'
 project(':capacitor-app').projectDir = new File('../node_modules/.pnpm/@capacitor+app@7.1.0_@capacitor+core@7.4.4/node_modules/@capacitor/app/android')
 
@@ -13,6 +10,12 @@ project(':capacitor-app-launcher').projectDir = new File('../node_modules/.pnpm/
 
 include ':capacitor-device'
 project(':capacitor-device').projectDir = new File('../node_modules/.pnpm/@capacitor+device@7.0.2_@capacitor+core@7.4.4/node_modules/@capacitor/device/android')
+
+include ':capacitor-status-bar'
+project(':capacitor-status-bar').projectDir = new File('../node_modules/.pnpm/@capacitor+status-bar@7.0.3_@capacitor+core@7.4.4/node_modules/@capacitor/status-bar/android')
+
+include ':capawesome-capacitor-android-edge-to-edge-support'
+project(':capawesome-capacitor-android-edge-to-edge-support').projectDir = new File('../node_modules/.pnpm/@capawesome+capacitor-android-edge-to-edge-support@7.2.3_@capacitor+core@7.4.4/node_modules/@capawesome/capacitor-android-edge-to-edge-support/android')
 
 include ':revenuecat-purchases-capacitor'
 project(':revenuecat-purchases-capacitor').projectDir = new File('../node_modules/.pnpm/@revenuecat+purchases-capacitor@11.2.13_@capacitor+core@7.4.4/node_modules/@revenuecat/purchases-capacitor/android')

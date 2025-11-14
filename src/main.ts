@@ -4,19 +4,10 @@ import router from "./router";
 import App from "./App.vue";
 import "./style.css";
 
-import { SafeArea } from "@capacitor-community/safe-area";
 import { LOG_LEVEL, Purchases } from "@revenuecat/purchases-capacitor";
 import { Capacitor } from "@capacitor/core";
-
-SafeArea.enable({
-  config: {
-    customColorsForSystemBars: true,
-    statusBarColor: "#00000000", // transparent
-    statusBarContent: "light",
-    navigationBarColor: "#00000000", // transparent
-    navigationBarContent: "light",
-  },
-});
+import { EdgeToEdge } from "@capawesome/capacitor-android-edge-to-edge-support";
+import { StatusBar, Style } from "@capacitor/status-bar";
 
 const configure = async () => {
   const platform = Capacitor.getPlatform();
@@ -32,6 +23,11 @@ const configure = async () => {
     await Purchases.configure({
       apiKey: import.meta.env.VITE_REVENUECAT_API_KEY,
     });
+    await EdgeToEdge.enable();
+    await EdgeToEdge.setBackgroundColor({ color: "#00000000" });
+    await StatusBar.setStyle({ style: Style.Dark });
+    await StatusBar.setBackgroundColor({ color: "#00000000" });
+    await StatusBar.setOverlaysWebView({ overlay: true });
   }
 };
 
