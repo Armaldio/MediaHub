@@ -26,15 +26,18 @@ importers:
       '@capacitor/device':
         specifier: ^7.0.1
         version: 7.0.2(@capacitor/core@7.4.0)
+      '@revenuecat/purchases-capacitor':
+        specifier: ^11.2.13
+        version: 11.2.13(@capacitor/core@7.4.0)
+      '@revenuecat/purchases-capacitor-ui':
+        specifier: ^11.2.13
+        version: 11.2.13(@capacitor/core@7.4.0)
       '@types/uuid':
         specifier: ^10.0.0
         version: 10.0.0
       command-exists:
         specifier: ^1.2.9
         version: 1.2.9
-      cordova-plugin-purchase:
-        specifier: ^13.12.1
-        version: 13.12.1
       fast-xml-parser:
         specifier: ^5.3.0
         version: 5.3.1
@@ -536,6 +539,27 @@ packages:
 
   '@prettier/plugin-xml@2.2.0':
     resolution: {integrity: sha512-UWRmygBsyj4bVXvDiqSccwT1kmsorcwQwaIy30yVh8T+Gspx4OlC0shX1y+ZuwXZvgnafmpRYKks0bAu9urJew==}
+
+  '@revenuecat/purchases-capacitor-ui@11.2.13':
+    resolution: {integrity: sha512-2PPN/t+PAKyxEJ5Gob/Hfxvd2RWK7GXcyabdwlcjl5TYuAIGykgCvr/MfmhMCYMMaLXCm3vqQc+mz0U6b4+KIA==}
+    peerDependencies:
+      '@capacitor/core': ^7.0.0
+
+  '@revenuecat/purchases-capacitor@10.4.0':
+    resolution: {integrity: sha512-205im5Bs1BY8wLt+qaS0O2GTWtSHUMFc3Z8U2QaVx4EN0hHOk9gqx2bNaUEH+cOWTUPlNz9yikdiMUSTjJzwyA==}
+    peerDependencies:
+      '@capacitor/core': '>=7.0.0'
+
+  '@revenuecat/purchases-capacitor@11.2.13':
+    resolution: {integrity: sha512-zVBzG2i/Dk8SZuXlDyHjaYf4nw142utFo8CI38agjaSF3cCmazqRO/HHlWKkXmUQO96lpB2gxXNXfMLDK9lEkw==}
+    peerDependencies:
+      '@capacitor/core': '>=7.0.0'
+
+  '@revenuecat/purchases-typescript-internal-esm@14.3.0':
+    resolution: {integrity: sha512-7mkuBupATfPvBw+skTE/chY6UEux9ZidTbKBOcZ/MgALKJdcww7LgSbChdyoGdQlSJXBFf1zRPzHH+RB7y+LQA==}
+
+  '@revenuecat/purchases-typescript-internal-esm@17.17.0':
+    resolution: {integrity: sha512-FtTBpwVfPVtpK22GVJO8oFRg5o8R+buILnKQGj9emc7knTyX7TqXBDLZ3BbMYfu5t/XZCeA9vnDmYc5xMLZrmA==}
 
   '@rolldown/pluginutils@1.0.0-beta.29':
     resolution: {integrity: sha512-NIJgOsMjbxAXvoGq/X0gD7VPMQ8j9g0BiDaNjVNVjvl+iKXxL3Jre0v31RmBYeLEmkbj2s02v8vFTbUXi5XS2Q==}
@@ -1138,9 +1162,6 @@ packages:
   copy-anything@4.0.5:
     resolution: {integrity: sha512-7Vv6asjS4gMOuILabD3l739tsaxFQmC+a7pLZm02zyvs8p977bL3zEgq3yDk5rn9B0PbYgIv++jmHcuUab4RhA==}
     engines: {node: '>=18'}
-
-  cordova-plugin-purchase@13.12.1:
-    resolution: {integrity: sha512-IRYOLqv8iEn/i+JnTXZI6yITphiwO8Bn6qm0f6+5t0the9Wb/jYdk7Q6rB7l3AO21Is5AcBLptQAwLTY3tY1Rg==}
 
   core-util-is@1.0.3:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
@@ -3289,6 +3310,26 @@ snapshots:
       '@xml-tools/parser': 1.0.11
       prettier: 2.8.8
 
+  '@revenuecat/purchases-capacitor-ui@11.2.13(@capacitor/core@7.4.0)':
+    dependencies:
+      '@capacitor/core': 7.4.0
+      '@revenuecat/purchases-capacitor': 10.4.0(@capacitor/core@7.4.0)
+      '@revenuecat/purchases-typescript-internal-esm': 17.17.0
+
+  '@revenuecat/purchases-capacitor@10.4.0(@capacitor/core@7.4.0)':
+    dependencies:
+      '@capacitor/core': 7.4.0
+      '@revenuecat/purchases-typescript-internal-esm': 14.3.0
+
+  '@revenuecat/purchases-capacitor@11.2.13(@capacitor/core@7.4.0)':
+    dependencies:
+      '@capacitor/core': 7.4.0
+      '@revenuecat/purchases-typescript-internal-esm': 17.17.0
+
+  '@revenuecat/purchases-typescript-internal-esm@14.3.0': {}
+
+  '@revenuecat/purchases-typescript-internal-esm@17.17.0': {}
+
   '@rolldown/pluginutils@1.0.0-beta.29': {}
 
   '@rollup/rollup-android-arm-eabi@4.53.2':
@@ -3939,8 +3980,6 @@ snapshots:
   copy-anything@4.0.5:
     dependencies:
       is-what: 5.5.0
-
-  cordova-plugin-purchase@13.12.1: {}
 
   core-util-is@1.0.3: {}
 

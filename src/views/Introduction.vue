@@ -31,7 +31,6 @@
         </label>
       </div>
 
-
       <!-- Available Services -->
       <div
         class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 mb-12"
@@ -192,8 +191,15 @@
       </div>
 
       <!-- Subscription Limit Message -->
-      <div v-if="selectedServices.length >= 5 && !subscriptionStore.hasUnlimitedServices" class="text-center text-yellow-400 mb-4">
-        You've reached the limit of 5 services. <button @click="goToSettings" class="underline hover:text-yellow-300">Subscribe</button> for unlimited access.
+      <div
+        v-if="selectedServices.length >= 5 && !isPro"
+        class="text-center text-yellow-400 mb-4"
+      >
+        You've reached the limit of 5 services.
+        <button @click="goToSettings" class="underline hover:text-yellow-300">
+          Subscribe
+        </button>
+        for unlimited access.
       </div>
 
       <!-- Continue Button -->
@@ -340,14 +346,15 @@
 import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useServicesStore } from "@/stores/services";
-import { useSubscriptionStore } from "@/stores/subscription";
 import draggable from "vuedraggable";
+import { useProducts } from "@/composables/products";
 
 const router = useRouter();
 const servicesStore = useServicesStore();
-const subscriptionStore = useSubscriptionStore();
 const drag = ref(false);
 const showInstalledOnly = ref(false);
+
+const { isPro } = useProducts();
 
 const selectedServices = computed({
   get: () => servicesStore.selectedServices,
@@ -359,11 +366,12 @@ const selectedServices = computed({
 
 const availableServices = computed(() => {
   if (!showInstalledOnly.value) {
-    return servicesStore.availableServices
+    return servicesStore.availableServices;
   }
-  return servicesStore.availableServices.filter(service =>
-    !service.isInstance || servicesStore.isServiceInstalled(service)
-  )
+  return servicesStore.availableServices.filter(
+    (service) =>
+      !service.isInstance || servicesStore.isServiceInstalled(service)
+  );
 });
 
 const dragOptions = computed(() => ({
@@ -385,16 +393,20 @@ const goToHome = () => {
 };
 
 const goToSettings = () => {
-  router.push({ name: 'settings' });
+  router.push({ name: "settings" });
 };
 
 // Custom toggle method to handle instances
 function toggleService(serviceId: string) {
-  if (!servicesStore.isServiceSelected(serviceId) && !subscriptionStore.hasUnlimitedServices && selectedServices.length >= 5) {
+  if (
+    !servicesStore.isServiceSelected(serviceId) &&
+    !isPro.value &&
+    selectedServices.value.length >= 5
+  ) {
     // Prevent selecting more than 5 services without subscription
-    return
+    return;
   }
-  servicesStore.toggleService(serviceId)
+  servicesStore.toggleService(serviceId);
 }
 
 onMounted(async () => {
