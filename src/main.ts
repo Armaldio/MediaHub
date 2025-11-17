@@ -37,7 +37,9 @@ const pinia = createPinia();
 app.use(pinia);
 app.use(router);
 
-configure().then(() => {
-  console.log("RevenueCat SDK configured!");
+router.isReady().then(() => {
   app.mount("#app");
+  configure().then(() => {
+    "RevenueCat SDK configured!";
+  });
 });

@@ -196,16 +196,19 @@
           <h3 class="text-lg font-medium mb-2">
             {{ currentOffering.serverDescription }}
           </h3>
-          <p class="text-gray-300 mb-2">
-            {{ currentOffering.availablePackages[0].product.description }}
-          </p>
           <ul class="text-sm text-gray-400 mb-3 space-y-1">
             <li>• Unlimited service selection</li>
             <li>• Custom service instances</li>
           </ul>
-          <p class="text-xl font-bold text-white">
-            {{ currentOffering.availablePackages[0].product.priceString }}
-          </p>
+          <div v-for="p in currentOffering.availablePackages" :key="p.id">
+            <p class="text-gray-300 mb-2">
+              {{ p.product.description }}
+            </p>
+
+            <p class="text-xl font-bold text-white">
+              {{ p.product.priceString }}
+            </p>
+          </div>
         </div>
 
         <!-- Loading State -->
