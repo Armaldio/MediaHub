@@ -48,3 +48,35 @@ depends = ["sync-dev"]
 run = "pnpm cap run android"
 env = { NODE_ENV = "production" }
 depends = ["sync-prod"]
+
+# --- Changesets-based release tasks ---
+
+[tasks.changeset]
+description = "Add a changeset describing your change (patch/minor/major)"
+run = "pnpm changeset"
+
+[tasks.version]
+description = "Bump versions + update CHANGELOG from pending changesets"
+run = "pnpm changeset version"
+
+[tasks.tag]
+description = "Create the vX.Y.Z git tag for the current package version"
+run = "node .github/workflows/tag-release.mjs"
+
+[tasks.release]
+description = "Version, commit, tag (v*), and push to trigger the Android build"
+run = '''
+set -euo pipefail
+pnpm changeset version
+VERSION=$(node -p "require('./package.json').version")
+git add -A
+git commit -m "chore: release v$VERSION" || echo "nothing to commit"
+node .github/workflows/tag-release.mjs
+TAG="v$VERSION"
+if git rev-parse "$TAG" >/dev/null 2>&1; then
+  git push origin "$TAG"
+  echo "» Pushed $TAG - Android build will run (internal Play track)."
+else
+  echo "» Tag $TAG not created (already exists or no version bump); skipping push."
+fi
+'''
