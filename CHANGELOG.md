@@ -1,5 +1,11 @@
 # movie-hub-app
 
+## 1.0.21
+
+### Patch Changes
+
+- Fix Android `versionCode` being hardcoded, which made every build reuse the same Play Store version code and fail the upload (`Version code 1000018 has already been used`). The Android version is now derived from `package.json`.
+
 ## 1.0.20
 
 ### Patch Changes
