@@ -1,7 +1,7 @@
 {
   "name": "movie-hub-app",
   "private": true,
-  "version": "1.0.19",
+  "version": "1.0.20",
   "type": "module",
   "packageManager": "pnpm@9.14.2",
   "scripts": {
@@ -9,7 +9,10 @@
     "build": "vite build",
     "lint": "eslint .",
     "check": "vue-tsc -b",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "changeset tag"
   },
   "dependencies": {
     "@capacitor/android": "7.4.4",
@@ -36,6 +39,7 @@
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^7.4.4",
+    "@changesets/cli": "^2.27.0",
     "@tailwindcss/postcss": "^4.1.17",
     "@types/node": "^24.10.1",
     "@types/uuid": "^10.0.0",
