@@ -31,12 +31,13 @@ jobs:
         run: pnpm install
 
       # Opens a "Version Packages" PR when changesets exist; on merge it runs
-      # `changeset tag`, which creates the v* git tag that triggers the
-      # Android build workflow (internal Play track only).
+      # `changeset version` (bump + changelog) and then tags the release with a
+      # `vX.Y.Z` git tag. That tag triggers the Android build workflow
+      # (internal Play track only).
       - name: Create release pull request or publish
         uses: changesets/action@v1
         with:
           version: pnpm changeset version
-          publish: pnpm changeset tag
+          publish: node .github/workflows/tag-release.mjs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
