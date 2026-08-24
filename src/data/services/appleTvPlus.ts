@@ -10,6 +10,7 @@ export const appleTvPlus: Service = {
   appUrl: "https://apps.apple.com/app/apple-tv/id1174078549",
   androidAppId: "com.apple.atve.sony.appletv",
   color: "#000000",
+  category: "streaming",
   deepLinks: [
     {
       name: "App",

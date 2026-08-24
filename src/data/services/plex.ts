@@ -10,6 +10,7 @@ export const plex: Service = {
   appUrl: "https://play.google.com/store/apps/details?id=com.plexapp.android",
   androidAppId: "com.plexapp.android",
   color: "#e5a00d",
+  category: "self-hosted",
   supportsCustomInstances: true,
   customInstances: [],
   deepLinks: [
@@ -29,19 +30,23 @@ export const plex: Service = {
     {
       name: "App",
       mediaType: "movie",
-      enabled: (data) => data.type === "movie",
-      url: (data) => `plex://movie/${data.tmdbId}`,
+      enabled: (data) => data.type === "movie" && !!data.tmdbId,
+      url: (data, instance) => instance
+        ? `${instance.baseUrl}/web/index.html#!/library/metadata/${data.tmdbId}`
+        : `plex://movie/${data.tmdbId}`,
     },
     {
       name: "App",
       mediaType: "tv",
-      enabled: (data) => data.type === "tv",
-      url: (data) => `plex://tvshow/${data.tmdbId}`,
+      enabled: (data) => data.type === "tv" && !!data.tmdbId,
+      url: (data, instance) => instance
+        ? `${instance.baseUrl}/web/index.html#!/library/metadata/${data.tmdbId}`
+        : `plex://tvshow/${data.tmdbId}`,
     },
     {
       name: "App",
       mediaType: "all",
-      enabled: (data) => data.type === "movie" || data.type === "tv",
+      enabled: (data) => (data.type === "movie" || data.type === "tv") && !!data.tmdbId,
       url: (data) => `plex://search?query=${data.tmdbId}`,
     },
   ],

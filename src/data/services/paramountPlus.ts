@@ -10,6 +10,7 @@ export const paramountPlus: Service = {
   appUrl: "https://play.google.com/store/apps/details?id=com.cbs.app",
   androidAppId: "com.cbs.app",
   color: "#0064FF",
+  category: "streaming",
   deepLinks: [
     {
       name: "App",

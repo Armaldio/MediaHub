@@ -11,6 +11,7 @@ export const nzb360: Service = {
     "https://play.google.com/store/apps/details?id=com.kevinforeman.nzb360",
   androidAppId: "com.kevinforeman.nzb360",
   color: "#4CAF50",
+  category: "utility",
   deepLinks: [
     {
       mediaType: "movie",

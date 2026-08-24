@@ -488,14 +488,13 @@ import {
   watch,
 } from "vue";
 import type { DeepLink, Service } from "@/types";
-import type { AppendToResponse, MovieDetails, TvShowDetails } from "tmdb-ts";
 import { useRouter } from "vue-router";
 import { ArrowLeft, Star, Film, Tv, Film as MovieIcon } from "lucide-vue-next";
 import { useMoviesStore } from "@/stores/movies";
 import { useServicesStore } from "@/stores/services";
-import { FormattedDetails, ExternalIds } from "@/models/models";
+import { FormattedDetails } from "@/models/models";
 import { MediaType } from "tmdb-ts";
-import { fetchTVDBData } from "@/data/services";
+import { useTVDBData } from "@/composables/tvdbData";
 
 interface Props {
   mediaType: MediaType;
@@ -581,6 +580,7 @@ const backButtonStyle = {
 
 const moviesStore = useMoviesStore();
 const servicesStore = useServicesStore();
+const { fetchTVDBData } = useTVDBData();
 const errorMessage = ref<string | null>(null);
 
 const title = computed(() => {
@@ -668,6 +668,17 @@ const scrollToService = (serviceId: string) => {
 
 const formattedDetails = ref<FormattedDetails | null>(null);
 
+async function fetchWikidataProperty(entityId: string, property: string): Promise<string | undefined> {
+  try {
+    const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${entityId}&property=${property}&format=json&origin=*`;
+    const response = await fetch(url);
+    const data = await response.json();
+    return data?.claims?.[property]?.[0]?.mainsnak?.datavalue?.value;
+  } catch {
+    return undefined;
+  }
+}
+
 watch(
   () => moviesStore.currentDetails,
   async (newDetails) => {
@@ -681,125 +692,40 @@ watch(
     let tvdbId = externalIds.tvdb_id?.toString();
     const { wikidata_id } = externalIds;
 
-    if (!wikidata_id) {
-      console.log("No Wikidata ID available");
-    }
-
     if (!tvdbId && wikidata_id) {
-      try {
-        const property = props.mediaType === "movie" ? "P12196" : "P4835";
-        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidata_id}&property=${property}&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        tvdbId = data?.claims?.[property]?.[0]?.mainsnak?.datavalue?.value;
-      } catch (error) {
-        console.error("Error fetching TVDB ID from Wikidata:", error);
-      }
+      const tvdbProperty = props.mediaType === "movie" ? "P12196" : "P4835";
+      tvdbId = await fetchWikidataProperty(wikidata_id, tvdbProperty);
     }
 
-    let netflixId = undefined;
-    if (wikidata_id) {
-      try {
-        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidata_id}&property=P1874&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        netflixId = data?.claims?.P1874?.[0]?.mainsnak?.datavalue?.value;
-      } catch (error) {
-        console.error("Error fetching Netflix ID from Wikidata:", error);
-      }
-    }
+    let netflixId: string | undefined;
+    let amazonPrimeId: string | undefined;
+    let disneyPlusId: string | undefined;
+    let hboMaxId: string | undefined;
+    let appleTvId: string | undefined;
+    let paramountPlusId: string | undefined;
+    let letterboxdId: string | undefined;
+    let mubiId: string | undefined;
 
-    let amazonPrimeId = undefined;
     if (wikidata_id) {
-      try {
-        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidata_id}&property=P8055&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        amazonPrimeId = data?.claims?.P8055?.[0]?.mainsnak?.datavalue?.value;
-      } catch (error) {
-        console.error(
-          "Error fetching Amazon Prime Video ID from Wikidata:",
-          error
-        );
-      }
-    }
-
-    let disneyPlusId = undefined;
-    if (wikidata_id) {
-      try {
-        const property = props.mediaType === "movie" ? "P7595" : "P7596";
-        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidata_id}&property=${property}&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        disneyPlusId =
-          data?.claims?.[property]?.[0]?.mainsnak?.datavalue?.value;
-      } catch (error) {
-        console.error("Error fetching Disney+ ID from Wikidata:", error);
-      }
-    }
-
-    let hboMaxId = undefined;
-    if (wikidata_id) {
-      try {
-        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidata_id}&property=P8298&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        hboMaxId = data?.claims?.P8298?.[0]?.mainsnak?.datavalue?.value;
-      } catch (error) {
-        console.error("Error fetching HBO Max ID from Wikidata:", error);
-      }
-    }
-
-    let appleTvId = undefined;
-    if (wikidata_id) {
-      try {
-        const property = props.mediaType === "movie" ? "P9586" : "P9751";
-        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidata_id}&property=${property}&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        appleTvId = data?.claims?.[property]?.[0]?.mainsnak?.datavalue?.value;
-        if (appleTvId && typeof appleTvId !== "string") {
-          appleTvId = String(appleTvId);
-        }
-      } catch (error) {
-        console.error("Error fetching Apple TV ID from Wikidata:", error);
-      }
-    }
-
-    let paramountPlusId = undefined;
-    if (wikidata_id) {
-      try {
-        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidata_id}&property=P13147&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        paramountPlusId = data?.claims?.P13147?.[0]?.mainsnak?.datavalue?.value;
-      } catch (error) {
-        console.error("Error fetching Paramount Plus ID from Wikidata:", error);
-      }
-    }
-
-    let letterboxdId = undefined;
-    if (wikidata_id) {
-      try {
-        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidata_id}&property=P6127&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        letterboxdId = data?.claims?.P6127?.[0]?.mainsnak?.datavalue?.value;
-      } catch (error) {
-        console.error("Error fetching Letterboxd ID from Wikidata:", error);
-      }
-    }
-
-    let mubiId = undefined;
-    if (wikidata_id) {
-      try {
-        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidata_id}&property=P7299&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        mubiId = data?.claims?.P7299?.[0]?.mainsnak?.datavalue?.value;
-      } catch (error) {
-        console.error("Error fetching MUBI ID from Wikidata:", error);
-      }
+      const isMovie = props.mediaType === "movie";
+      const [nId, aId, dId, hId, atId, ppId, lId, mId] = await Promise.all([
+        fetchWikidataProperty(wikidata_id, "P1874"),
+        fetchWikidataProperty(wikidata_id, "P8055"),
+        fetchWikidataProperty(wikidata_id, isMovie ? "P7595" : "P7596"),
+        fetchWikidataProperty(wikidata_id, "P8298"),
+        fetchWikidataProperty(wikidata_id, isMovie ? "P9586" : "P9751"),
+        fetchWikidataProperty(wikidata_id, "P13147"),
+        fetchWikidataProperty(wikidata_id, "P6127"),
+        fetchWikidataProperty(wikidata_id, "P7299"),
+      ]);
+      netflixId = nId;
+      amazonPrimeId = aId;
+      disneyPlusId = dId;
+      hboMaxId = hId;
+      appleTvId = atId ? String(atId) : undefined;
+      paramountPlusId = ppId;
+      letterboxdId = lId;
+      mubiId = mId;
     }
 
     const title =
@@ -849,7 +775,7 @@ watch(
       facebookId: details.external_ids.facebook_id,
       instagramId: details.external_ids.instagram_id,
       twitterId: details.external_ids.twitter_id,
-      type: props.mediaType,
+      type: props.mediaType as 'movie' | 'tv',
     };
 
     // Fetch TVDB data and enhance the formatted details
@@ -929,10 +855,6 @@ const loadDetails = async () => {
 const retryLoading = async () => {
   await loadDetails();
 };
-
-onMounted(() => {
-  loadDetails();
-});
 </script>
 
 <style scoped>

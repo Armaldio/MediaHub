@@ -107,9 +107,6 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const servicesStore = useServicesStore()
-  
-  // Always load services from localStorage first
-  servicesStore.loadFromLocalStorage()
 
   // If we're going to introduction but have services selected, redirect to home
   if (to.name === 'introduction' && servicesStore.hasSelectedServices && to.query.force !== '1') {

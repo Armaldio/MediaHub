@@ -11,6 +11,7 @@ export const primeVideo: Service = {
     "https://play.google.com/store/apps/details?id=com.amazon.avod.thirdpartyclient",
   androidAppId: "com.amazon.avod.thirdpartyclient",
   color: "#00A8E1",
+  category: "streaming",
   deepLinks: [
     {
       name: "App",

@@ -10,6 +10,7 @@ export const wikidata: Service = {
   appUrl: "https://play.google.com/store/apps/details?id=org.wikipedia",
   androidAppId: "org.wikipedia",
   color: "#006699",
+  category: "database",
   deepLinks: [
     {
       name: "Wikidata website",

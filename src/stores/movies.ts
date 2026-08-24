@@ -38,15 +38,23 @@ export const useMoviesStore = defineStore('movies', () => {
   const searchResults = ref<MultiSearchResult[]>([])
   const currentDetails = ref<AppendToResponse<TvShowDetails, "external_ids"[], "tvShow">
   | AppendToResponse<MovieDetails, "external_ids"[], "movie"> | null>(null)
-  const loading = ref(false)
+  const loadingPopularMovies = ref(false)
+  const loadingPopularTV = ref(false)
+  const loadingSearch = ref(false)
+  const loadingDetails = ref(false)
+  const loadingTrending = ref(false)
   const error = ref<string | null>(null)
+
+  const loading = computed(() =>
+    loadingPopularMovies.value || loadingPopularTV.value || loadingSearch.value || loadingDetails.value || loadingTrending.value
+  )
 
   // Initialize TMDB client
   const tmdb = new TMDB(import.meta.env.VITE_TMDB_API_KEY);
 
   const fetchPopularMovies = async () => {
     try {
-      loading.value = true;
+      loadingPopularMovies.value = true;
       const response = await tmdb.movies.popular({
         language: userLanguage.value
       });
@@ -58,13 +66,13 @@ export const useMoviesStore = defineStore('movies', () => {
       console.error(err)
       return []
     } finally {
-      loading.value = false
+      loadingPopularMovies.value = false
     }
   }
 
   const fetchPopularTVShows = async () => {
     try {
-      loading.value = true;
+      loadingPopularTV.value = true;
       const response = await tmdb.tvShows.popular({
         language: userLanguage.value
       });
@@ -76,7 +84,7 @@ export const useMoviesStore = defineStore('movies', () => {
       console.error(err)
       return []
     } finally {
-      loading.value = false
+      loadingPopularTV.value = false
     }
   }
 
@@ -87,7 +95,7 @@ export const useMoviesStore = defineStore('movies', () => {
     }
 
     try {
-      loading.value = true;
+      loadingSearch.value = true;
       const response = await tmdb.search.multi({ 
         query, 
         page: 1,
@@ -99,13 +107,13 @@ export const useMoviesStore = defineStore('movies', () => {
       error.value = 'Search failed'
       console.error(err)
     } finally {
-      loading.value = false
+      loadingSearch.value = false
     }
   }
 
   const fetchDetails = async (id: number, mediaType: MediaType) => {
     try {
-      loading.value = true;
+      loadingDetails.value = true;
       error.value = null;
 
       let detailsResponse: AppendToResponse<TvShowDetails, "external_ids"[], "tvShow"> | AppendToResponse<MovieDetails, "external_ids"[], "movie"> | null = null;
@@ -116,12 +124,6 @@ export const useMoviesStore = defineStore('movies', () => {
       } else if (mediaType === 'tv') {
         const response = await tmdb.tvShows.details(id, ['external_ids'], userLanguage.value);
         detailsResponse = response;
-      // } else if (mediaType === 'tvEpisode') {
-      //   detailsResponse = await tmdb.tvEpisode.details({
-      //     tvShowID: id,
-      //     seasonNumber: 1,
-      //     episodeNumber: 1
-      //   }, ['external_ids']);
       } else {
         throw new Error('Invalid media type');
       }
@@ -139,13 +141,13 @@ export const useMoviesStore = defineStore('movies', () => {
       console.error('Error in fetchDetails:', err)
       throw error.value; // Re-throw to allow component to handle the error
     } finally {
-      loading.value = false
+      loadingDetails.value = false
     }
   }
 
   const fetchDetailsByImdbId = async (imdbId: string, mediaType: MediaType) => {
     try {
-      loading.value = true
+      loadingDetails.value = true
       error.value = null
       
       if (!imdbId) {
@@ -179,7 +181,7 @@ export const useMoviesStore = defineStore('movies', () => {
       console.error('Error in fetchDetailsByImdbId:', err)
       throw error.value;
     } finally {
-      loading.value = false
+      loadingDetails.value = false
     }
   }
 
@@ -194,7 +196,7 @@ export const useMoviesStore = defineStore('movies', () => {
 
   const fetchTrending = async (mediaType: TrendingMediaType, timeWindow: 'day' | 'week' = 'week') => {
     try {
-      loading.value = true;
+      loadingTrending.value = true;
       const response = await tmdb.trending.trending(mediaType, timeWindow, { language: userLanguage.value });
       trending.value = response.results
       return response.results
@@ -203,7 +205,7 @@ export const useMoviesStore = defineStore('movies', () => {
       console.error(err)
       return []
     } finally {
-      loading.value = false
+      loadingTrending.value = false
     }
   }
 

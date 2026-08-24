@@ -119,7 +119,6 @@ export const useTVDBStore = defineStore("tvdb", () => {
       }
 
       authToken.value = data.data.token;
-      console.log("authToken.value", authToken.value);
 
       // Token expires in 24 hours, but we'll refresh after 23 hours to be safe
       tokenExpiry.value = Date.now() + 23 * 60 * 60 * 1000;
@@ -133,14 +132,6 @@ export const useTVDBStore = defineStore("tvdb", () => {
   const ensureAuthenticated = async (): Promise<void> => {
     const now = Date.now();
 
-    console.log(
-      "ensureAuthenticated",
-      authToken.value,
-      tokenExpiry.value,
-      now,
-      tokenExpiry.value && now >= tokenExpiry.value
-    );
-
     if (!authToken.value || !tokenExpiry.value || now >= tokenExpiry.value) {
       await authenticate();
     }
@@ -151,7 +142,7 @@ export const useTVDBStore = defineStore("tvdb", () => {
     if (!images || images.length === 0) return null;
 
     // Sort by ratings (highest rated first)
-    const sorted = images.sort(
+    const sorted = [...images].sort(
       (a, b) => b.ratingsInfo.average - a.ratingsInfo.average
     );
 
@@ -166,7 +157,7 @@ export const useTVDBStore = defineStore("tvdb", () => {
     if (!images || images.length === 0) return null;
 
     // Sort by ratings (highest rated first)
-    const sorted = images.sort(
+    const sorted = [...images].sort(
       (a, b) => b.ratingsInfo.average - a.ratingsInfo.average
     );
 
@@ -202,7 +193,7 @@ export const useTVDBStore = defineStore("tvdb", () => {
 
       const data = await response.json();
       const details = data.data;
-      const result = { ...details, slug: details.slug };
+      const result = { ...details };
 
       setCached(cacheKey, result);
       return result;
@@ -221,8 +212,6 @@ export const useTVDBStore = defineStore("tvdb", () => {
     try {
       await ensureAuthenticated();
 
-      console.log("authToken.value", authToken.value);
-
       const response = await fetch(`${TVDB_BASE_URL}/movies/${tvdbId}`, {
         headers: {
           Authorization: `Bearer ${authToken.value}`,
@@ -240,7 +229,7 @@ export const useTVDBStore = defineStore("tvdb", () => {
 
       const data = await response.json();
       const details = data.data;
-      const result = { ...details, slug: details.slug };
+      const result = { ...details };
 
       setCached(cacheKey, result);
       return result;

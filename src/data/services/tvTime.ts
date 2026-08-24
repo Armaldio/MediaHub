@@ -11,6 +11,7 @@ export const tvTime: Service = {
     "https://play.google.com/store/apps/details?id=com.tozelabs.tvshowtime",
   androidAppId: "com.tozelabs.tvshowtime",
   color: "#FF6B6B",
+  category: "tracking",
   deepLinks: [
     {
       mediaType: "movie",

@@ -10,6 +10,7 @@ export const tmdb: Service = {
   appUrl: "https://www.themoviedb.org",
   androidAppId: "",
   color: "#01B4E4",
+  category: "database",
   deepLinks: [
     {
       mediaType: "movie",

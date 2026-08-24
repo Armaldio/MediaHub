@@ -10,6 +10,7 @@ export const trakt: Service = {
   appUrl: "https://play.google.com/store/apps/details?id=tv.trakt.trakt",
   androidAppId: "tv.trakt.trakt",
   color: "#ED1C24",
+  category: "tracking",
   deepLinks: [
     {
       name: "App",

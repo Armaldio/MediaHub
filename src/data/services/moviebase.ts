@@ -10,6 +10,7 @@ export const moviebase: Service = {
   appUrl: "https://play.google.com/store/apps/details?id=com.moviebase",
   androidAppId: "com.moviebase",
   color: "#FF6B35",
+  category: "tracking",
   deepLinks: [
     {
       name: "App",

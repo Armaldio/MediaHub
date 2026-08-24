@@ -50,7 +50,9 @@ export function parseDeepLink(url: string): DeepLinkParams | null {
   }
 }
 
-export function navigateFromDeepLink(router: any, params: DeepLinkParams) {
+import type { Router } from 'vue-router';
+
+export function navigateFromDeepLink(router: Router, params: DeepLinkParams) {
   const mediaType = params.type === 'movie' ? 'movie' : 'tv';
   const id = params.tmdbId || params.imdbId;
   const idType = params.tmdbId ? 'tmdb' : 'imdb';

@@ -10,6 +10,7 @@ export const dubbingbase: Service = {
   appUrl: "https://play.google.com/store/apps/details?id=com.dubbingbase.app",
   androidAppId: "com.dubbingbase.app",
   color: "#FFCC00",
+  category: "database",
   deepLinks: [
     {
       mediaType: "movie",
@@ -22,6 +23,18 @@ export const dubbingbase: Service = {
       enabled: (data) => data.type === "tv",
       name: "App",
       url: (data) => `dubbingbase://show/${data.tmdbId}`,
+    },
+    {
+      mediaType: "movie",
+      enabled: (data) => data.type === "movie",
+      name: "Website",
+      url: (data) => `https://dubbingbase.com/movie/${data.tmdbId}`,
+    },
+    {
+      mediaType: "tv",
+      enabled: (data) => data.type === "tv",
+      name: "Website",
+      url: (data) => `https://dubbingbase.com/show/${data.tmdbId}`,
     },
   ],
 };

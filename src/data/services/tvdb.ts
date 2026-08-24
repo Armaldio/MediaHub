@@ -8,6 +8,7 @@ export const tvdb: Service = {
   icon: tvdbIcon,
   websiteUrl: "https://thetvdb.com",
   color: "#00B4CC",
+  category: "database",
   appUrl: "https://thetvdb.com",
   androidAppId: "",
   deepLinks: [

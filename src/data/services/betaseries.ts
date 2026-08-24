@@ -11,6 +11,7 @@ export const betaseries: Service = {
     "https://play.google.com/store/apps/details?id=com.betaseriesnative",
   androidAppId: "com.betaseriesnative",
   color: "#00A4DC",
+  category: "tracking",
   deepLinks: [
     {
       mediaType: "movie",
@@ -29,18 +30,18 @@ export const betaseries: Service = {
       enabled: (data) => data.type === "movie",
       name: "Website",
       url: (data) =>
-        `https://www.betaseries.com/movie/${data.title
-          ?.toLowerCase()
-          .replace(/\s+/g, "-")}`,
+        `https://www.betaseries.com/movie/${encodeURIComponent(
+          data.title?.toLowerCase().replace(/\s+/g, "-") || ""
+        )}`,
     },
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       name: "Website",
       url: (data) =>
-        `https://www.betaseries.com/serie/${data.title
-          ?.toLowerCase()
-          .replace(/\s+/g, "-")}`,
+        `https://www.betaseries.com/serie/${encodeURIComponent(
+          data.title?.toLowerCase().replace(/\s+/g, "-") || ""
+        )}`,
     },
   ],
 };

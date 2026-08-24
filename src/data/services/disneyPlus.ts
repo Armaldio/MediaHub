@@ -11,6 +11,7 @@ export const disneyPlus: Service = {
     "https://play.google.com/store/apps/details?id=com.disney.disneyplus",
   androidAppId: "com.disney.disneyplus",
   color: "#113CCF",
+  category: "streaming",
   deepLinks: [
     {
       name: "App",
@@ -18,7 +19,6 @@ export const disneyPlus: Service = {
       enabled: (data) => data.type === "movie",
       url: (data) => {
         const id = data.disneyPlusId || data.tmdbId;
-        console.log("Disney+ movie deep link ID:", id, "Type:", typeof id);
         return `disneyplus://content/${id}`;
       },
     },
@@ -28,7 +28,6 @@ export const disneyPlus: Service = {
       enabled: (data) => data.type === "tv",
       url: (data) => {
         const id = data.disneyPlusId || data.tmdbId;
-        console.log("Disney+ tv deep link ID:", id, "Type:", typeof id);
         return `disneyplus://content/${id}`;
       },
     },

@@ -10,6 +10,7 @@ export const imdb: Service = {
   appUrl: "https://play.google.com/store/apps/details?id=com.imdb.mobile",
   androidAppId: "com.imdb.mobile",
   color: "#F5C518",
+  category: "database",
   deepLinks: [
     {
       name: "App",
@@ -20,8 +21,8 @@ export const imdb: Service = {
     {
       name: "App",
       mediaType: "tv",
-      enabled: (data) => data.type === "tv",
-      url: (data) => `imdb:///find?q=${data.tmdbId}`,
+      enabled: (data) => data.type === "tv" && !!data.imdbId,
+      url: (data) => `imdb:///title/${data.imdbId}`,
     },
     {
       name: "Website",

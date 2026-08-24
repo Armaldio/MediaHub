@@ -10,6 +10,7 @@ export const jellyfin: Service = {
   appUrl: "https://play.google.com/store/apps/details?id=org.jellyfin.mobile",
   androidAppId: "org.jellyfin.mobile",
   color: "#00A4DC",
+  category: "self-hosted",
   supportsCustomInstances: true,
   customInstances: [],
   deepLinks: [
@@ -29,19 +30,23 @@ export const jellyfin: Service = {
     {
       name: "App",
       mediaType: "movie",
-      enabled: (data) => data.type === "movie",
-      url: (data) => `jellyfin://movie/${data.tmdbId}`,
+      enabled: (data) => data.type === "movie" && !!data.tmdbId,
+      url: (data, instance) => instance
+        ? `${instance.baseUrl}/#!/details?id=${data.tmdbId}`
+        : `jellyfin://movie/${data.tmdbId}`,
     },
     {
       name: "App",
       mediaType: "tv",
-      enabled: (data) => data.type === "tv",
-      url: (data) => `jellyfin://tvshow/${data.tmdbId}`,
+      enabled: (data) => data.type === "tv" && !!data.tmdbId,
+      url: (data, instance) => instance
+        ? `${instance.baseUrl}/#!/details?id=${data.tmdbId}`
+        : `jellyfin://tvshow/${data.tmdbId}`,
     },
     {
       name: "App",
       mediaType: "all",
-      enabled: (data) => data.type === "movie" || data.type === "tv",
+      enabled: (data) => (data.type === "movie" || data.type === "tv") && !!data.tmdbId,
       url: (data) => `jellyfin://search?query=${data.tmdbId}`,
     },
   ],

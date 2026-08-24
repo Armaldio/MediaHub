@@ -11,6 +11,7 @@ export const youtube: Service = {
     "https://play.google.com/store/apps/details?id=com.google.android.youtube",
   androidAppId: "com.google.android.youtube",
   color: "#FF0000",
+  category: "utility",
   deepLinks: [
     {
       mediaType: "movie",

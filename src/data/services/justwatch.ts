@@ -11,12 +11,31 @@ export const justwatch: Service = {
     "https://play.google.com/store/apps/details?id=com.justwatch.justwatch",
   androidAppId: "com.justwatch.justwatch",
   color: "#FFD23F",
+  category: "utility",
   deepLinks: [
     {
       name: "App",
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
       url: (data) => `justwatch://title/movie/${data.tmdbId}`,
+    },
+    {
+      name: "App",
+      mediaType: "tv",
+      enabled: (data) => data.type === "tv",
+      url: (data) => `justwatch://title/tv/${data.tmdbId}`,
+    },
+    {
+      name: "Website",
+      mediaType: "movie",
+      enabled: (data) => data.type === "movie",
+      url: (data) => `https://www.justwatch.com/us/movie/${data.tmdbId}`,
+    },
+    {
+      name: "Website",
+      mediaType: "tv",
+      enabled: (data) => data.type === "tv",
+      url: (data) => `https://www.justwatch.com/us/tv-show/${data.tmdbId}`,
     },
   ],
 };

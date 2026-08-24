@@ -48,3 +48,7 @@ depends = ["sync-dev"]
 run = "pnpm cap run android"
 env = { NODE_ENV = "production" }
 depends = ["sync-prod"]
+
+[tasks.release]
+description = "Bump package.json version, create a v* tag, and push it to trigger the Android CI build"
+run = "bash scripts/release.sh"

@@ -10,6 +10,7 @@ export const kodi: Service = {
   appUrl: "https://play.google.com/store/apps/details?id=org.xbmc.kodi",
   androidAppId: "org.xbmc.kodi",
   color: "#17B2E7",
+  category: "self-hosted",
   supportsCustomInstances: true,
   customInstances: [],
   deepLinks: [
@@ -29,19 +30,23 @@ export const kodi: Service = {
     {
       name: "App",
       mediaType: "movie",
-      enabled: (data) => data.type === "movie",
-      url: (data) => `kodi://movie/${data.tmdbId}`,
+      enabled: (data) => data.type === "movie" && !!data.tmdbId,
+      url: (data, instance) => instance
+        ? `http://${instance.baseUrl}/video/${data.tmdbId}`
+        : `kodi://movie/${data.tmdbId}`,
     },
     {
       name: "App",
       mediaType: "tv",
-      enabled: (data) => data.type === "tv",
-      url: (data) => `kodi://tvshow/${data.tmdbId}`,
+      enabled: (data) => data.type === "tv" && !!data.tmdbId,
+      url: (data, instance) => instance
+        ? `http://${instance.baseUrl}/video/${data.tmdbId}`
+        : `kodi://tvshow/${data.tmdbId}`,
     },
     {
       name: "App",
       mediaType: "all",
-      enabled: (data) => data.type === "movie" || data.type === "tv",
+      enabled: (data) => (data.type === "movie" || data.type === "tv") && !!data.tmdbId,
       url: (data) => `kodi://search?query=${data.tmdbId}`,
     },
   ],

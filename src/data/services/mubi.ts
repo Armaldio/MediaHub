@@ -10,6 +10,7 @@ export const mubi: Service = {
   appUrl: "https://play.google.com/store/apps/details?id=com.mubi",
   androidAppId: "com.mubi",
   color: "#FF4B3E",
+  category: "streaming",
   deepLinks: [
     {
       mediaType: "movie",
@@ -33,7 +34,7 @@ export const mubi: Service = {
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.mubiId,
       name: "Website",
-      url: (data) => `https://mubi.com/films/${data.mubiId}`,
+      url: (data) => `https://mubi.com/shows/${data.mubiId}`,
     },
   ],
 };

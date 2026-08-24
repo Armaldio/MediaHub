@@ -11,6 +11,7 @@ export const netflix: Service = {
     "https://play.google.com/store/apps/details?id=com.netflix.mediaclient",
   androidAppId: "com.netflix.mediaclient",
   color: "#E50914",
+  category: "streaming",
   deepLinks: [
     {
       name: "App",

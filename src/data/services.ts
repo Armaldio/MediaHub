@@ -1,6 +1,4 @@
 import { Service } from "../types/index";
-import { FormattedDetails } from "../models/models";
-import { useTVDBStore } from "../stores/tvdb";
 
 import { netflix } from "./services/netflix";
 import { primeVideo } from "./services/primeVideo";
@@ -28,52 +26,6 @@ import { allocine } from "./services/allocine";
 import { betaseries } from "./services/betaseries";
 import { dubbingbase } from "./services/dubbingbase";
 import { nzb360 } from "./services/nzb360";
-
-// Function to fetch TVDB data and enhance FormattedDetails
-export const fetchTVDBData = async (
-  formattedDetails: FormattedDetails
-): Promise<FormattedDetails> => {
-  if (!formattedDetails.tvdbId) {
-    console.log("No TVDB ID available, returning original details");
-    return formattedDetails;
-  }
-
-  console.log(
-    `Fetching TVDB data for ${formattedDetails.type} with ID: ${formattedDetails.tvdbId}`
-  );
-
-  const tvdbStore = useTVDBStore();
-
-  try {
-    let details: any = null;
-
-    if (formattedDetails.type === "tv") {
-      console.log("Fetching series images from TVDB");
-      console.log("Fetching series details from TVDB");
-      details = await tvdbStore.getSeriesDetails(formattedDetails.tvdbId);
-    } else if (formattedDetails.type === "movie") {
-      console.log("Fetching movie images from TVDB");
-      console.log("Fetching movie details from TVDB");
-      details = await tvdbStore.getMovieDetails(formattedDetails.tvdbId);
-    }
-
-    // Enhance the formatted details with TVDB data
-    const enhancedDetails = { ...formattedDetails };
-
-    if (details && details.slug) {
-      enhancedDetails.tvdbSlug = details.slug;
-      console.log("Added TVDB slug to enhanced details");
-    }
-
-    console.log("Returning enhanced details with TVDB data");
-    return enhancedDetails;
-  } catch (error) {
-    console.error("Error fetching TVDB data:", error);
-  }
-
-  console.log("Returning original details due to error or no data");
-  return formattedDetails;
-};
 
 export default [
   netflix,

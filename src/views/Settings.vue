@@ -675,7 +675,7 @@ const fetchOfferings = async () => {
   } catch (error) {
     console.error("Error fetching offerings:", error);
     offeringsError.value =
-      "Failed to load subscription details. Please try again." + error;
+      "Failed to load subscription details. Please try again." + (error instanceof Error ? error.message : String(error));
   } finally {
     loadingOfferings.value = false;
   }

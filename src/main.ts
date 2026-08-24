@@ -11,9 +11,9 @@ import { StatusBar, Style } from "@capacitor/status-bar";
 
 const configure = async () => {
   const platform = Capacitor.getPlatform();
-  console.log("platform", platform);
   if (platform === "ios" || platform === "android") {
-    await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
+    const level = import.meta.env.DEV ? LOG_LEVEL.DEBUG : LOG_LEVEL.INFO;
+    await Purchases.setLogLevel({ level });
   }
   if (platform === "ios") {
     await Purchases.configure({
@@ -39,7 +39,7 @@ app.use(router);
 
 router.isReady().then(() => {
   app.mount("#app");
-  configure().then(() => {
-    "RevenueCat SDK configured!";
+  configure().catch((err) => {
+    console.error("Failed to configure SDKs:", err);
   });
 });

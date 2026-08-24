@@ -15,7 +15,7 @@ export interface ExternalIds {
 }
 
 export interface FormattedDetails {
-  type: string;
+  type: 'movie' | 'tv';
   tmdbId: string;
   imdbId?: string;
   tvdbId?: string;

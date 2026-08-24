@@ -11,7 +11,7 @@
           class="flex items-center justify-center gap-2 text-sm text-gray-400 mb-8"
         >
           <span v-if="servicesStore.isNative" class="flex items-center gap-1">
-            📱 {{ servicesStore.installedServices.length }} apps detected
+            📱 {{ servicesStore.installedApps.length }} apps detected
           </span>
         </div>
         <div
@@ -135,7 +135,6 @@
             :delay-on-touch-only="true"
             delay="100"
             v-bind="dragOptions"
-            @start="drag = true"
             @end="onDragEnd"
           >
             <template #item="{ element: service }">
@@ -325,21 +324,6 @@
   cursor: move;
   cursor: -webkit-grabbing;
 }
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.scrollbar-none::-webkit-scrollbar {
-  display: none;
-}
-.scrollbar-none {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
 </style>
 
 <script setup lang="ts">
@@ -351,7 +335,6 @@ import { useProducts } from "@/composables/products";
 
 const router = useRouter();
 const servicesStore = useServicesStore();
-const drag = ref(false);
 const showInstalledOnly = ref(false);
 
 const { isPro } = useProducts();
@@ -382,9 +365,7 @@ const dragOptions = computed(() => ({
   handle: ".cursor-move",
 }));
 
-const onDragEnd = () => {
-  drag.value = false;
-};
+const onDragEnd = () => {};
 
 const goToHome = () => {
   if (servicesStore.hasSelectedServices) {

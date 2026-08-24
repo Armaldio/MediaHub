@@ -1,5 +1,7 @@
 import { FormattedDetails } from "../models/models.ts";
 
+export type ServiceCategory = 'streaming' | 'tracking' | 'self-hosted' | 'database' | 'utility';
+
 export interface Service {
   id: string;
   name: string;
@@ -10,6 +12,7 @@ export interface Service {
   androidAppId: string;
   deepLinks: DeepLink[];
   color: string;
+  category: ServiceCategory;
   isInstalled?: boolean;
   supportsCustomInstances?: boolean;
   customInstances?: CustomServiceInstance[];

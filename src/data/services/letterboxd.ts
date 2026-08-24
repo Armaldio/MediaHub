@@ -10,6 +10,7 @@ export const letterboxd: Service = {
   appUrl: "https://play.google.com/store/apps/details?id=com.letterboxd",
   androidAppId: "com.letterboxd.letterboxd",
   color: "#00D735",
+  category: "tracking",
   deepLinks: [
     {
       name: "App",

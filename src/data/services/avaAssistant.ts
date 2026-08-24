@@ -10,27 +10,19 @@ export const avaAssistant: Service = {
   appUrl: "https://play.google.com/store/apps/details?id=de.ava",
   androidAppId: "de.ava",
   color: "#9C27B0",
+  category: "utility",
   deepLinks: [
     {
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
       name: "App",
-      url: (data) => {
-        const url = `https://ava-assistant.app/movie/${data.tmdbId}`;
-        console.log("url", url);
-        return url;
-      },
+      url: (data) => `https://ava-assistant.app/movie/${data.tmdbId}`,
     },
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       name: "App",
-      url: (data) => {
-        console.log(data);
-        const url = `https://ava-assistant.app/show/?id=${data.tmdbId}`;
-        console.log("url", url);
-        return url;
-      },
+      url: (data) => `https://ava-assistant.app/show/?id=${data.tmdbId}`,
     },
   ],
 };

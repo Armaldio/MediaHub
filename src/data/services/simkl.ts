@@ -10,6 +10,7 @@ export const simkl: Service = {
   appUrl: "https://play.google.com/store/apps/details?id=com.simkl.lists",
   androidAppId: "com.simkl.lists",
   color: "#2DAF38",
+  category: "tracking",
   deepLinks: [
     {
       mediaType: "movie",

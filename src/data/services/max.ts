@@ -10,6 +10,7 @@ export const max: Service = {
   appUrl: "https://play.google.com/store/apps/details?id=com.wbd.stream",
   androidAppId: "com.wbd.stream",
   color: "#8B00FF",
+  category: "streaming",
   deepLinks: [
     {
       name: "App",

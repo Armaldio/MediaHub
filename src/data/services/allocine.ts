@@ -11,6 +11,7 @@ export const allocine: Service = {
     "https://play.google.com/store/apps/details?id=com.allocine.androidapp",
   androidAppId: "com.allocine.androidapp",
   color: "#FFCC00",
+  category: "database",
   deepLinks: [
     {
       mediaType: "movie",
@@ -23,6 +24,18 @@ export const allocine: Service = {
       enabled: (data) => data.type === "tv",
       name: "App",
       url: (data) => `allocine://series/${data.tmdbId}`,
+    },
+    {
+      mediaType: "movie",
+      enabled: (data) => data.type === "movie",
+      name: "Website",
+      url: (data) => `https://www.allocine.fr/film/film-${data.tmdbId}/`,
+    },
+    {
+      mediaType: "tv",
+      enabled: (data) => data.type === "tv",
+      name: "Website",
+      url: (data) => `https://www.allocine.fr/series/series-${data.tmdbId}/`,
     },
   ],
 };
