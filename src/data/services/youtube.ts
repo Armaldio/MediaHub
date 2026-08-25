@@ -18,6 +18,7 @@ export const youtube: Service = {
       name: "Search in App",
       url: (data) =>
         `vnd.youtube://search?query=${encodeURIComponent(data.title || "")}`,
+      requiresApp: true,
     },
     {
       mediaType: "tv",
@@ -25,6 +26,7 @@ export const youtube: Service = {
       name: "Search in App",
       url: (data) =>
         `vnd.youtube://search?query=${encodeURIComponent(data.title || "")}`,
+      requiresApp: true,
     },
     {
       mediaType: "movie",

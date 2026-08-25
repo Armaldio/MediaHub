@@ -16,12 +16,14 @@ export const dubbingbase: Service = {
       enabled: (data) => data.type === "movie",
       name: "App",
       url: (data) => `dubbingbase://movie/${data.tmdbId}`,
+      requiresApp: true,
     },
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       name: "App",
       url: (data) => `dubbingbase://show/${data.tmdbId}`,
+      requiresApp: true,
     },
   ],
 };

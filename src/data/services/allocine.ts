@@ -17,12 +17,14 @@ export const allocine: Service = {
       enabled: (data) => data.type === "movie",
       name: "App",
       url: (data) => `allocine://film/${data.tmdbId}`,
+      requiresApp: true,
     },
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       name: "App",
       url: (data) => `allocine://series/${data.tmdbId}`,
+      requiresApp: true,
     },
   ],
 };

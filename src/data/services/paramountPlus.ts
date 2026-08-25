@@ -17,6 +17,7 @@ export const paramountPlus: Service = {
       enabled: (data) => data.type === "movie",
       url: (data) =>
         `paramountplus://content/${data.paramountPlusId || data.tmdbId}`,
+      requiresApp: true,
     },
     {
       name: "App",
@@ -24,6 +25,7 @@ export const paramountPlus: Service = {
       enabled: (data) => data.type === "tv",
       url: (data) =>
         `paramountplus://content/${data.paramountPlusId || data.tmdbId}`,
+      requiresApp: true,
     },
     {
       name: "Website",

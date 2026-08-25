@@ -21,6 +21,7 @@ export const disneyPlus: Service = {
         console.log("Disney+ movie deep link ID:", id, "Type:", typeof id);
         return `disneyplus://content/${id}`;
       },
+      requiresApp: true,
     },
     {
       name: "App",
@@ -31,6 +32,7 @@ export const disneyPlus: Service = {
         console.log("Disney+ tv deep link ID:", id, "Type:", typeof id);
         return `disneyplus://content/${id}`;
       },
+      requiresApp: true,
     },
     {
       name: "Website",

@@ -22,6 +22,7 @@ export const wikidata: Service = {
       mediaType: "all",
       enabled: (data) => !!data.wikidataId,
       url: (data) => `wikidata://entity/${data.wikidataId}`,
+      requiresApp: true,
     },
     {
       name: "Wikipedia page",

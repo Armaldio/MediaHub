@@ -337,12 +337,7 @@
                       :key="index"
                     >
                       <button
-                        v-if="
-                          formattedDetails &&
-                          (('enabled' in link &&
-                            link.enabled?.(formattedDetails)) ||
-                            !('enabled' in link))
-                        "
+                        v-if="isLinkVisible(service, link)"
                         @click.stop="openDeepLink(service, link)"
                         class="w-full text-left px-3 py-2 text-sm rounded-lg transition-all duration-200 flex items-center justify-between gap-2 group/link relative overflow-hidden"
                         :class="{
@@ -618,18 +613,23 @@ const runtime = computed(() => {
 const genres = computed(() => moviesStore.currentDetails?.genres || []);
 
 // Filter services based on search query and ensure at least one deep link is enabled
+// Check if a deep link should be visible for a service
+const isLinkVisible = (service: Service, link: DeepLink) => {
+  const details = formattedDetails.value;
+  if (!details) return false;
+  if (link.requiresApp && (!servicesStore.isNative || !servicesStore.isServiceInstalled(service))) {
+    return false;
+  }
+  return ('enabled' in link && link.enabled?.(details)) || !('enabled' in link);
+};
+
 const filteredServices = computed<Service[]>(() => {
   const query = searchQuery.value.toLowerCase();
-  const details = formattedDetails.value;
   return servicesStore.selectedServices.filter((service) => {
-    const isInstalled = servicesStore.isServiceInstalled(service);
-
     // Check if at least one deep link is enabled and available
-    const hasEnabledLink = service.deepLinks?.some((link) => {
-      if (!details) return false;
-      if (link.requiresApp && !isInstalled) return false;
-      return ('enabled' in link && link.enabled?.(details)) || !('enabled' in link);
-    }) ?? false;
+    const hasEnabledLink = service.deepLinks?.some((link) =>
+      isLinkVisible(service, link)
+    ) ?? false;
 
     // Check search match
     const matchesSearch = service.name.toLowerCase().includes(query) ||

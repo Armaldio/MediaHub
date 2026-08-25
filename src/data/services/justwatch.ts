@@ -17,6 +17,7 @@ export const justwatch: Service = {
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
       url: (data) => `justwatch://title/movie/${data.tmdbId}`,
+      requiresApp: true,
     },
   ],
 };

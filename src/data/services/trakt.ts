@@ -16,12 +16,14 @@ export const trakt: Service = {
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
       url: (data) => `trakt://movie/${data.tmdbId}`,
+      requiresApp: true,
     },
     {
       name: "App",
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       url: (data) => `trakt://search/tvshow/${data.tmdbId}`,
+      requiresApp: true,
     },
     {
       name: "Website",

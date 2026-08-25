@@ -17,12 +17,14 @@ export const nzb360: Service = {
       enabled: (data) => data.type === "movie",
       name: "Add Movie",
       url: (data) => `nzb360://radarr?movieId=${data.tmdbId}`,
+      requiresApp: true,
     },
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       name: "Add to app",
       url: (data) => `nzb360://sonarr?seriesId=${data.tmdbId}`,
+      requiresApp: true,
     },
     {
       mediaType: "all",
@@ -30,6 +32,7 @@ export const nzb360: Service = {
       name: "Open App",
       url: (data) =>
         `nzb360://search?query=${encodeURIComponent(data.title || "")}`,
+      requiresApp: true,
     },
   ],
 };

@@ -17,6 +17,7 @@ export const primeVideo: Service = {
       mediaType: "all",
       enabled: (data) => !!data.amazonPrimeId,
       url: (data) => `aiv://aiv/resume?asin=${data.amazonPrimeId}`,
+      requiresApp: true,
     },
     {
       name: "Website",

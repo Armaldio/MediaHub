@@ -16,12 +16,14 @@ export const simkl: Service = {
       enabled: (data) => data.type === "movie",
       name: "App",
       url: (data) => `simkl://media/movie/${data.tmdbId}`,
+      requiresApp: true,
     },
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       name: "App",
       url: (data) => `simkl://media/tv/${data.tmdbId}`,
+      requiresApp: true,
     },
     {
       mediaType: "movie",

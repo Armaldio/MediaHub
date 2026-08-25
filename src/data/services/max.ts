@@ -16,12 +16,14 @@ export const max: Service = {
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.hboMaxId,
       url: (data) => `max://content/${data.hboMaxId}`,
+      requiresApp: true,
     },
     {
       name: "App",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.hboMaxId,
       url: (data) => `max://content/${data.hboMaxId}`,
+      requiresApp: true,
     },
     {
       name: "Website",

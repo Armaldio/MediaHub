@@ -31,18 +31,21 @@ export const jellyfin: Service = {
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
       url: (data) => `jellyfin://movie/${data.tmdbId}`,
+      requiresApp: true,
     },
     {
       name: "App",
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       url: (data) => `jellyfin://tvshow/${data.tmdbId}`,
+      requiresApp: true,
     },
     {
       name: "App",
       mediaType: "all",
       enabled: (data) => data.type === "movie" || data.type === "tv",
       url: (data) => `jellyfin://search?query=${data.tmdbId}`,
+      requiresApp: true,
     },
   ],
 };

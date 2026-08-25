@@ -17,12 +17,14 @@ export const tvTime: Service = {
       enabled: (data) => data.type === "movie",
       name: "App",
       url: (data) => `tvtime://movie/${data.tmdbId}`,
+      requiresApp: true,
     },
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       name: "App",
       url: (data) => `tvtime://show/${data.tmdbId}`,
+      requiresApp: true,
     },
     {
       mediaType: "movie",

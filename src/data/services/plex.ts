@@ -31,18 +31,21 @@ export const plex: Service = {
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
       url: (data) => `plex://movie/${data.tmdbId}`,
+      requiresApp: true,
     },
     {
       name: "App",
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       url: (data) => `plex://tvshow/${data.tmdbId}`,
+      requiresApp: true,
     },
     {
       name: "App",
       mediaType: "all",
       enabled: (data) => data.type === "movie" || data.type === "tv",
       url: (data) => `plex://search?query=${data.tmdbId}`,
+      requiresApp: true,
     },
   ],
 };

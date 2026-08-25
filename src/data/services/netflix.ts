@@ -17,6 +17,7 @@ export const netflix: Service = {
       mediaType: "all",
       enabled: (data) => !!data.netflixId,
       url: (data) => `netflix://title/${data.netflixId}`,
+      requiresApp: true,
     },
     {
       name: "Website",

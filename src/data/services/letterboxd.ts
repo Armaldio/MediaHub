@@ -16,12 +16,14 @@ export const letterboxd: Service = {
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
       url: (data) => `letterboxd://film/${data.letterboxdId || data.tmdbId}`,
+      requiresApp: true,
     },
     {
       name: "App",
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       url: (data) => `letterboxd://film/${data.letterboxdId || data.imdbId}`,
+      requiresApp: true,
     },
     {
       name: "Website",
