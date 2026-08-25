@@ -16,12 +16,14 @@ export const imdb: Service = {
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
       url: (data) => `imdb:///title/${data.imdbId}`,
+      requiresApp: true,
     },
     {
       name: "App",
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       url: (data) => `imdb:///find?q=${data.tmdbId}`,
+      requiresApp: true,
     },
     {
       name: "Website",

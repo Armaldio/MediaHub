@@ -622,10 +622,14 @@ const filteredServices = computed<Service[]>(() => {
   const query = searchQuery.value.toLowerCase();
   const details = formattedDetails.value;
   return servicesStore.selectedServices.filter((service) => {
-    // Check if at least one deep link is enabled
-    const hasEnabledLink = service.deepLinks?.some((link) =>
-      details && (('enabled' in link && link.enabled?.(details)) || !('enabled' in link))
-    ) ?? false;
+    const isInstalled = servicesStore.isServiceInstalled(service);
+
+    // Check if at least one deep link is enabled and available
+    const hasEnabledLink = service.deepLinks?.some((link) => {
+      if (!details) return false;
+      if (link.requiresApp && !isInstalled) return false;
+      return ('enabled' in link && link.enabled?.(details)) || !('enabled' in link);
+    }) ?? false;
 
     // Check search match
     const matchesSearch = service.name.toLowerCase().includes(query) ||
