@@ -328,7 +328,7 @@
     <!-- Add/Edit Instance Modal -->
     <div
       v-if="showInstanceModal"
-      class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"
+      class="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50"
       role="dialog"
       aria-modal="true"
       :aria-labelledby="`${editingInstance ? 'edit' : 'add'}-instance-title`"
@@ -482,7 +482,7 @@
     <!-- Delete Confirmation Modal -->
     <div
       v-if="showDeleteModal"
-      class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"
+      class="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50"
       role="dialog"
       aria-modal="true"
       aria-labelledby="delete-instance-title"
@@ -540,7 +540,7 @@
     <!-- Default Instance Confirmation Modal -->
     <div
       v-if="showDefaultConfirmModal"
-      class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50"
+      class="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50"
       role="dialog"
       aria-modal="true"
       aria-labelledby="default-instance-title"

@@ -36,7 +36,7 @@
       <!-- Back Button -->
       <button
         @click="goBack"
-        class="fixed z-50 p-3 glass-effect rounded-full text-white hover:bg-white hover:bg-opacity-20 transition-all"
+        class="fixed z-50 p-3 glass-effect rounded-full text-white hover:bg-white/20 transition-all"
         :style="backButtonStyle"
       >
         <ArrowLeft class="h-6 w-6" />
@@ -107,7 +107,7 @@
                   <span
                     v-for="genre in genres"
                     :key="genre.id"
-                    class="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm"
+                    class="px-3 py-1 bg-white/20 rounded-full text-sm"
                   >
                     {{ genre.name }}
                   </span>
@@ -840,6 +840,11 @@ const loadDetails = async () => {
     errorMessage.value = null;
     detailsLoading.value = true;
 
+    // Clear any previously loaded media so navigating from another
+    // detail page never shows stale content while this one loads
+    moviesStore.currentDetails = null;
+    formattedDetails.value = null;
+
     // Prefer tmdbid, fallback to id for backward compatibility
     const tmdbId = props.tmdbId || props.id;
 
@@ -866,10 +871,6 @@ const loadDetails = async () => {
 const retryLoading = async () => {
   await loadDetails();
 };
-
-onMounted(() => {
-  loadDetails();
-});
 </script>
 
 <style scoped>
