@@ -1,5 +1,16 @@
 # movie-hub-app
 
+## 1.0.22
+
+### Patch Changes
+
+- Fix app deep link install detection and gate links by install status
+
+  App deep links (custom scheme like imdb://) are now hidden when the native app
+  isn't installed, while web links always show. Install detection now uses the
+  deep-link URI scheme via AppLauncher.canOpenUrl instead of the package name,
+  which never resolved on Android.
+
 ## 1.0.21
 
 ### Patch Changes
