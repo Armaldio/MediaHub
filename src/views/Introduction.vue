@@ -3,7 +3,7 @@
     <div class="max-w-6xl w-full">
       <!-- Header -->
       <div class="text-center mb-12 animate-fade-in">
-        <h1 class="text-5xl font-bold gradient-text mb-4">Movie Hub</h1>
+        <h1 class="text-5xl font-bold gradient-text mb-4">MediaHub</h1>
         <p class="text-xl text-gray-300 mb-4">
           Choose your movie apps and services
         </p>

@@ -1,4 +1,4 @@
-# movie-hub-app
+# MediaHub
 
 ## 1.0.22
 

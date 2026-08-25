@@ -17,7 +17,7 @@ buildOptions.keystorePassword = storePassword;
 // Base configuration shared between environments
 const baseConfig: CapacitorConfig = {
   appId: "xyz.armaldio.mediahub.app",
-  appName: "Media Hub",
+  appName: "MediaHub",
   webDir: "dist",
   plugins: {
     // Configure the App plugin for deep linking

@@ -234,10 +234,13 @@ export const useServicesStore = defineStore('services', () => {
   const hasSelectedServices = computed(() => selectedServiceIds.value.length > 0)
 
   // Initialize the store
+  // Restore persisted selections synchronously so the router guard
+  // sees them immediately (before the async checkInstalledApps finishes).
+  loadFromLocalStorage()
+
   const initStore = async () => {
     try {
       await checkInstalledApps()
-      loadFromLocalStorage()
     } catch (error) {
       console.error('Error initializing services store:', error)
     }
