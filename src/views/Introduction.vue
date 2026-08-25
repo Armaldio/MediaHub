@@ -368,9 +368,8 @@ const availableServices = computed(() => {
   if (!showInstalledOnly.value) {
     return servicesStore.availableServices;
   }
-  return servicesStore.availableServices.filter(
-    (service) =>
-      !service.isInstance || servicesStore.isServiceInstalled(service)
+  return servicesStore.availableServices.filter((service) =>
+    servicesStore.isServiceInstalled(service)
   );
 });
 
