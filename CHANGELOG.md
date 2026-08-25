@@ -1,5 +1,15 @@
 # MediaHub
 
+## 1.0.23
+
+### Patch Changes
+
+- Fix service chooser always showing on launch and rename app to MediaHub
+
+  Move loadFromLocalStorage() before async checkInstalledApps() so the
+  router guard sees persisted selections immediately. Also rename the
+  user-facing app name from "Movie Hub" to "MediaHub" across all UI text.
+
 ## 1.0.22
 
 ### Patch Changes
