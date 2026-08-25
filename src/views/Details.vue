@@ -662,6 +662,22 @@ const scrollToService = (serviceId: string) => {
 
 const formattedDetails = ref<FormattedDetails | null>(null);
 
+// Fetch a single Wikidata claim property
+const fetchWikidataClaim = async (
+  wikidataId: string,
+  property: string
+): Promise<string | undefined> => {
+  try {
+    const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidataId}&property=${property}&format=json&origin=*`;
+    const response = await fetch(url);
+    const data = await response.json();
+    return data?.claims?.[property]?.[0]?.mainsnak?.datavalue?.value;
+  } catch (error) {
+    console.error(`Error fetching ${property} from Wikidata:`, error);
+    return undefined;
+  }
+};
+
 watch(
   () => moviesStore.currentDetails,
   async (newDetails) => {
@@ -672,129 +688,7 @@ watch(
 
     const details = newDetails;
     const externalIds = details.external_ids;
-    let tvdbId = externalIds.tvdb_id?.toString();
     const { wikidata_id } = externalIds;
-
-    if (!wikidata_id) {
-      console.log("No Wikidata ID available");
-    }
-
-    if (!tvdbId && wikidata_id) {
-      try {
-        const property = props.mediaType === "movie" ? "P12196" : "P4835";
-        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidata_id}&property=${property}&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        tvdbId = data?.claims?.[property]?.[0]?.mainsnak?.datavalue?.value;
-      } catch (error) {
-        console.error("Error fetching TVDB ID from Wikidata:", error);
-      }
-    }
-
-    let netflixId = undefined;
-    if (wikidata_id) {
-      try {
-        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidata_id}&property=P1874&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        netflixId = data?.claims?.P1874?.[0]?.mainsnak?.datavalue?.value;
-      } catch (error) {
-        console.error("Error fetching Netflix ID from Wikidata:", error);
-      }
-    }
-
-    let amazonPrimeId = undefined;
-    if (wikidata_id) {
-      try {
-        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidata_id}&property=P8055&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        amazonPrimeId = data?.claims?.P8055?.[0]?.mainsnak?.datavalue?.value;
-      } catch (error) {
-        console.error(
-          "Error fetching Amazon Prime Video ID from Wikidata:",
-          error
-        );
-      }
-    }
-
-    let disneyPlusId = undefined;
-    if (wikidata_id) {
-      try {
-        const property = props.mediaType === "movie" ? "P7595" : "P7596";
-        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidata_id}&property=${property}&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        disneyPlusId =
-          data?.claims?.[property]?.[0]?.mainsnak?.datavalue?.value;
-      } catch (error) {
-        console.error("Error fetching Disney+ ID from Wikidata:", error);
-      }
-    }
-
-    let hboMaxId = undefined;
-    if (wikidata_id) {
-      try {
-        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidata_id}&property=P8298&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        hboMaxId = data?.claims?.P8298?.[0]?.mainsnak?.datavalue?.value;
-      } catch (error) {
-        console.error("Error fetching HBO Max ID from Wikidata:", error);
-      }
-    }
-
-    let appleTvId = undefined;
-    if (wikidata_id) {
-      try {
-        const property = props.mediaType === "movie" ? "P9586" : "P9751";
-        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidata_id}&property=${property}&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        appleTvId = data?.claims?.[property]?.[0]?.mainsnak?.datavalue?.value;
-        if (appleTvId && typeof appleTvId !== "string") {
-          appleTvId = String(appleTvId);
-        }
-      } catch (error) {
-        console.error("Error fetching Apple TV ID from Wikidata:", error);
-      }
-    }
-
-    let paramountPlusId = undefined;
-    if (wikidata_id) {
-      try {
-        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidata_id}&property=P13147&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        paramountPlusId = data?.claims?.P13147?.[0]?.mainsnak?.datavalue?.value;
-      } catch (error) {
-        console.error("Error fetching Paramount Plus ID from Wikidata:", error);
-      }
-    }
-
-    let letterboxdId = undefined;
-    if (wikidata_id) {
-      try {
-        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidata_id}&property=P6127&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        letterboxdId = data?.claims?.P6127?.[0]?.mainsnak?.datavalue?.value;
-      } catch (error) {
-        console.error("Error fetching Letterboxd ID from Wikidata:", error);
-      }
-    }
-
-    let mubiId = undefined;
-    if (wikidata_id) {
-      try {
-        const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidata_id}&property=P7299&format=json&origin=*`;
-        const response = await fetch(url);
-        const data = await response.json();
-        mubiId = data?.claims?.P7299?.[0]?.mainsnak?.datavalue?.value;
-      } catch (error) {
-        console.error("Error fetching MUBI ID from Wikidata:", error);
-      }
-    }
 
     const title =
       "title" in details
@@ -821,7 +715,9 @@ watch(
     const genres = "genres" in details ? details.genres : [];
     const overview = "overview" in details ? details.overview : "";
 
-    const baseFormattedDetails = {
+    // Assign base details immediately so the page renders without
+    // waiting for the Wikidata/TVDB enrichment requests
+    formattedDetails.value = {
       title,
       releaseYear,
       rating,
@@ -830,15 +726,7 @@ watch(
       overview,
       tmdbId: details.id.toString(),
       imdbId: details.external_ids.imdb_id,
-      tvdbId: tvdbId,
-      netflixId: netflixId,
-      amazonPrimeId: amazonPrimeId,
-      disneyPlusId: disneyPlusId,
-      hboMaxId: hboMaxId,
-      appleTvId: appleTvId,
-      paramountPlusId: paramountPlusId,
-      letterboxdId: letterboxdId,
-      mubiId: mubiId,
+      tvdbId: externalIds.tvdb_id?.toString(),
       wikidataId: details.external_ids.wikidata_id,
       facebookId: details.external_ids.facebook_id,
       instagramId: details.external_ids.instagram_id,
@@ -846,8 +734,60 @@ watch(
       type: props.mediaType,
     };
 
+    if (!wikidata_id) {
+      console.log("No Wikidata ID available");
+      return;
+    }
+
+    // Fetch all external IDs from Wikidata in parallel
+    const tvdbProperty = props.mediaType === "movie" ? "P12196" : "P4835";
+    const disneyProperty = props.mediaType === "movie" ? "P7595" : "P7596";
+    const appleProperty = props.mediaType === "movie" ? "P9586" : "P9751";
+
+    const [
+      tvdbClaim,
+      netflixId,
+      amazonPrimeId,
+      disneyPlusId,
+      hboMaxId,
+      appleTvId,
+      paramountPlusId,
+      letterboxdId,
+      mubiId,
+    ] = await Promise.all([
+      externalIds.tvdb_id
+        ? Promise.resolve(undefined)
+        : fetchWikidataClaim(wikidata_id, tvdbProperty),
+      fetchWikidataClaim(wikidata_id, "P1874"),
+      fetchWikidataClaim(wikidata_id, "P8055"),
+      fetchWikidataClaim(wikidata_id, disneyProperty),
+      fetchWikidataClaim(wikidata_id, "P8298"),
+      fetchWikidataClaim(wikidata_id, appleProperty),
+      fetchWikidataClaim(wikidata_id, "P13147"),
+      fetchWikidataClaim(wikidata_id, "P6127"),
+      fetchWikidataClaim(wikidata_id, "P7299"),
+    ]);
+
+    const tvdbId =
+      externalIds.tvdb_id?.toString() ||
+      (tvdbClaim ? tvdbClaim.toString() : undefined);
+
+    // Update with the resolved external IDs
+    formattedDetails.value = {
+      ...formattedDetails.value,
+      tvdbId,
+      netflixId,
+      amazonPrimeId,
+      disneyPlusId,
+      hboMaxId,
+      appleTvId: appleTvId ? String(appleTvId) : undefined,
+      paramountPlusId,
+      letterboxdId,
+      mubiId,
+    };
+
     // Fetch TVDB data and enhance the formatted details
-    formattedDetails.value = await fetchTVDBData(baseFormattedDetails);
+    formattedDetails.value = await fetchTVDBData(formattedDetails.value);
   },
   { immediate: true }
 );
