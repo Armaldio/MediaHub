@@ -3,20 +3,9 @@
     <!-- Safe Area Top -->
     <div class="h-safe-top"></div>
 
-    <!-- Loading State -->
-    <div
-      v-if="moviesStore.loading"
-      class="flex flex-col justify-center items-center min-h-screen-safe p-8 text-center"
-    >
-      <div
-        class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mb-4"
-      ></div>
-      <p class="text-gray-300">Loading details...</p>
-    </div>
-
     <!-- Error State -->
     <div
-      v-else-if="errorMessage"
+      v-if="errorMessage && !detailsLoading"
       class="flex flex-col items-center justify-center min-h-screen-safe p-8 text-center"
     >
       <div
@@ -43,7 +32,7 @@
     </div>
 
     <!-- Content -->
-    <div v-else-if="moviesStore.currentDetails" class="relative">
+    <div v-if="moviesStore.currentDetails || detailsLoading" class="relative">
       <!-- Back Button -->
       <button
         @click="goBack"
@@ -582,6 +571,7 @@ const backButtonStyle = {
 const moviesStore = useMoviesStore();
 const servicesStore = useServicesStore();
 const errorMessage = ref<string | null>(null);
+const detailsLoading = ref(true);
 
 const title = computed(() => {
   const details = moviesStore.currentDetails;
@@ -904,6 +894,7 @@ const goToIntroduction = () => {
 const loadDetails = async () => {
   try {
     errorMessage.value = null;
+    detailsLoading.value = true;
 
     // Prefer tmdbid, fallback to id for backward compatibility
     const tmdbId = props.tmdbId || props.id;
@@ -923,6 +914,8 @@ const loadDetails = async () => {
         : error instanceof Error
         ? error.message
         : "An unknown error occurred while loading details";
+  } finally {
+    detailsLoading.value = false;
   }
 };
 
