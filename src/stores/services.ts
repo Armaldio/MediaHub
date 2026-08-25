@@ -13,6 +13,30 @@ interface InstanceService extends Service {
   instanceData: CustomServiceInstance
 }
 
+// Extract a URI scheme (e.g. "imdb://") from a service's first app deep link.
+// Used to detect whether the native app is installed, since AppLauncher.canOpenUrl
+// needs a URI scheme (not a package name) to work on Android.
+const getAppScheme = (service: Service | InstanceService): string | null => {
+  const link = service.deepLinks?.find((l) => {
+    try {
+      const maybe = l.url({} as any, undefined)
+      if (maybe instanceof Promise) return false
+      return !String(maybe).startsWith("http")
+    } catch {
+      return false
+    }
+  })
+  if (!link) return null
+  try {
+    const maybe = link.url({} as any, undefined)
+    const url = maybe instanceof Promise ? "" : String(maybe)
+    const scheme = url.split("://")[0]
+    return scheme ? `${scheme}://` : null
+  } catch {
+    return null
+  }
+}
+
 export const useServicesStore = defineStore('services', () => {
   // Initialize with clean services data and convert instances to separate services
   const initializeServices = (): (Service | InstanceService)[] => {
@@ -114,28 +138,36 @@ export const useServicesStore = defineStore('services', () => {
 
       // Create a new array to avoid modifying the original while iterating
       const updatedServices = [...availableServices.value]
-      
-      // Check each service that has a package name
+
+      // Check each service
       for (let i = 0; i < updatedServices.length; i++) {
         const service = updatedServices[i]
         try {
-          if (service.androidAppId) {
-            // For Android, we can try to open the package
-            const { value: canOpen } = await AppLauncher.canOpenUrl({ 
-              url: service.androidAppId 
-            })
-            service.isInstalled = canOpen
-            
-            if (canOpen) {
-              installedApps.value.push(service.id) // Store only the service ID
-            }
-          } else {
-            // If no package is provided, assume it's a web service
+          if (!service.androidAppId) {
+            // Web-only service: always available
             service.isInstalled = true
+            continue
+          }
+
+          // Detect install by checking if the app's deep-link scheme can be opened.
+          // (canOpenUrl with a package name doesn't work on Android; it needs a URI scheme.)
+          const scheme = getAppScheme(service)
+          if (!scheme) {
+            // No detectable scheme (e.g. web-only links) -> assume accessible
+            service.isInstalled = true
+            continue
+          }
+
+          const { value: canOpen } = await AppLauncher.canOpenUrl({ url: scheme })
+          service.isInstalled = canOpen
+
+          if (canOpen) {
+            installedApps.value.push(service.id) // Store only the service ID
           }
         } catch (error) {
           console.warn(`Error checking if ${service.name} is installed:`, error)
-          service.isInstalled = false
+          // On failure, assume accessible so we don't wrongly hide working links
+          service.isInstalled = true
         }
       }
       

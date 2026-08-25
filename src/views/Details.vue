@@ -348,12 +348,7 @@
                       :key="index"
                     >
                       <button
-                        v-if="
-                          formattedDetails &&
-                          (('enabled' in link &&
-                            link.enabled?.(formattedDetails)) ||
-                            !('enabled' in link))
-                        "
+                        v-if="isLinkVisible(link, service)"
                         @click.stop="openDeepLink(service, link)"
                         class="w-full text-left px-3 py-2 text-sm rounded-lg transition-all duration-200 flex items-center justify-between gap-2 group/link relative overflow-hidden"
                         :class="{
@@ -627,21 +622,47 @@ const runtime = computed(() => {
 
 const genres = computed(() => moviesStore.currentDetails?.genres || []);
 
-// Filter services based on search query and ensure at least one deep link is enabled
+// A deep link is an "app" link (needs the native app) when its URL uses a
+// custom scheme rather than http(s). Web links are always shown.
+const isAppSchemeLink = (link: DeepLink): boolean => {
+  try {
+    const maybe = link.url(formattedDetails.value as FormattedDetails, undefined)
+    if (maybe instanceof Promise) return false
+    return !String(maybe).startsWith("http")
+  } catch {
+    return true
+  }
+}
+
+// Whether a deep link should be visible: enabled AND (web link, or an app link
+// whose native app is installed).
+const isLinkVisible = (link: DeepLink, service: Service): boolean => {
+  const details = formattedDetails.value
+  if (!details) return false
+  const enabled =
+    !("enabled" in link) || link.enabled?.(details as FormattedDetails)
+  if (!enabled) return false
+  if (isAppSchemeLink(link)) {
+    return servicesStore.isServiceInstalled(service)
+  }
+  return true
+}
+
+// Filter services based on search query and ensure at least one deep link is visible
 const filteredServices = computed<Service[]>(() => {
   const query = searchQuery.value.toLowerCase();
   const details = formattedDetails.value;
   return servicesStore.selectedServices.filter((service) => {
-    // Check if at least one deep link is enabled
-    const hasEnabledLink = service.deepLinks?.some((link) =>
-      details && (('enabled' in link && link.enabled?.(details)) || !('enabled' in link))
+    // Check if at least one visible deep link exists
+    const hasVisibleLink = service.deepLinks?.some((link) =>
+      isLinkVisible(link, service as Service)
     ) ?? false;
 
     // Check search match
     const matchesSearch = service.name.toLowerCase().includes(query) ||
       (service.description && service.description.toLowerCase().includes(query));
 
-    return hasEnabledLink && matchesSearch;
+    return hasVisibleLink && matchesSearch;
   });
 });
 
