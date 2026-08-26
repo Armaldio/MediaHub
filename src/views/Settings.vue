@@ -188,6 +188,12 @@
           </p>
         </div>
 
+        <!-- Customer ID -->
+        <div v-if="customerId" class="mb-4">
+          <p class="text-xs text-gray-500">RevenueCat ID</p>
+          <p class="text-sm text-gray-400 font-mono break-all">{{ customerId }}</p>
+        </div>
+
         <!-- Product Details -->
         <div
           v-if="currentOffering && currentOffering.availablePackages.length > 0"
@@ -602,6 +608,7 @@ const isSaving = ref(false);
 const isDeleting = ref(false);
 
 const isPro = ref(false);
+const customerId = ref<string | null>(null);
 const currentOffering = ref<any>(null);
 const loadingOfferings = ref(false);
 const offeringsError = ref<string | null>(null);
@@ -654,6 +661,14 @@ const fetchOfferings = async () => {
 
 onMounted(async () => {
   isPro.value = await hasPro();
+
+  // Fetch customer ID for display
+  try {
+    const { customerInfo } = await Purchases.getCustomerInfo();
+    customerId.value = customerInfo.originalAppUserId;
+  } catch (e) {
+    console.error("Failed to fetch customer ID:", e);
+  }
 
   // Fetch offerings for subscription details
   await fetchOfferings();
@@ -843,11 +858,18 @@ const handlePurchase = async () => {
 const handleRestorePurchases = async () => {
   restoreLoading.value = true;
   try {
-    await Purchases.restorePurchases();
-    // Refresh subscription status after restore
-    isPro.value = await hasPro();
+    const { customerInfo } = await Purchases.restorePurchases();
+    const restored =
+      typeof customerInfo.entitlements.active["MediaHub Pro"] !== "undefined";
+    isPro.value = restored;
+    alert(
+      restored
+        ? "Subscription restored successfully!"
+        : "No active subscription found for this account."
+    );
   } catch (error) {
     console.error("Error restoring purchases:", error);
+    alert("Failed to restore purchases. Please try again.");
   } finally {
     restoreLoading.value = false;
   }

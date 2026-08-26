@@ -5,6 +5,8 @@ export const useProducts = () => {
   const isPro = ref(false);
 
   const hasPro = async () => {
+    if (import.meta.env.VITE_BYPASS_PREMIUM === "true") return true;
+
     try {
       const { customerInfo } = await Purchases.getCustomerInfo();
 
