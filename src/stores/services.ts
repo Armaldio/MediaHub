@@ -14,23 +14,24 @@ interface InstanceService extends Service {
 }
 
 export const useServicesStore = defineStore('services', () => {
-  // Initialize with clean services data and convert instances to separate services
-  const initializeServices = (): (Service | InstanceService)[] => {
+  // Build the list of available services plus one flattened entry per
+  // custom instance, using the provided custom-instances map.
+  const buildAvailableServices = (
+    instancesMap: Record<string, CustomServiceInstance[]>
+  ): (Service | InstanceService)[] => {
     const services: (Service | InstanceService)[] = []
 
-    // Add all regular services
     servicesData.forEach(service => {
-      // Ensure customInstances is always an array
+      const instances = instancesMap[service.id] || []
       const serviceWithInstances: Service = {
         ...service,
-        customInstances: service.customInstances || []
+        customInstances: instances
       }
 
       services.push(serviceWithInstances)
 
-      // Add all instances as separate services
-      if (service.supportsCustomInstances && service.customInstances?.length > 0) {
-        service.customInstances.forEach(instance => {
+      if (service.supportsCustomInstances && instances.length > 0) {
+        instances.forEach(instance => {
           services.push({
             ...serviceWithInstances,
             id: `${serviceWithInstances.id}-${instance.id}`,
@@ -48,12 +49,13 @@ export const useServicesStore = defineStore('services', () => {
     return services
   }
 
+  const initializeServices = () => buildAvailableServices({})
+
   const availableServices = ref<(Service | InstanceService)[]>(initializeServices())
 
   const selectedServiceIds = ref<string[]>([])
   const installedApps = ref<string[]>([])
   const isNative = ref(false)
-  const customInstances = ref<Record<string, CustomServiceInstance[]>>({})
 
   const selectedServices = computed(() => {
     // Create a map for quick lookup
@@ -180,20 +182,18 @@ export const useServicesStore = defineStore('services', () => {
       const stored = localStorage.getItem('servicesState')
       if (stored) {
         const parsed = JSON.parse(stored)
-        // Restore selected service IDs
+        const restoredInstances: Record<string, CustomServiceInstance[]> =
+          parsed.customInstances || {}
+
+        // Rebuild the service list so custom-instance entries are recreated
+        // (their ids must match for saved selections to persist)
+        availableServices.value = buildAvailableServices(restoredInstances)
+
+        // Restore selected service IDs (instance ids now exist again)
         if (Array.isArray(parsed.selectedServiceIds)) {
-          selectedServiceIds.value = parsed.selectedServiceIds.filter((id: string) => 
+          selectedServiceIds.value = parsed.selectedServiceIds.filter((id: string) =>
             availableServices.value.some(s => s.id === id)
           )
-        }
-        // Restore custom instances
-        if (parsed.customInstances) {
-          customInstances.value = parsed.customInstances
-          // Update services with their custom instances
-          availableServices.value = availableServices.value.map(service => ({
-            ...service,
-            customInstances: parsed.customInstances?.[service.id] || []
-          }))
         }
       }
     } catch (error) {
@@ -203,13 +203,21 @@ export const useServicesStore = defineStore('services', () => {
     }
   }
 
+  const getInstancesForService = (serviceId: string): CustomServiceInstance[] => {
+    const parent = availableServices.value.find(
+      s => s.id === serviceId && !('isInstance' in s)
+    ) as Service | undefined
+    if (!parent) return []
+    return parent.customInstances || []
+  }
+
   const hasSelectedServices = computed(() => selectedServiceIds.value.length > 0)
 
   // Initialize the store
   const initStore = async () => {
     try {
-      await checkInstalledApps()
       loadFromLocalStorage()
+      await checkInstalledApps()
     } catch (error) {
       console.error('Error initializing services store:', error)
     }
@@ -275,22 +283,23 @@ export const useServicesStore = defineStore('services', () => {
     const instanceIndex = parentService.customInstances.findIndex(i => i.id === instanceId)
     if (instanceIndex === -1) return null
 
+    const instances = parentService.customInstances
     const updatedInstance = {
-      ...parentService.customInstances[instanceIndex],
+      ...instances[instanceIndex],
       ...updates,
       id: instanceId // Ensure ID can't be changed
     }
 
     // If this is being set as default, unset any existing default
     if (updates.isDefault) {
-      parentService.customInstances.forEach((i, idx) => {
+      instances.forEach((i, idx) => {
         if (i.id !== instanceId) {
-          parentService.customInstances[idx].isDefault = false
+          instances[idx].isDefault = false
         }
       })
     }
 
-    parentService.customInstances[instanceIndex] = updatedInstance
+    instances[instanceIndex] = updatedInstance
 
     // Update the corresponding instance service
     const instanceServiceIndex = availableServices.value.findIndex(s =>
@@ -370,6 +379,7 @@ export const useServicesStore = defineStore('services', () => {
     loadFromLocalStorage,
     hasSelectedServices,
     initStore,
+    getInstancesForService,
     // Custom instance methods
     addCustomInstance,
     updateCustomInstance,

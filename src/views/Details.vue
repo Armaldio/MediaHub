@@ -471,7 +471,14 @@ import {
   nextTick,
   watch,
 } from "vue";
-import type { DeepLink, Service } from "@/types";
+import type { DeepLink, Service, CustomServiceInstance } from "@/types";
+
+interface InstanceService extends Service {
+  isInstance: true;
+  instanceId: string;
+  parentServiceId: string;
+  instanceData: CustomServiceInstance;
+}
 import type { AppendToResponse, MovieDetails, TvShowDetails } from "tmdb-ts";
 import { useRouter } from "vue-router";
 import { ArrowLeft, Star, Film, Tv, Film as MovieIcon } from "lucide-vue-next";
@@ -614,9 +621,17 @@ const genres = computed(() => moviesStore.currentDetails?.genres || []);
 
 // Filter services based on search query and ensure at least one deep link is enabled
 // Check if a deep link should be visible for a service
+const isInstance = (service: Service): service is InstanceService =>
+  'instanceData' in service;
+
 const isLinkVisible = (service: Service, link: DeepLink) => {
   const details = formattedDetails.value;
   if (!details) return false;
+
+  // For a self-hosted instance, app-only (requiresApp) links can't target the
+  // instance, so only show instance-aware links
+  if (isInstance(service) && link.requiresApp) return false;
+
   if (link.requiresApp && (!servicesStore.isNative || !servicesStore.isServiceInstalled(service))) {
     return false;
   }
@@ -805,7 +820,13 @@ const openDeepLink = async (service: Service, link: DeepLink) => {
 
   loadingLinks.value = { ...loadingLinks.value, [loadingKey]: true };
   try {
-    const resolvedUrl = await link.url(formattedDetails.value!);
+    const instance = isInstance(service) ? service.instanceData : undefined;
+    const details = formattedDetails.value!;
+    // Prefer customUrlBuilder (instance-aware web URL) when available,
+    // otherwise fall back to the link's url resolver (with the instance)
+    const resolvedUrl = link.customUrlBuilder
+      ? await link.customUrlBuilder(details, instance!)
+      : await link.url(details, instance);
     if (!resolvedUrl) return;
 
     // Handle different types of deep links

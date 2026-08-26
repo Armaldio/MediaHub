@@ -575,7 +575,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useServicesStore } from "@/stores/services";
-import { v4 as uuidv4 } from "uuid";
 import type { Service, CustomServiceInstance } from "@/types";
 import { useProducts } from "@/composables/products";
 import { Purchases } from "@revenuecat/purchases-capacitor";
@@ -601,7 +600,6 @@ const urlError = ref<string | null>(null);
 const pendingDefaultChange = ref(false);
 const isSaving = ref(false);
 const isDeleting = ref(false);
-const userCustomInstances = ref<Record<string, CustomServiceInstance[]>>({});
 
 const isPro = ref(false);
 const currentOffering = ref<any>(null);
@@ -619,32 +617,6 @@ const instanceForm = ref({
 
 const currentService = ref<Service | null>(null);
 
-const USER_CUSTOM_INSTANCES_KEY = "userCustomInstances";
-
-// Load user instances from localStorage
-const loadUserInstances = () => {
-  try {
-    const stored = localStorage.getItem(USER_CUSTOM_INSTANCES_KEY);
-    if (stored) {
-      userCustomInstances.value = JSON.parse(stored);
-    }
-  } catch (error) {
-    console.error("Error loading user instances from localStorage:", error);
-  }
-};
-
-// Save user instances to localStorage
-const saveUserInstances = () => {
-  try {
-    localStorage.setItem(
-      USER_CUSTOM_INSTANCES_KEY,
-      JSON.stringify(userCustomInstances.value)
-    );
-  } catch (error) {
-    console.error("Error saving user instances to localStorage:", error);
-  }
-};
-
 const servicesWithCustomInstances = computed(() => {
   return servicesStore.availableServices.filter(
     (service) => service.supportsCustomInstances && !("isInstance" in service)
@@ -652,8 +624,7 @@ const servicesWithCustomInstances = computed(() => {
 });
 
 const getInstancesForService = (serviceId: string) => {
-  // Use userCustomInstances instead of servicesStore
-  return userCustomInstances.value[serviceId] || [];
+  return servicesStore.getInstancesForService(serviceId);
 };
 
 const filteredServices = computed(() => {
@@ -682,9 +653,6 @@ const fetchOfferings = async () => {
 };
 
 onMounted(async () => {
-  // Load user instances from localStorage
-  loadUserInstances();
-
   isPro.value = await hasPro();
 
   // Fetch offerings for subscription details
@@ -792,37 +760,13 @@ async function saveInstance() {
   isSaving.value = true;
 
   try {
-    const instanceData = {
-      id: editingInstance.value?.id || uuidv4(),
+    const instanceData: Omit<CustomServiceInstance, 'id'> = {
       name: instanceForm.value.name,
       baseUrl: instanceForm.value.baseUrl,
       apiKey: instanceForm.value.apiKey || undefined,
       isDefault: instanceForm.value.isDefault,
     };
 
-    // Update userCustomInstances
-    if (!userCustomInstances.value[currentService.value.id]) {
-      userCustomInstances.value[currentService.value.id] = [];
-    }
-
-    if (editingInstance.value) {
-      // Update existing instance
-      const index = userCustomInstances.value[
-        currentService.value.id
-      ].findIndex((i) => i.id === editingInstance.value?.id);
-      if (index !== -1) {
-        userCustomInstances.value[currentService.value.id][index] =
-          instanceData;
-      }
-    } else {
-      // Add new instance
-      userCustomInstances.value[currentService.value.id].push(instanceData);
-    }
-
-    // Save to localStorage
-    saveUserInstances();
-
-    // Also update the services store
     if (editingInstance.value) {
       await servicesStore.updateCustomInstance(
         currentService.value.id,
@@ -830,10 +774,7 @@ async function saveInstance() {
         instanceData
       );
     } else {
-      await servicesStore.addCustomInstance(
-        currentService.value.id,
-        instanceData
-      );
+      servicesStore.addCustomInstance(currentService.value.id, instanceData);
     }
 
     showInstanceModal.value = false;
@@ -859,18 +800,6 @@ async function deleteInstance() {
   isDeleting.value = true;
 
   try {
-    // Update userCustomInstances
-    if (userCustomInstances.value[instanceToDelete.value.serviceId]) {
-      userCustomInstances.value[instanceToDelete.value.serviceId] =
-        userCustomInstances.value[instanceToDelete.value.serviceId].filter(
-          (i) => i.id !== instanceToDelete.value?.instance.id
-        );
-    }
-
-    // Save to localStorage
-    saveUserInstances();
-
-    // Also update the services store
     await servicesStore.removeCustomInstance(
       instanceToDelete.value.serviceId,
       instanceToDelete.value.instance.id
