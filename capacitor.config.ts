@@ -34,6 +34,10 @@ const baseConfig: CapacitorConfig = {
       path: "/",
       launchUrl: "mediahub://",
     },
+    // Enable edge-to-edge (content draws behind system bars) at native startup
+    "capacitor-android-edge-to-edge-support": {
+      enable: true,
+    },
   },
   android: {
     buildOptions,

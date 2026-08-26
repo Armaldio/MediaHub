@@ -23,11 +23,16 @@ const configure = async () => {
     await Purchases.configure({
       apiKey: import.meta.env.VITE_REVENUECAT_API_KEY,
     });
-    await EdgeToEdge.enable();
-    await EdgeToEdge.setBackgroundColor({ color: "#00000000" });
-    await StatusBar.setStyle({ style: Style.Dark });
-    await StatusBar.setBackgroundColor({ color: "#00000000" });
-    await StatusBar.setOverlaysWebView({ overlay: true });
+    try {
+      await EdgeToEdge.enable();
+      // Match the app's dark background so system bars blend with the app
+      await EdgeToEdge.setBackgroundColor({ color: "#0f0f0f" });
+      await StatusBar.setStyle({ style: Style.Dark });
+      await StatusBar.setBackgroundColor({ color: "#0f0f0f" });
+      await StatusBar.setOverlaysWebView({ overlay: true });
+    } catch (e) {
+      console.error("Edge-to-edge setup failed:", e);
+    }
   }
 };
 
