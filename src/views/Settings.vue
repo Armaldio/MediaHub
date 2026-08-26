@@ -1,5 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-900 text-white p-4">
+    <div class="h-safe-top"></div>
     <div class="max-w-4xl mx-auto">
       <div class="flex items-center mb-6">
         <button
@@ -581,6 +582,7 @@
         </div>
       </div>
     </div>
+    <div class="h-safe-bottom"></div>
   </div>
 </template>
 

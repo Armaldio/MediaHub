@@ -24,9 +24,11 @@ const configure = async () => {
       apiKey: import.meta.env.VITE_REVENUECAT_API_KEY,
     });
     try {
-      await EdgeToEdge.enable();
-      // Match the app's dark background so system bars blend with the app
-      await EdgeToEdge.setBackgroundColor({ color: "#0f0f0f" });
+      // The plugin insets the WebView by default; disable that so the app
+      // renders full-bleed. MainActivity already set the window to draw behind
+      // the bars, so the app's gradient shows through the transparent bars.
+      await EdgeToEdge.disable();
+      await EdgeToEdge.setBackgroundColor({ color: "#00000000" });
       await StatusBar.setStyle({ style: Style.Dark });
       await StatusBar.setBackgroundColor({ color: "#0f0f0f" });
       await StatusBar.setOverlaysWebView({ overlay: true });

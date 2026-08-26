@@ -49,6 +49,15 @@ html, body, #app {
   );
 }
 
+/* Safe-area aware padding helpers (used where a flex-centered layout
+   makes spacer divs awkward, e.g. Introduction.vue) */
+.safe-pt {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 1rem);
+}
+.safe-pb {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
+}
+
 /* Glass Effect */
 .glass-effect {
   background: rgba(31, 41, 55, 0.7);
