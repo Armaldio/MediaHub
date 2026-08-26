@@ -664,7 +664,9 @@ onMounted(async () => {
 
   // Fetch customer ID for display
   try {
-    const { customerInfo } = await Purchases.getCustomerInfo();
+    const { customerInfo } = await Purchases.getCustomerInfo({
+      forceRefresh: true,
+    });
     customerId.value = customerInfo.originalAppUserId;
   } catch (e) {
     console.error("Failed to fetch customer ID:", e);

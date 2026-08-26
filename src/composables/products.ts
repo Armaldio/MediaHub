@@ -8,9 +8,15 @@ export const useProducts = () => {
     if (import.meta.env.VITE_BYPASS_PREMIUM === "true") return true;
 
     try {
-      const { customerInfo } = await Purchases.getCustomerInfo();
+      const { customerInfo } = await Purchases.getCustomerInfo({
+        forceRefresh: true,
+      });
 
-      console.log("customerInfo", customerInfo);
+      console.log("RevenueCat customerInfo:", customerInfo);
+      console.log(
+        "RevenueCat active entitlements:",
+        Object.keys(customerInfo.entitlements.active)
+      );
 
       if (
         typeof customerInfo.entitlements.active["MediaHub Pro"] !== "undefined"
@@ -18,6 +24,7 @@ export const useProducts = () => {
         return true;
       }
     } catch (e) {
+      console.error("RevenueCat hasPro error:", e);
       return false;
     }
     return false;
