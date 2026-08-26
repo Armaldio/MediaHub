@@ -19,7 +19,8 @@ export const useProducts = () => {
       );
 
       if (
-        typeof customerInfo.entitlements.active["MediaHub Pro"] !== "undefined"
+        typeof customerInfo.entitlements.active["custom-instances"] !== "undefined" ||
+        typeof customerInfo.entitlements.active["unlimited-services"] !== "undefined"
       ) {
         return true;
       }
