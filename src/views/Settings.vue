@@ -192,6 +192,12 @@
         <div v-if="customerId" class="mb-4">
           <p class="text-xs text-gray-500">RevenueCat ID</p>
           <p class="text-sm text-gray-400 font-mono break-all">{{ customerId }}</p>
+          <p v-if="activeEntitlements.length" class="text-xs text-green-400 mt-1">
+            Active: {{ activeEntitlements.join(", ") }}
+          </p>
+          <p v-else class="text-xs text-yellow-400 mt-1">
+            No active entitlements found
+          </p>
         </div>
 
         <!-- Product Details -->
@@ -609,6 +615,7 @@ const isDeleting = ref(false);
 
 const isPro = ref(false);
 const customerId = ref<string | null>(null);
+const activeEntitlements = ref<string[]>([]);
 const currentOffering = ref<any>(null);
 const loadingOfferings = ref(false);
 const offeringsError = ref<string | null>(null);
@@ -662,14 +669,15 @@ const fetchOfferings = async () => {
 onMounted(async () => {
   isPro.value = await hasPro();
 
-  // Fetch customer ID for display
+  // Fetch customer ID and entitlements for display
   try {
     const { customerInfo } = await Purchases.getCustomerInfo({
       forceRefresh: true,
     });
     customerId.value = customerInfo.originalAppUserId;
+    activeEntitlements.value = Object.keys(customerInfo.entitlements.active);
   } catch (e) {
-    console.error("Failed to fetch customer ID:", e);
+    console.error("Failed to fetch customer info:", e);
   }
 
   // Fetch offerings for subscription details
