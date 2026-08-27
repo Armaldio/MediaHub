@@ -190,11 +190,18 @@ export const useServicesStore = defineStore('services', () => {
         availableServices.value = buildAvailableServices(restoredInstances)
 
         // Restore selected service IDs (instance ids now exist again)
-        if (Array.isArray(parsed.selectedServiceIds)) {
-          selectedServiceIds.value = parsed.selectedServiceIds.filter((id: string) =>
-            availableServices.value.some(s => s.id === id)
-          )
-        }
+        const restored = Array.isArray(parsed.selectedServiceIds)
+          ? parsed.selectedServiceIds.filter((id: string) =>
+              availableServices.value.some(s => s.id === id)
+            )
+          : []
+
+        // Auto-select any custom instances so they appear on the details page
+        // (covers instances added before this change, which were never selected)
+        const instanceIds = availableServices.value
+          .filter(s => 'isInstance' in s)
+          .map(s => s.id)
+        selectedServiceIds.value = [...new Set([...restored, ...instanceIds])]
       }
     } catch (error) {
       console.error('Error loading from localStorage:', error)
@@ -265,6 +272,11 @@ export const useServicesStore = defineStore('services', () => {
     // Add to available services and update parent
     parentService.customInstances.push(newInstance)
     availableServices.value.push(instanceService)
+
+    // Auto-select the new instance so it shows up on the details page
+    if (!selectedServiceIds.value.includes(instanceService.id)) {
+      selectedServiceIds.value.push(instanceService.id)
+    }
 
     saveToLocalStorage()
     return newInstance
@@ -341,6 +353,12 @@ export const useServicesStore = defineStore('services', () => {
 
     if (instanceServiceIndex !== -1) {
       availableServices.value.splice(instanceServiceIndex, 1)
+    }
+
+    // Remove the instance from the selection so it disappears from the details page
+    const selIndex = selectedServiceIds.value.indexOf(`${serviceId}-${instanceId}`)
+    if (selIndex !== -1) {
+      selectedServiceIds.value.splice(selIndex, 1)
     }
 
     // If we removed the default and there are other instances, make the first one default
