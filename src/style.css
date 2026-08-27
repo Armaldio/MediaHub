@@ -17,34 +17,54 @@
 body {
   margin: 0;
   min-width: 320px;
-  height: 100%;
+  min-height: 100vh;
   background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 100%);
+  overscroll-behavior-y: contain;
 }
 
-html, body {
+html, body, #app {
   padding: 0;
   margin: 0;
-  height: 100%;
-  overflow: hidden;
-  /* Overscrolling is handled at the #app level so content can never
-     scroll behind the system bars. */
+}
+
+html {
   overscroll-behavior: none;
 }
 
-/* #app is the single scroll container. The system-bar insets are applied as
-   non-scrolling padding, so scrolling content can never enter the strips behind
-   the status/navigation bars. */
 #app {
-  height: 100%;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Safe Area Utilities */
+.h-safe-top {
+  height: env(safe-area-inset-top, 0px);
+  width: 100%;
+  position: relative;
+}
+
+.h-safe-bottom {
+  height: env(safe-area-inset-bottom, 0px);
+  width: 100%;
+  position: relative;
+}
+
+.min-h-screen-safe {
+  min-height: calc(
+    100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
+  );
+}
+
+/* Safe-area aware padding helpers (used where a flex-centered layout
+   makes spacer divs awkward, e.g. Introduction.vue) */
+.safe-pt {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 1rem);
+}
+.safe-pb {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
 }
 
 /* Glass Effect */

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-full flex items-center justify-center p-4">
+  <div class="min-h-screen flex items-center justify-center px-4 safe-pt safe-pb">
     <div class="max-w-6xl w-full">
       <!-- Header -->
       <div class="text-center mb-12 animate-fade-in">
