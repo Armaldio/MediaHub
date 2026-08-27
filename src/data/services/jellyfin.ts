@@ -61,9 +61,6 @@ export const jellyfin: Service = {
         if (instance) return buildSearchUrl(instance, data.tmdbId);
         return `jellyfin://`;
       },
-      customUrlBuilder: (data: FormattedDetails, instance: CustomServiceInstance) => {
-        return buildSearchUrl(instance, data.tmdbId);
-      },
     },
     {
       name: "App",
