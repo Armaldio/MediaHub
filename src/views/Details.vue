@@ -1,12 +1,9 @@
 <template>
-  <div class="min-h-screen bg-gray-900">
-    <!-- Safe Area Top -->
-    <div class="h-safe-top"></div>
-
+  <div class="min-h-full bg-gray-900">
     <!-- Error State -->
     <div
       v-if="errorMessage && !detailsLoading"
-      class="flex flex-col items-center justify-center min-h-screen-safe p-8 text-center"
+      class="flex flex-col items-center justify-center min-h-full p-8 text-center"
     >
       <div
         class="bg-red-900/30 border border-red-800 rounded-xl p-6 max-w-2xl w-full"
@@ -455,9 +452,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Safe Area Bottom -->
-    <div class="h-safe-bottom"></div>
   </div>
 </template>
 

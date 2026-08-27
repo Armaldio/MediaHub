@@ -1,8 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-900">
-    <!-- Safe Area Top -->
-    <div class="h-safe-top"></div>
-    
+  <div class="min-h-full bg-gray-900">
     <!-- Header -->
     <header class="sticky top-0 z-50 glass-effect border-b border-gray-800">
       <div class="max-w-7xl mx-auto px-4 py-4">
@@ -201,9 +198,6 @@
         </section>
       </div>
     </main>
-    
-    <!-- Safe Area Bottom -->
-    <div class="h-safe-bottom"></div>
   </div>
 </template>
 
