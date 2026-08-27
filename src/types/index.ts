@@ -31,5 +31,6 @@ export interface DeepLink {
   enabled?: (data: FormattedDetails) => boolean;
   url: (data: FormattedDetails, instance?: CustomServiceInstance) => Promise<string> | string;
   customUrlBuilder?: (data: FormattedDetails, instance: CustomServiceInstance) => string;
+  available?: (data: FormattedDetails, instance?: CustomServiceInstance) => Promise<boolean>;
   requiresApp?: boolean;
 }

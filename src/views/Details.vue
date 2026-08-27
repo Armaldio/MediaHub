@@ -635,6 +635,13 @@ const isLinkVisible = (service: Service, link: DeepLink) => {
   if (link.requiresApp && (!servicesStore.isNative || !servicesStore.isServiceInstalled(service))) {
     return false;
   }
+
+  // Async availability (e.g. confirm the item exists in a self-hosted library).
+  // Hide until resolved, and hide when it resolves to false.
+  if (link.available) {
+    if (linkAvailability.value[linkKey(service, link)] !== true) return false;
+  }
+
   return ('enabled' in link && link.enabled?.(details)) || !('enabled' in link);
 };
 
@@ -803,6 +810,9 @@ watch(
 
     // Fetch TVDB data and enhance the formatted details
     formattedDetails.value = await fetchTVDBData(formattedDetails.value);
+
+    // Resolve async link availability (e.g. confirm items exist in libraries)
+    await resolveAvailability();
   },
   { immediate: true }
 );
@@ -812,6 +822,39 @@ const loadingLinks = ref<Record<string, boolean>>({});
 const getLoadingKey = (service: Service, link: DeepLink) => {
   return `${service.id}-${link.name}`;
 };
+
+// Async availability results (true = show, false/undefined = hide) for links
+// that declare an `available` predicate (e.g. self-hosted media servers).
+const linkAvailability = ref<Record<string, boolean>>({});
+
+function linkKey(service: Service, link: DeepLink) {
+  return `${service.id}-${link.name}`;
+}
+
+async function resolveAvailability() {
+  const details = formattedDetails.value;
+  if (!details) return;
+
+  const results: Record<string, boolean> = {};
+  await Promise.all(
+    servicesStore.selectedServices.flatMap((service) => {
+      const instance = isInstance(service) ? service.instanceData : undefined;
+      return (service.deepLinks || [])
+        .filter((link) => link.available)
+        .map((link) =>
+          link
+            .available!(details, instance)
+            .then((ok) => {
+              results[linkKey(service, link)] = ok;
+            })
+            .catch(() => {
+              results[linkKey(service, link)] = false;
+            })
+        );
+    })
+  );
+  linkAvailability.value = results;
+}
 
 const openDeepLink = async (service: Service, link: DeepLink) => {
   const loadingKey = getLoadingKey(service, link);

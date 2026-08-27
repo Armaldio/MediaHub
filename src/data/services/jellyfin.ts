@@ -53,12 +53,18 @@ export const jellyfin: Service = {
     {
       name: "App",
       mediaType: "all",
+      available: async (data: FormattedDetails, instance?: CustomServiceInstance) => {
+        if (!instance) return true;
+        if (!instance.apiKey) return false;
+        if (data.type !== "movie" && data.type !== "tv") return false;
+        return !!(await findJellyfinItemId(instance, data.tmdbId, data.type));
+      },
       url: async (data: FormattedDetails, instance?: CustomServiceInstance) => {
         if (instance?.apiKey && (data.type === "movie" || data.type === "tv")) {
           const itemId = await findJellyfinItemId(instance, data.tmdbId, data.type);
           if (itemId) return buildItemUrl(instance, itemId);
         }
-        if (instance) return buildSearchUrl(instance, data.tmdbId);
+        if (instance) return null;
         return `jellyfin://`;
       },
     },
