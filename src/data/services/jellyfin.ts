@@ -31,7 +31,7 @@ async function findJellyfinItemId(
 }
 
 function buildItemUrl(instance: CustomServiceInstance, itemId: string): string {
-  return `${instance.baseUrl}/web/index.html#!/item?id=${itemId}`;
+  return `${instance.baseUrl}/web/index.html#!/details?id=${itemId}`;
 }
 
 function buildSearchUrl(instance: CustomServiceInstance, tmdbId: string): string {
