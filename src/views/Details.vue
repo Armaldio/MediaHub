@@ -824,9 +824,10 @@ const openDeepLink = async (service: Service, link: DeepLink) => {
     const details = formattedDetails.value!;
     // Prefer customUrlBuilder (instance-aware web URL) when available,
     // otherwise fall back to the link's url resolver (with the instance)
-    const resolvedUrl = link.customUrlBuilder
-      ? await link.customUrlBuilder(details, instance!)
-      : await link.url(details, instance);
+    const resolvedUrl =
+      link.customUrlBuilder && instance
+        ? await link.customUrlBuilder(details, instance)
+        : await link.url(details, instance);
     if (!resolvedUrl) return;
 
     // Handle different types of deep links

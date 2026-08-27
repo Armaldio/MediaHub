@@ -14,23 +14,14 @@ export const avaAssistant: Service = {
     {
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
-      name: "App",
-      url: (data) => {
-        const url = `https://ava-assistant.app/movie/${data.tmdbId}`;
-        console.log("url", url);
-        return url;
-      },
+      name: "Website",
+      url: (data) => `https://ava-assistant.app/movie/${data.tmdbId}`,
     },
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
-      name: "App",
-      url: (data) => {
-        console.log(data);
-        const url = `https://ava-assistant.app/show/?id=${data.tmdbId}`;
-        console.log("url", url);
-        return url;
-      },
+      name: "Website",
+      url: (data) => `https://ava-assistant.app/show/?id=${data.tmdbId}`,
     },
   ],
 };
