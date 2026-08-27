@@ -1,10 +1,7 @@
 <template>
-  <div class="min-h-screen bg-gray-900">
-    <!-- Safe Area Top -->
-    <div class="h-safe-top"></div>
-    
-    <!-- Header -->
-    <header class="sticky top-0 z-50 glass-effect border-b border-gray-800">
+  <div class="h-screen bg-gray-900 flex flex-col">
+    <!-- Header (fixed below the status bar; never scrolls under it) -->
+    <header class="flex-shrink-0 z-50 bg-gray-900 border-b border-gray-800" style="padding-top: env(safe-area-inset-top, 0px)">
       <div class="max-w-7xl mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
           <h1 class="text-2xl font-bold gradient-text">Movie Hub</h1>
@@ -49,7 +46,7 @@
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 py-8">
+    <main class="flex-1 overflow-y-auto w-full max-w-7xl mx-auto px-4 py-8">
       <!-- Loading State -->
       <div v-if="moviesStore.loading" class="py-12">
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
@@ -201,9 +198,6 @@
         </section>
       </div>
     </main>
-    
-    <!-- Safe Area Bottom -->
-    <div class="h-safe-bottom"></div>
   </div>
 </template>
 
