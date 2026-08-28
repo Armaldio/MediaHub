@@ -29,11 +29,6 @@ import { betaseries } from "./services/betaseries";
 import { dubbingbase } from "./services/dubbingbase";
 import { nzb360 } from "./services/nzb360";
 import { seerr } from "./services/seerr";
-import { findroid } from "./services/findroid";
-import { streamyfin } from "./services/streamyfin";
-import { reefin } from "./services/reefin";
-import { jellyflix } from "./services/jellyflix";
-import { fladder } from "./services/fladder";
 
 // Function to fetch TVDB data and enhance FormattedDetails
 export const fetchTVDBData = async (
@@ -109,9 +104,4 @@ export default [
   dubbingbase,
   nzb360,
   seerr,
-  findroid,
-  streamyfin,
-  reefin,
-  jellyflix,
-  fladder,
 ] satisfies Service[];
