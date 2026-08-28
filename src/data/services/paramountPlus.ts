@@ -1,5 +1,6 @@
 import paramountPlusIcon from "../../assets/apps/images/paramount_plus/assets/play_store.png";
 import { Service } from "../../types/index";
+import { withAffiliate } from "../../utils/affiliate";
 
 export const paramountPlus: Service = {
   id: "paramount_plus",
@@ -30,14 +31,20 @@ export const paramountPlus: Service = {
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.paramountPlusId,
       url: (data) =>
-        `https://www.paramountplus.com/movies/video/${data.paramountPlusId}`,
+        withAffiliate(
+          `https://www.paramountplus.com/movies/video/${data.paramountPlusId}`,
+          "paramount_plus"
+        ),
     },
     {
       name: "Website",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.paramountPlusId,
       url: (data) =>
-        `https://www.paramountplus.com/shows/video/${data.paramountPlusId}`,
+        withAffiliate(
+          `https://www.paramountplus.com/shows/video/${data.paramountPlusId}`,
+          "paramount_plus"
+        ),
     },
   ],
 };

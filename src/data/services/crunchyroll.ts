@@ -1,5 +1,6 @@
 import crunchyrollIcon from "../../assets/apps/images/crunchyroll/assets/logo.svg";
 import { Service } from "../../types/index";
+import { withAffiliate } from "../../utils/affiliate";
 
 export const crunchyroll: Service = {
   id: "crunchyroll",
@@ -15,13 +16,13 @@ export const crunchyroll: Service = {
       name: "Website",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.crunchyrollId,
-      url: (data) => `https://crunchyroll.com/series/${data.crunchyrollId}`,
+      url: (data) => withAffiliate(`https://crunchyroll.com/series/${data.crunchyrollId}`, "crunchyroll"),
     },
     {
       name: "Website",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.crunchyrollId,
-      url: (data) => `https://crunchyroll.com/series/${data.crunchyrollId}`,
+      url: (data) => withAffiliate(`https://crunchyroll.com/series/${data.crunchyrollId}`, "crunchyroll"),
     },
   ],
 };

@@ -1,5 +1,6 @@
 import huluIcon from "../../assets/apps/images/hulu/assets/logo.svg";
 import { Service } from "../../types/index";
+import { withAffiliate } from "../../utils/affiliate";
 
 export const hulu: Service = {
   id: "hulu",
@@ -15,13 +16,13 @@ export const hulu: Service = {
       name: "Website",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.huluMovieId,
-      url: (data) => `https://www.hulu.com/movie/${data.huluMovieId}`,
+      url: (data) => withAffiliate(`https://www.hulu.com/movie/${data.huluMovieId}`, "hulu"),
     },
     {
       name: "Website",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.huluSeriesId,
-      url: (data) => `https://www.hulu.com/series/${data.huluSeriesId}`,
+      url: (data) => withAffiliate(`https://www.hulu.com/series/${data.huluSeriesId}`, "hulu"),
     },
   ],
 };
