@@ -28,8 +28,7 @@ import { allocine } from "./services/allocine";
 import { betaseries } from "./services/betaseries";
 import { dubbingbase } from "./services/dubbingbase";
 import { nzb360 } from "./services/nzb360";
-import { overseerr } from "./services/overseerr";
-import { jellyseerr } from "./services/jellyseerr";
+import { seerr } from "./services/seerr";
 
 // Function to fetch TVDB data and enhance FormattedDetails
 export const fetchTVDBData = async (
@@ -104,6 +103,5 @@ export default [
   betaseries,
   dubbingbase,
   nzb360,
-  overseerr,
-  jellyseerr,
+  seerr,
 ] satisfies Service[];
