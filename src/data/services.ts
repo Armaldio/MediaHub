@@ -45,6 +45,9 @@ import { itunes } from "./services/itunes";
 import { googlePlay } from "./services/googlePlay";
 import { sensCritique } from "./services/sensCritique";
 import { allMovie } from "./services/allMovie";
+import { filmweb } from "./services/filmweb";
+import { boxOfficeMojo } from "./services/boxOfficeMojo";
+import { filmarks } from "./services/filmarks";
 
 // Function to fetch TVDB data and enhance FormattedDetails
 export const fetchTVDBData = async (
@@ -136,4 +139,7 @@ export default [
   googlePlay,
   sensCritique,
   allMovie,
+  filmweb,
+  boxOfficeMojo,
+  filmarks,
 ] satisfies Service[];

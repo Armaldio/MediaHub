@@ -785,6 +785,9 @@ watch(
       sensCritiqueId,
       allMovieId,
       allocineId,
+      filmwebId,
+      boxOfficeMojoId,
+      filmarksId,
     ] = await Promise.all([
       externalIds.tvdb_id
         ? Promise.resolve(undefined)
@@ -813,6 +816,9 @@ watch(
       fetchWikidataClaim(wikidata_id, "P10100"),
       fetchWikidataClaim(wikidata_id, "P1562"),
       fetchWikidataClaim(wikidata_id, "P1265"),
+      fetchWikidataClaim(wikidata_id, "P3995"),
+      fetchWikidataClaim(wikidata_id, "P1237"),
+      fetchWikidataClaim(wikidata_id, "P13904"),
     ]);
 
     const tvdbId =
@@ -847,6 +853,9 @@ watch(
       sensCritiqueId: sensCritiqueId ? String(sensCritiqueId) : undefined,
       allMovieId: allMovieId ? String(allMovieId) : undefined,
       allocineId: allocineId ? String(allocineId) : undefined,
+      filmwebId: filmwebId ? String(filmwebId) : undefined,
+      boxOfficeMojoId: boxOfficeMojoId ? String(boxOfficeMojoId) : undefined,
+      filmarksId: filmarksId ? String(filmarksId) : undefined,
     };
 
     // Fetch TVDB data and enhance the formatted details

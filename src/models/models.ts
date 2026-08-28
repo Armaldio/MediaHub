@@ -28,6 +28,9 @@ export interface ExternalIds {
   sensCritiqueId?: string;
   allMovieId?: string;
   allocineId?: string;
+  filmwebId?: string;
+  boxOfficeMojoId?: string;
+  filmarksId?: string;
 }
 
 export interface FormattedDetails {
@@ -59,6 +62,9 @@ export interface FormattedDetails {
   sensCritiqueId?: string;
   allMovieId?: string;
   allocineId?: string;
+  filmwebId?: string;
+  boxOfficeMojoId?: string;
+  filmarksId?: string;
   wikidataId?: string;
   facebookId?: string;
   instagramId?: string;
