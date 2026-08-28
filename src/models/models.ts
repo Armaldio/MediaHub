@@ -15,6 +15,10 @@ export interface ExternalIds {
   rottenTomatoesId?: string;
   metacriticId?: string;
   anilistId?: string;
+  peacockId?: string;
+  huluMovieId?: string;
+  huluSeriesId?: string;
+  crunchyrollId?: string;
 }
 
 export interface FormattedDetails {
@@ -33,6 +37,10 @@ export interface FormattedDetails {
   rottenTomatoesId?: string;
   metacriticId?: string;
   anilistId?: string;
+  peacockId?: string;
+  huluMovieId?: string;
+  huluSeriesId?: string;
+  crunchyrollId?: string;
   wikidataId?: string;
   facebookId?: string;
   instagramId?: string;

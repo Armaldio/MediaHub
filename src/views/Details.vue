@@ -772,6 +772,10 @@ watch(
       rottenTomatoesId,
       metacriticId,
       anilistId,
+      peacockId,
+      huluMovieId,
+      huluSeriesId,
+      crunchyrollId,
     ] = await Promise.all([
       externalIds.tvdb_id
         ? Promise.resolve(undefined)
@@ -787,6 +791,10 @@ watch(
       fetchWikidataClaim(wikidata_id, "P1258"),
       fetchWikidataClaim(wikidata_id, "P1712"),
       fetchWikidataClaim(wikidata_id, "P8729"),
+      fetchWikidataClaim(wikidata_id, "P11815"),
+      fetchWikidataClaim(wikidata_id, "P6466"),
+      fetchWikidataClaim(wikidata_id, "P6467"),
+      fetchWikidataClaim(wikidata_id, "P11330"),
     ]);
 
     const tvdbId =
@@ -808,6 +816,10 @@ watch(
       rottenTomatoesId,
       metacriticId: metacriticId ? String(metacriticId) : undefined,
       anilistId: anilistId ? String(anilistId) : undefined,
+      peacockId: peacockId ? String(peacockId) : undefined,
+      huluMovieId: huluMovieId ? String(huluMovieId) : undefined,
+      huluSeriesId: huluSeriesId ? String(huluSeriesId) : undefined,
+      crunchyrollId: crunchyrollId ? String(crunchyrollId) : undefined,
     };
 
     // Fetch TVDB data and enhance the formatted details

@@ -32,6 +32,11 @@ import { seerr } from "./services/seerr";
 import { rottenTomatoes } from "./services/rottenTomatoes";
 import { metacritic } from "./services/metacritic";
 import { anilist } from "./services/anilist";
+import { emby } from "./services/emby";
+import { tvmaze } from "./services/tvmaze";
+import { peacock } from "./services/peacock";
+import { hulu } from "./services/hulu";
+import { crunchyroll } from "./services/crunchyroll";
 
 // Function to fetch TVDB data and enhance FormattedDetails
 export const fetchTVDBData = async (
@@ -110,4 +115,9 @@ export default [
   rottenTomatoes,
   metacritic,
   anilist,
+  emby,
+  tvmaze,
+  peacock,
+  hulu,
+  crunchyroll,
 ] satisfies Service[];
