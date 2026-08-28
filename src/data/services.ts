@@ -37,6 +37,14 @@ import { tvmaze } from "./services/tvmaze";
 import { peacock } from "./services/peacock";
 import { hulu } from "./services/hulu";
 import { crunchyroll } from "./services/crunchyroll";
+import { kinopoisk } from "./services/kinopoisk";
+import { douban } from "./services/douban";
+import { filmAffinity } from "./services/filmAffinity";
+import { csfd } from "./services/csfd";
+import { itunes } from "./services/itunes";
+import { googlePlay } from "./services/googlePlay";
+import { sensCritique } from "./services/sensCritique";
+import { allMovie } from "./services/allMovie";
 
 // Function to fetch TVDB data and enhance FormattedDetails
 export const fetchTVDBData = async (
@@ -120,4 +128,12 @@ export default [
   peacock,
   hulu,
   crunchyroll,
+  kinopoisk,
+  douban,
+  filmAffinity,
+  csfd,
+  itunes,
+  googlePlay,
+  sensCritique,
+  allMovie,
 ] satisfies Service[];

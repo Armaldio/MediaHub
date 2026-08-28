@@ -19,6 +19,15 @@ export interface ExternalIds {
   huluMovieId?: string;
   huluSeriesId?: string;
   crunchyrollId?: string;
+  kinopoiskId?: string;
+  doubanId?: string;
+  filmAffinityId?: string;
+  csfdId?: string;
+  itunesId?: string;
+  googlePlayId?: string;
+  sensCritiqueId?: string;
+  allMovieId?: string;
+  allocineId?: string;
 }
 
 export interface FormattedDetails {
@@ -41,6 +50,15 @@ export interface FormattedDetails {
   huluMovieId?: string;
   huluSeriesId?: string;
   crunchyrollId?: string;
+  kinopoiskId?: string;
+  doubanId?: string;
+  filmAffinityId?: string;
+  csfdId?: string;
+  itunesId?: string;
+  googlePlayId?: string;
+  sensCritiqueId?: string;
+  allMovieId?: string;
+  allocineId?: string;
   wikidataId?: string;
   facebookId?: string;
   instagramId?: string;

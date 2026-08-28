@@ -776,6 +776,15 @@ watch(
       huluMovieId,
       huluSeriesId,
       crunchyrollId,
+      kinopoiskId,
+      doubanId,
+      filmAffinityId,
+      csfdId,
+      itunesId,
+      googlePlayId,
+      sensCritiqueId,
+      allMovieId,
+      allocineId,
     ] = await Promise.all([
       externalIds.tvdb_id
         ? Promise.resolve(undefined)
@@ -795,6 +804,15 @@ watch(
       fetchWikidataClaim(wikidata_id, "P6466"),
       fetchWikidataClaim(wikidata_id, "P6467"),
       fetchWikidataClaim(wikidata_id, "P11330"),
+      fetchWikidataClaim(wikidata_id, "P2603"),
+      fetchWikidataClaim(wikidata_id, "P4529"),
+      fetchWikidataClaim(wikidata_id, "P480"),
+      fetchWikidataClaim(wikidata_id, "P2529"),
+      fetchWikidataClaim(wikidata_id, "P6398"),
+      fetchWikidataClaim(wikidata_id, "P6562"),
+      fetchWikidataClaim(wikidata_id, "P10100"),
+      fetchWikidataClaim(wikidata_id, "P1562"),
+      fetchWikidataClaim(wikidata_id, "P1265"),
     ]);
 
     const tvdbId =
@@ -820,6 +838,15 @@ watch(
       huluMovieId: huluMovieId ? String(huluMovieId) : undefined,
       huluSeriesId: huluSeriesId ? String(huluSeriesId) : undefined,
       crunchyrollId: crunchyrollId ? String(crunchyrollId) : undefined,
+      kinopoiskId: kinopoiskId ? String(kinopoiskId) : undefined,
+      doubanId: doubanId ? String(doubanId) : undefined,
+      filmAffinityId: filmAffinityId ? String(filmAffinityId) : undefined,
+      csfdId: csfdId ? String(csfdId) : undefined,
+      itunesId: itunesId ? String(itunesId) : undefined,
+      googlePlayId: googlePlayId ? String(googlePlayId) : undefined,
+      sensCritiqueId: sensCritiqueId ? String(sensCritiqueId) : undefined,
+      allMovieId: allMovieId ? String(allMovieId) : undefined,
+      allocineId: allocineId ? String(allocineId) : undefined,
     };
 
     // Fetch TVDB data and enhance the formatted details
