@@ -29,6 +29,9 @@ import { betaseries } from "./services/betaseries";
 import { dubbingbase } from "./services/dubbingbase";
 import { nzb360 } from "./services/nzb360";
 import { seerr } from "./services/seerr";
+import { rottenTomatoes } from "./services/rottenTomatoes";
+import { metacritic } from "./services/metacritic";
+import { anilist } from "./services/anilist";
 
 // Function to fetch TVDB data and enhance FormattedDetails
 export const fetchTVDBData = async (
@@ -104,4 +107,7 @@ export default [
   dubbingbase,
   nzb360,
   seerr,
+  rottenTomatoes,
+  metacritic,
+  anilist,
 ] satisfies Service[];

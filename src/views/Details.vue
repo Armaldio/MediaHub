@@ -769,6 +769,9 @@ watch(
       paramountPlusId,
       letterboxdId,
       mubiId,
+      rottenTomatoesId,
+      metacriticId,
+      anilistId,
     ] = await Promise.all([
       externalIds.tvdb_id
         ? Promise.resolve(undefined)
@@ -781,6 +784,9 @@ watch(
       fetchWikidataClaim(wikidata_id, "P13147"),
       fetchWikidataClaim(wikidata_id, "P6127"),
       fetchWikidataClaim(wikidata_id, "P7299"),
+      fetchWikidataClaim(wikidata_id, "P1258"),
+      fetchWikidataClaim(wikidata_id, "P1712"),
+      fetchWikidataClaim(wikidata_id, "P8729"),
     ]);
 
     const tvdbId =
@@ -799,6 +805,9 @@ watch(
       paramountPlusId,
       letterboxdId,
       mubiId,
+      rottenTomatoesId,
+      metacriticId: metacriticId ? String(metacriticId) : undefined,
+      anilistId: anilistId ? String(anilistId) : undefined,
     };
 
     // Fetch TVDB data and enhance the formatted details

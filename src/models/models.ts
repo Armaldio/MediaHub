@@ -12,6 +12,9 @@ export interface ExternalIds {
   paramountPlusId?: string;
   letterboxdId?: string;
   mubiId?: string;
+  rottenTomatoesId?: string;
+  metacriticId?: string;
+  anilistId?: string;
 }
 
 export interface FormattedDetails {
@@ -27,6 +30,9 @@ export interface FormattedDetails {
   paramountPlusId?: string;
   letterboxdId?: string;
   mubiId?: string;
+  rottenTomatoesId?: string;
+  metacriticId?: string;
+  anilistId?: string;
   wikidataId?: string;
   facebookId?: string;
   instagramId?: string;
