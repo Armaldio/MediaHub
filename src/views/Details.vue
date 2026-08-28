@@ -677,19 +677,25 @@ const scrollToService = (serviceId: string) => {
 
 const formattedDetails = ref<FormattedDetails | null>(null);
 
-// Fetch a single Wikidata claim property
-const fetchWikidataClaim = async (
+// Fetch Wikidata claims in a single request (filtered by selected services)
+const fetchWikidataClaimsBulk = async (
   wikidataId: string,
-  property: string
-): Promise<string | undefined> => {
+  properties: string[]
+): Promise<Record<string, string | undefined>> => {
+  if (properties.length === 0) return {};
   try {
-    const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidataId}&property=${property}&format=json&origin=*`;
+    const url = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${wikidataId}&props=claims&format=json&origin=*`;
     const response = await fetch(url);
     const data = await response.json();
-    return data?.claims?.[property]?.[0]?.mainsnak?.datavalue?.value;
+    const claims = data?.entities?.[wikidataId]?.claims;
+    const result: Record<string, string | undefined> = {};
+    for (const prop of properties) {
+      result[prop] = claims?.[prop]?.[0]?.mainsnak?.datavalue?.value;
+    }
+    return result;
   } catch (error) {
-    console.error(`Error fetching ${property} from Wikidata:`, error);
-    return undefined;
+    console.error(`Error fetching bulk claims for ${wikidataId}:`, error);
+    return {};
   }
 };
 
@@ -754,72 +760,74 @@ watch(
       return;
     }
 
-    // Fetch all external IDs from Wikidata in parallel
+    // Single Wikidata request filtered by selected services
     const tvdbProperty = props.mediaType === "movie" ? "P12196" : "P4835";
     const disneyProperty = props.mediaType === "movie" ? "P7595" : "P7596";
     const appleProperty = props.mediaType === "movie" ? "P9586" : "P9751";
 
-    const [
-      tvdbClaim,
-      netflixId,
-      amazonPrimeId,
-      disneyPlusId,
-      hboMaxId,
-      appleTvId,
-      paramountPlusId,
-      letterboxdId,
-      mubiId,
-      rottenTomatoesId,
-      metacriticId,
-      anilistId,
-      peacockId,
-      huluMovieId,
-      huluSeriesId,
-      crunchyrollId,
-      kinopoiskId,
-      doubanId,
-      filmAffinityId,
-      csfdId,
-      itunesId,
-      googlePlayId,
-      sensCritiqueId,
-      allMovieId,
-      allocineId,
-      filmwebId,
-      boxOfficeMojoId,
-      filmarksId,
-    ] = await Promise.all([
-      externalIds.tvdb_id
-        ? Promise.resolve(undefined)
-        : fetchWikidataClaim(wikidata_id, tvdbProperty),
-      fetchWikidataClaim(wikidata_id, "P1874"),
-      fetchWikidataClaim(wikidata_id, "P8055"),
-      fetchWikidataClaim(wikidata_id, disneyProperty),
-      fetchWikidataClaim(wikidata_id, "P8298"),
-      fetchWikidataClaim(wikidata_id, appleProperty),
-      fetchWikidataClaim(wikidata_id, "P13147"),
-      fetchWikidataClaim(wikidata_id, "P6127"),
-      fetchWikidataClaim(wikidata_id, "P7299"),
-      fetchWikidataClaim(wikidata_id, "P1258"),
-      fetchWikidataClaim(wikidata_id, "P1712"),
-      fetchWikidataClaim(wikidata_id, "P8729"),
-      fetchWikidataClaim(wikidata_id, "P11815"),
-      fetchWikidataClaim(wikidata_id, "P6466"),
-      fetchWikidataClaim(wikidata_id, "P6467"),
-      fetchWikidataClaim(wikidata_id, "P11330"),
-      fetchWikidataClaim(wikidata_id, "P2603"),
-      fetchWikidataClaim(wikidata_id, "P4529"),
-      fetchWikidataClaim(wikidata_id, "P480"),
-      fetchWikidataClaim(wikidata_id, "P2529"),
-      fetchWikidataClaim(wikidata_id, "P6398"),
-      fetchWikidataClaim(wikidata_id, "P6562"),
-      fetchWikidataClaim(wikidata_id, "P10100"),
-      fetchWikidataClaim(wikidata_id, "P1562"),
-      fetchWikidataClaim(wikidata_id, "P1265"),
-      fetchWikidataClaim(wikidata_id, "P3995"),
-      fetchWikidataClaim(wikidata_id, "P1237"),
-      fetchWikidataClaim(wikidata_id, "P13904"),
-    ]);
+    const selectedSet = new Set(
+      servicesStore.selectedServices.map((s: any) => s.parentServiceId || s.id)
+    );
+
+    const propsToFetch: string[] = [];
+    if (selectedSet.has("tvdb") && !externalIds.tvdb_id) propsToFetch.push(tvdbProperty);
+    if (selectedSet.has("netflix")) propsToFetch.push("P1874");
+    if (selectedSet.has("prime_video")) propsToFetch.push("P8055");
+    if (selectedSet.has("disney_plus")) propsToFetch.push(disneyProperty);
+    if (selectedSet.has("max")) propsToFetch.push("P8298");
+    if (selectedSet.has("apple_tv_plus")) propsToFetch.push(appleProperty);
+    if (selectedSet.has("paramount_plus")) propsToFetch.push("P13147");
+    if (selectedSet.has("letterboxd")) propsToFetch.push("P6127");
+    if (selectedSet.has("mubi")) propsToFetch.push("P7299");
+    if (selectedSet.has("rotten_tomatoes")) propsToFetch.push("P1258");
+    if (selectedSet.has("metacritic")) propsToFetch.push("P1712");
+    if (selectedSet.has("anilist")) propsToFetch.push("P8729");
+    if (selectedSet.has("peacock")) propsToFetch.push("P11815");
+    if (selectedSet.has("hulu")) propsToFetch.push("P6466", "P6467");
+    if (selectedSet.has("crunchyroll")) propsToFetch.push("P11330");
+    if (selectedSet.has("kinopoisk")) propsToFetch.push("P2603");
+    if (selectedSet.has("douban")) propsToFetch.push("P4529");
+    if (selectedSet.has("filmaffinity")) propsToFetch.push("P480");
+    if (selectedSet.has("csfd")) propsToFetch.push("P2529");
+    if (selectedSet.has("itunes")) propsToFetch.push("P6398");
+    if (selectedSet.has("googleplay")) propsToFetch.push("P6562");
+    if (selectedSet.has("senscritique")) propsToFetch.push("P10100");
+    if (selectedSet.has("allmovie")) propsToFetch.push("P1562");
+    if (selectedSet.has("allocine")) propsToFetch.push("P1265");
+    if (selectedSet.has("filmweb")) propsToFetch.push("P3995");
+    if (selectedSet.has("boxofficemojo")) propsToFetch.push("P1237");
+    if (selectedSet.has("filmarks")) propsToFetch.push("P13904");
+
+    const claims = await fetchWikidataClaimsBulk(wikidata_id, propsToFetch);
+
+    const tvdbClaim = claims[tvdbProperty];
+    const netflixId = claims["P1874"];
+    const amazonPrimeId = claims["P8055"];
+    const disneyPlusId = claims[disneyProperty];
+    const hboMaxId = claims["P8298"];
+    const appleTvId = claims[appleProperty];
+    const paramountPlusId = claims["P13147"];
+    const letterboxdId = claims["P6127"];
+    const mubiId = claims["P7299"];
+    const rottenTomatoesId = claims["P1258"];
+    const metacriticId = claims["P1712"];
+    const anilistId = claims["P8729"];
+    const peacockId = claims["P11815"];
+    const huluMovieId = claims["P6466"];
+    const huluSeriesId = claims["P6467"];
+    const crunchyrollId = claims["P11330"];
+    const kinopoiskId = claims["P2603"];
+    const doubanId = claims["P4529"];
+    const filmAffinityId = claims["P480"];
+    const csfdId = claims["P2529"];
+    const itunesId = claims["P6398"];
+    const googlePlayId = claims["P6562"];
+    const sensCritiqueId = claims["P10100"];
+    const allMovieId = claims["P1562"];
+    const allocineId = claims["P1265"];
+    const filmwebId = claims["P3995"];
+    const boxOfficeMojoId = claims["P1237"];
+    const filmarksId = claims["P13904"];
 
     const tvdbId =
       externalIds.tvdb_id?.toString() ||
