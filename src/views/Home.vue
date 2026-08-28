@@ -42,6 +42,37 @@
             <X class="h-4 w-4" />
           </button>
         </div>
+
+        <!-- Filter Chips -->
+        <div v-if="moviesStore.searchResults.length > 0" class="mt-3 flex gap-2">
+          <button
+            v-for="f in (['all','movie','tv'] as const)"
+            :key="f"
+            @click="filterType = f"
+            class="px-3 py-1 rounded-full text-sm border transition-colors"
+            :class="filterType === f ? 'bg-white text-gray-900 border-white' : 'bg-gray-800 text-gray-300 border-gray-700 hover:border-gray-600'"
+          >
+            {{ f === 'all' ? 'All' : f === 'movie' ? 'Movies' : 'TV' }}
+          </button>
+        </div>
+
+        <!-- Recent Searches -->
+        <div v-if="!searchQuery && recentSearches.length > 0 && moviesStore.searchResults.length === 0" class="mt-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs text-gray-500 uppercase tracking-wide">Recent</span>
+            <button @click="clearRecent" class="text-xs text-gray-500 hover:text-gray-300">Clear</button>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-for="r in recentSearches"
+              :key="r"
+              @click="selectRecent(r)"
+              class="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-full text-sm border border-gray-700"
+            >
+              {{ r }}
+            </button>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -58,12 +89,12 @@
       <section v-else-if="moviesStore.searchResults.length > 0" class="mb-12">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-2xl font-bold text-white">Search Results</h2>
-          <span class="text-gray-400">{{ moviesStore.searchResults.length }} results</span>
+          <span class="text-gray-400">{{ filteredResults.length }} results</span>
         </div>
         <div class="relative">
           <div class="flex space-x-4 py-4 overflow-x-auto scrollbar-hide">
             <MediaCard
-              v-for="item in moviesStore.searchResults.slice(0, 14)"
+              v-for="item in filteredResults.slice(0, 14)"
               :key="`search-${item.id}`"
               :media="item"
               @click="goToDetails(item)"
@@ -71,7 +102,7 @@
             />
           </div>
         </div>
-        <div v-if="moviesStore.searchResults.length > 14" class="mt-6 text-center">
+        <div v-if="filteredResults.length > 14" class="mt-6 text-center">
           <button class="px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors">
             Load More Results
           </button>
@@ -202,22 +233,35 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { Search, X, Cog } from 'lucide-vue-next'
 import { useMoviesStore } from '@/stores/movies'
 import MediaCard from '@/components/MediaCard.vue'
 import { MultiSearchResult } from 'tmdb-ts'
 
 const router = useRouter()
+const route = useRoute()
 const moviesStore = useMoviesStore()
 const searchQuery = ref('')
+const filterType = ref<'all' | 'movie' | 'tv'>('all')
+const recentSearches = ref<string[]>(JSON.parse(localStorage.getItem('recentSearches') || '[]'))
 let searchTimeout: number
+
+const saveRecent = (q: string) => {
+  const normalized = q.trim()
+  if (!normalized || normalized.length < 2) return
+  const next = [normalized, ...recentSearches.value.filter(s => s.toLowerCase() !== normalized.toLowerCase())].slice(0, 10)
+  recentSearches.value = next
+  localStorage.setItem('recentSearches', JSON.stringify(next))
+}
 
 const handleSearch = () => {
   clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
-    moviesStore.searchMulti(searchQuery.value)
+    const q = searchQuery.value.trim()
+    if (q) saveRecent(q)
+    moviesStore.searchMulti(q)
   }, 300)
 }
 
@@ -225,6 +269,28 @@ const clearSearch = () => {
   searchQuery.value = ''
   moviesStore.clearSearch()
 }
+
+const filteredResults = computed(() => {
+  if (filterType.value === 'all') return moviesStore.searchResults
+  return moviesStore.searchResults.filter(r => r.media_type === filterType.value)
+})
+
+const selectRecent = (q: string) => {
+  searchQuery.value = q
+  moviesStore.searchMulti(q)
+}
+
+const clearRecent = () => {
+  recentSearches.value = []
+  localStorage.removeItem('recentSearches')
+}
+
+watch(() => route.query.q, (q) => {
+  if (typeof q === 'string' && q) {
+    searchQuery.value = q
+    moviesStore.searchMulti(q)
+  }
+}, { immediate: true })
 
 const goToDetails = (item: MultiSearchResult) => {
   const mediaType = item.media_type
