@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen bg-gray-900 flex flex-col">
+  <div class="min-h-screen flex flex-col">
     <!-- Header (fixed below the status bar; never scrolls under it) -->
     <header class="flex-shrink-0 z-50 bg-gray-900 border-b border-gray-800" style="padding-top: env(safe-area-inset-top, 0px)">
       <div class="max-w-7xl mx-auto px-4 py-4">

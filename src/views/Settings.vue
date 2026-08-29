@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-900 text-white p-4">
+  <div class="min-h-screen text-white p-4">
     <div class="h-safe-top"></div>
     <div class="max-w-4xl mx-auto">
       <div class="flex items-center mb-6">
@@ -35,7 +35,7 @@
             v-model="searchQuery"
             type="text"
             placeholder="Search services..."
-            class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
             aria-label="Search services"
           />
         </div>
@@ -64,7 +64,7 @@
                 v-for="instance in getInstancesForService(service.id)"
                 :key="instance.id"
                 class="bg-gray-700 rounded-lg p-4 flex justify-between items-center relative group"
-                :class="{ 'border-2 border-blue-500': instance.isDefault }"
+                :class="{ 'border-2 border-primary-500': instance.isDefault }"
                 role="listitem"
                 :aria-label="`${instance.name} instance`"
               >
@@ -77,7 +77,7 @@
                 <div class="flex space-x-2">
                   <button
                     @click="editInstance(service, instance)"
-                    class="p-1.5 text-blue-400 hover:text-blue-300 transition-colors"
+                    class="p-1.5 text-primary-400 hover:text-primary-300 transition-colors"
                     aria-label="Edit instance"
                     :title="`Edit ${instance.name}`"
                   >
@@ -121,7 +121,7 @@
                 <!-- Default instance badge -->
                 <div
                   v-if="instance.isDefault"
-                  class="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full"
+                  class="absolute top-2 right-2 bg-primary-500 text-white text-xs px-2 py-0.5 rounded-full"
                 >
                   Default
                 </div>
@@ -131,7 +131,7 @@
             <button
               @click="addNewInstance(service)"
               :disabled="!isPro"
-              class="mt-2 flex items-center text-blue-400 hover:text-blue-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors text-sm"
+              class="mt-2 flex items-center text-primary-400 hover:text-primary-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors text-sm"
               :aria-label="`Add ${service.name} instance`"
               :title="
                 !isPro
@@ -270,7 +270,7 @@
             v-if="!isPro"
             @click="handlePurchase"
             :disabled="loadingOfferings || !currentOffering"
-            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            class="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <span
               v-if="purchaseLoading"
@@ -377,7 +377,7 @@
                 v-model="instanceForm.name"
                 type="text"
                 required
-                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="e.g., My Jellyfin Server"
                 :aria-invalid="!!nameError"
                 @input="validateName"
@@ -399,7 +399,7 @@
                 v-model="instanceForm.baseUrl"
                 :type="currentService?.id === 'kodi' ? 'text' : 'url'"
                 required
-                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 :placeholder="getUrlPlaceholder(currentService?.id)"
                 :aria-invalid="!!urlError"
                 @input="validateUrl"
@@ -428,7 +428,7 @@
                 id="apiKey"
                 v-model="instanceForm.apiKey"
                 type="password"
-                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="Leave empty if not needed"
               />
             </div>
@@ -438,7 +438,7 @@
                 id="isDefault"
                 v-model="instanceForm.isDefault"
                 type="checkbox"
-                class="h-4 w-4 text-blue-500 rounded border-gray-600 bg-gray-700 focus:ring-blue-500"
+                class="h-4 w-4 text-primary-500 rounded border-gray-600 bg-gray-700 focus:ring-primary-500"
                 @change="handleDefaultChange"
               />
               <label for="isDefault" class="ml-2 block text-sm text-gray-300">
@@ -457,7 +457,7 @@
             </button>
             <button
               type="submit"
-              class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
               :disabled="!!nameError || !!urlError || isSaving"
             >
               <span v-if="isSaving" class="flex items-center">
@@ -575,7 +575,7 @@
           </button>
           <button
             @click="confirmDefaultChange"
-            class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
           >
             Confirm
           </button>

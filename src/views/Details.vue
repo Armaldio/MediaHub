@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-900">
+  <div class="min-h-screen">
     <!-- Safe Area Top -->
     <div class="h-safe-top"></div>
 
@@ -42,6 +42,36 @@
         <ArrowLeft class="h-6 w-6" />
       </button>
 
+      <!-- Loading Skeleton -->
+      <div v-if="detailsLoading">
+        <div class="max-w-7xl mx-auto px-4 w-full py-8">
+          <div class="flex flex-col lg:flex-row items-start gap-8">
+            <div class="flex-shrink-0 mt-12 lg:mt-0 lg:pt-12">
+              <div class="h-48 w-32 bg-gray-800 rounded-xl animate-pulse"></div>
+            </div>
+            <div class="flex-1 space-y-4">
+              <div class="h-10 bg-gray-800 rounded-lg animate-pulse w-3/4"></div>
+              <div class="flex gap-4">
+                <div class="h-6 bg-gray-800 rounded animate-pulse w-20"></div>
+                <div class="h-6 bg-gray-800 rounded animate-pulse w-16"></div>
+                <div class="h-6 bg-gray-800 rounded animate-pulse w-24"></div>
+              </div>
+              <div class="flex gap-2">
+                <div class="h-8 bg-gray-800 rounded-full animate-pulse w-20"></div>
+                <div class="h-8 bg-gray-800 rounded-full animate-pulse w-24"></div>
+              </div>
+              <div class="space-y-2 pt-2">
+                <div class="h-4 bg-gray-800 rounded animate-pulse"></div>
+                <div class="h-4 bg-gray-800 rounded animate-pulse w-5/6"></div>
+                <div class="h-4 bg-gray-800 rounded animate-pulse w-4/6"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actual Content -->
+      <div v-else>
       <!-- Hero Section with Parallax -->
       <div class="relative backdrop overflow-hidden">
         <!-- Parallax Backdrop -->
@@ -149,7 +179,7 @@
                     >
                       <button
                         @click="toggleOverview"
-                        class="text-sm font-medium text-blue-400 hover:text-blue-300 transition-all duration-200 flex items-top gap-1 group bg-gray-900/80 px-3 py-1.5 rounded-lg"
+                        class="text-sm font-medium text-primary-400 hover:text-primary-300 transition-all duration-200 flex items-top gap-1 group bg-gray-900/80 px-3 py-1.5 rounded-lg"
                       >
                         {{ isOverviewExpanded ? "Show Less" : "Read More" }}
                         <svg
@@ -212,6 +242,7 @@
           </div>
         </div>
       </div>
+      </div>
 
       <!-- Gradient transition -->
       <div
@@ -256,7 +287,7 @@
               <input
                 v-model="searchQuery"
                 type="text"
-                class="block w-full pl-10 pr-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                class="block w-full pl-10 pr-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400                 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="Search services..."
               />
             </div>
@@ -302,7 +333,7 @@
                         :class="{
                           'bg-green-500':
                             servicesStore.isServiceInstalled(service),
-                          'bg-blue-500':
+                          'bg-primary-500':
                             !servicesStore.isServiceInstalled(service),
                         }"
                         :title="
