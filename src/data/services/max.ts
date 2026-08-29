@@ -1,6 +1,5 @@
 import maxIcon from "../../assets/apps/images/max/assets/play_store.png";
 import { Service } from "../../types/index";
-import { withAffiliate } from "../../utils/affiliate";
 
 export const max: Service = {
   id: "max",
@@ -30,7 +29,7 @@ export const max: Service = {
       name: "Website",
       mediaType: "all",
       enabled: (data) => !!data.hboMaxId,
-      url: (data) => withAffiliate(`https://play.max.com/${data.hboMaxId}`, "max"),
+      url: (data) => `https://play.max.com/${data.hboMaxId}`,
     },
   ],
 };

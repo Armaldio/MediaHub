@@ -12,25 +12,6 @@ export interface ExternalIds {
   paramountPlusId?: string;
   letterboxdId?: string;
   mubiId?: string;
-  rottenTomatoesId?: string;
-  metacriticId?: string;
-  anilistId?: string;
-  peacockId?: string;
-  huluMovieId?: string;
-  huluSeriesId?: string;
-  crunchyrollId?: string;
-  kinopoiskId?: string;
-  doubanId?: string;
-  filmAffinityId?: string;
-  csfdId?: string;
-  itunesId?: string;
-  googlePlayId?: string;
-  sensCritiqueId?: string;
-  allMovieId?: string;
-  allocineId?: string;
-  filmwebId?: string;
-  boxOfficeMojoId?: string;
-  filmarksId?: string;
 }
 
 export interface FormattedDetails {
@@ -46,25 +27,6 @@ export interface FormattedDetails {
   paramountPlusId?: string;
   letterboxdId?: string;
   mubiId?: string;
-  rottenTomatoesId?: string;
-  metacriticId?: string;
-  anilistId?: string;
-  peacockId?: string;
-  huluMovieId?: string;
-  huluSeriesId?: string;
-  crunchyrollId?: string;
-  kinopoiskId?: string;
-  doubanId?: string;
-  filmAffinityId?: string;
-  csfdId?: string;
-  itunesId?: string;
-  googlePlayId?: string;
-  sensCritiqueId?: string;
-  allMovieId?: string;
-  allocineId?: string;
-  filmwebId?: string;
-  boxOfficeMojoId?: string;
-  filmarksId?: string;
   wikidataId?: string;
   facebookId?: string;
   instagramId?: string;

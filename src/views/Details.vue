@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen">
+  <div class="min-h-screen bg-gray-900">
     <!-- Safe Area Top -->
     <div class="h-safe-top"></div>
 
@@ -42,36 +42,6 @@
         <ArrowLeft class="h-6 w-6" />
       </button>
 
-      <!-- Loading Skeleton -->
-      <div v-if="detailsLoading">
-        <div class="max-w-7xl mx-auto px-4 w-full py-8">
-          <div class="flex flex-col lg:flex-row items-start gap-8">
-            <div class="flex-shrink-0 mt-12 lg:mt-0 lg:pt-12">
-              <div class="h-48 w-32 bg-gray-800 rounded-xl animate-pulse"></div>
-            </div>
-            <div class="flex-1 space-y-4">
-              <div class="h-10 bg-gray-800 rounded-lg animate-pulse w-3/4"></div>
-              <div class="flex gap-4">
-                <div class="h-6 bg-gray-800 rounded animate-pulse w-20"></div>
-                <div class="h-6 bg-gray-800 rounded animate-pulse w-16"></div>
-                <div class="h-6 bg-gray-800 rounded animate-pulse w-24"></div>
-              </div>
-              <div class="flex gap-2">
-                <div class="h-8 bg-gray-800 rounded-full animate-pulse w-20"></div>
-                <div class="h-8 bg-gray-800 rounded-full animate-pulse w-24"></div>
-              </div>
-              <div class="space-y-2 pt-2">
-                <div class="h-4 bg-gray-800 rounded animate-pulse"></div>
-                <div class="h-4 bg-gray-800 rounded animate-pulse w-5/6"></div>
-                <div class="h-4 bg-gray-800 rounded animate-pulse w-4/6"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Actual Content -->
-      <div v-else>
       <!-- Hero Section with Parallax -->
       <div class="relative backdrop overflow-hidden">
         <!-- Parallax Backdrop -->
@@ -172,7 +142,7 @@
                     >
                       <button
                         @click="toggleOverview"
-                        class="text-sm font-medium text-primary-400 hover:text-primary-300 transition-all duration-200 flex items-top gap-1 group bg-gray-900/80 px-3 py-1.5 rounded-lg"
+                        class="text-sm font-medium text-blue-400 hover:text-blue-300 transition-all duration-200 flex items-top gap-1 group bg-gray-900/80 px-3 py-1.5 rounded-lg"
                       >
                         {{ isOverviewExpanded ? "Show Less" : "Read More" }}
                         <svg
@@ -235,7 +205,6 @@
           </div>
         </div>
       </div>
-      </div>
 
       <!-- Gradient transition -->
           <div
@@ -280,7 +249,7 @@
               <input
                 v-model="searchQuery"
                 type="text"
-                class="block w-full pl-10 pr-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400                 focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                class="block w-full pl-10 pr-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="Search services..."
               />
             </div>
@@ -326,7 +295,7 @@
                         :class="{
                           'bg-green-500':
                             servicesStore.isServiceInstalled(service),
-                          'bg-primary-500':
+                          'bg-blue-500':
                             !servicesStore.isServiceInstalled(service),
                         }"
                         :title="
@@ -701,25 +670,19 @@ const scrollToService = (serviceId: string) => {
 
 const formattedDetails = ref<FormattedDetails | null>(null);
 
-// Fetch Wikidata claims in a single request (filtered by selected services)
-const fetchWikidataClaimsBulk = async (
+// Fetch a single Wikidata claim property
+const fetchWikidataClaim = async (
   wikidataId: string,
-  properties: string[]
-): Promise<Record<string, string | undefined>> => {
-  if (properties.length === 0) return {};
+  property: string
+): Promise<string | undefined> => {
   try {
-    const url = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${wikidataId}&props=claims&format=json&origin=*`;
+    const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidataId}&property=${property}&format=json&origin=*`;
     const response = await fetch(url);
     const data = await response.json();
-    const claims = data?.entities?.[wikidataId]?.claims;
-    const result: Record<string, string | undefined> = {};
-    for (const prop of properties) {
-      result[prop] = claims?.[prop]?.[0]?.mainsnak?.datavalue?.value;
-    }
-    return result;
+    return data?.claims?.[property]?.[0]?.mainsnak?.datavalue?.value;
   } catch (error) {
-    console.error(`Error fetching bulk claims for ${wikidataId}:`, error);
-    return {};
+    console.error(`Error fetching ${property} from Wikidata:`, error);
+    return undefined;
   }
 };
 
@@ -784,74 +747,34 @@ watch(
       return;
     }
 
-    // Single Wikidata request filtered by selected services
+    // Fetch all external IDs from Wikidata in parallel
     const tvdbProperty = props.mediaType === "movie" ? "P12196" : "P4835";
     const disneyProperty = props.mediaType === "movie" ? "P7595" : "P7596";
     const appleProperty = props.mediaType === "movie" ? "P9586" : "P9751";
 
-    const selectedSet = new Set(
-      servicesStore.selectedServices.map((s: any) => s.parentServiceId || s.id)
-    );
-
-    const propsToFetch: string[] = [];
-    if (selectedSet.has("tvdb") && !externalIds.tvdb_id) propsToFetch.push(tvdbProperty);
-    if (selectedSet.has("netflix")) propsToFetch.push("P1874");
-    if (selectedSet.has("prime_video")) propsToFetch.push("P8055");
-    if (selectedSet.has("disney_plus")) propsToFetch.push(disneyProperty);
-    if (selectedSet.has("max")) propsToFetch.push("P8298");
-    if (selectedSet.has("apple_tv_plus")) propsToFetch.push(appleProperty);
-    if (selectedSet.has("paramount_plus")) propsToFetch.push("P13147");
-    if (selectedSet.has("letterboxd")) propsToFetch.push("P6127");
-    if (selectedSet.has("mubi")) propsToFetch.push("P7299");
-    if (selectedSet.has("rotten_tomatoes")) propsToFetch.push("P1258");
-    if (selectedSet.has("metacritic")) propsToFetch.push("P1712");
-    if (selectedSet.has("anilist")) propsToFetch.push("P8729");
-    if (selectedSet.has("peacock")) propsToFetch.push("P11815");
-    if (selectedSet.has("hulu")) propsToFetch.push("P6466", "P6467");
-    if (selectedSet.has("crunchyroll")) propsToFetch.push("P11330");
-    if (selectedSet.has("kinopoisk")) propsToFetch.push("P2603");
-    if (selectedSet.has("douban")) propsToFetch.push("P4529");
-    if (selectedSet.has("filmaffinity")) propsToFetch.push("P480");
-    if (selectedSet.has("csfd")) propsToFetch.push("P2529");
-    if (selectedSet.has("itunes")) propsToFetch.push("P6398");
-    if (selectedSet.has("googleplay")) propsToFetch.push("P6562");
-    if (selectedSet.has("senscritique")) propsToFetch.push("P10100");
-    if (selectedSet.has("allmovie")) propsToFetch.push("P1562");
-    if (selectedSet.has("allocine")) propsToFetch.push("P1265");
-    if (selectedSet.has("filmweb")) propsToFetch.push("P3995");
-    if (selectedSet.has("boxofficemojo")) propsToFetch.push("P1237");
-    if (selectedSet.has("filmarks")) propsToFetch.push("P13904");
-
-    const claims = await fetchWikidataClaimsBulk(wikidata_id, propsToFetch);
-
-    const tvdbClaim = claims[tvdbProperty];
-    const netflixId = claims["P1874"];
-    const amazonPrimeId = claims["P8055"];
-    const disneyPlusId = claims[disneyProperty];
-    const hboMaxId = claims["P8298"];
-    const appleTvId = claims[appleProperty];
-    const paramountPlusId = claims["P13147"];
-    const letterboxdId = claims["P6127"];
-    const mubiId = claims["P7299"];
-    const rottenTomatoesId = claims["P1258"];
-    const metacriticId = claims["P1712"];
-    const anilistId = claims["P8729"];
-    const peacockId = claims["P11815"];
-    const huluMovieId = claims["P6466"];
-    const huluSeriesId = claims["P6467"];
-    const crunchyrollId = claims["P11330"];
-    const kinopoiskId = claims["P2603"];
-    const doubanId = claims["P4529"];
-    const filmAffinityId = claims["P480"];
-    const csfdId = claims["P2529"];
-    const itunesId = claims["P6398"];
-    const googlePlayId = claims["P6562"];
-    const sensCritiqueId = claims["P10100"];
-    const allMovieId = claims["P1562"];
-    const allocineId = claims["P1265"];
-    const filmwebId = claims["P3995"];
-    const boxOfficeMojoId = claims["P1237"];
-    const filmarksId = claims["P13904"];
+    const [
+      tvdbClaim,
+      netflixId,
+      amazonPrimeId,
+      disneyPlusId,
+      hboMaxId,
+      appleTvId,
+      paramountPlusId,
+      letterboxdId,
+      mubiId,
+    ] = await Promise.all([
+      externalIds.tvdb_id
+        ? Promise.resolve(undefined)
+        : fetchWikidataClaim(wikidata_id, tvdbProperty),
+      fetchWikidataClaim(wikidata_id, "P1874"),
+      fetchWikidataClaim(wikidata_id, "P8055"),
+      fetchWikidataClaim(wikidata_id, disneyProperty),
+      fetchWikidataClaim(wikidata_id, "P8298"),
+      fetchWikidataClaim(wikidata_id, appleProperty),
+      fetchWikidataClaim(wikidata_id, "P13147"),
+      fetchWikidataClaim(wikidata_id, "P6127"),
+      fetchWikidataClaim(wikidata_id, "P7299"),
+    ]);
 
     const tvdbId =
       externalIds.tvdb_id?.toString() ||
@@ -869,25 +792,6 @@ watch(
       paramountPlusId,
       letterboxdId,
       mubiId,
-      rottenTomatoesId,
-      metacriticId: metacriticId ? String(metacriticId) : undefined,
-      anilistId: anilistId ? String(anilistId) : undefined,
-      peacockId: peacockId ? String(peacockId) : undefined,
-      huluMovieId: huluMovieId ? String(huluMovieId) : undefined,
-      huluSeriesId: huluSeriesId ? String(huluSeriesId) : undefined,
-      crunchyrollId: crunchyrollId ? String(crunchyrollId) : undefined,
-      kinopoiskId: kinopoiskId ? String(kinopoiskId) : undefined,
-      doubanId: doubanId ? String(doubanId) : undefined,
-      filmAffinityId: filmAffinityId ? String(filmAffinityId) : undefined,
-      csfdId: csfdId ? String(csfdId) : undefined,
-      itunesId: itunesId ? String(itunesId) : undefined,
-      googlePlayId: googlePlayId ? String(googlePlayId) : undefined,
-      sensCritiqueId: sensCritiqueId ? String(sensCritiqueId) : undefined,
-      allMovieId: allMovieId ? String(allMovieId) : undefined,
-      allocineId: allocineId ? String(allocineId) : undefined,
-      filmwebId: filmwebId ? String(filmwebId) : undefined,
-      boxOfficeMojoId: boxOfficeMojoId ? String(boxOfficeMojoId) : undefined,
-      filmarksId: filmarksId ? String(filmarksId) : undefined,
     };
 
     // Fetch TVDB data and enhance the formatted details
@@ -913,10 +817,9 @@ const openDeepLink = async (service: Service, link: DeepLink) => {
     const details = formattedDetails.value!;
     // Prefer customUrlBuilder (instance-aware web URL) when available,
     // otherwise fall back to the link's url resolver (with the instance)
-    const resolvedUrl =
-      link.customUrlBuilder && instance
-        ? await link.customUrlBuilder(details, instance)
-        : await link.url(details, instance);
+    const resolvedUrl = link.customUrlBuilder
+      ? await link.customUrlBuilder(details, instance!)
+      : await link.url(details, instance);
     if (!resolvedUrl) return;
 
     // Handle different types of deep links

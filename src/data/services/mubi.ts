@@ -13,14 +13,14 @@ export const mubi: Service = {
   deepLinks: [
     {
       mediaType: "movie",
-      enabled: (data) => data.type === "movie" && !!data.mubiId,
+      enabled: (data) => data.type === "movie",
       name: "App",
       url: (data) => `mubi://films/${data.mubiId}`,
       requiresApp: true,
     },
     {
       mediaType: "tv",
-      enabled: (data) => data.type === "tv" && !!data.mubiId,
+      enabled: (data) => data.type === "tv",
       name: "App",
       url: (data) => `mubi://films/${data.mubiId}`,
       requiresApp: true,

@@ -19,19 +19,5 @@ export const justwatch: Service = {
       url: (data) => `justwatch://title/movie/${data.tmdbId}`,
       requiresApp: true,
     },
-    {
-      name: "App",
-      mediaType: "tv",
-      enabled: (data) => data.type === "tv",
-      url: (data) => `justwatch://title/tv/${data.tmdbId}`,
-      requiresApp: true,
-    },
-    {
-      name: "Website",
-      mediaType: "all",
-      enabled: (data) => data.type === "movie" || data.type === "tv",
-      url: (data) =>
-        `https://www.justwatch.com/us/search?q=${encodeURIComponent(data.title || "")}`,
-    },
   ],
 };

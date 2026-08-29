@@ -1,10 +1,9 @@
 export interface DeepLinkParams {
-  type: 'movie' | 'show' | 'search';
+  type: 'movie' | 'show';
   tmdbId?: string;
   imdbId?: string;
   season?: string;
   episode?: string;
-  query?: string;
 }
 
 export function parseDeepLink(url: string): DeepLinkParams | null {
@@ -43,17 +42,6 @@ export function parseDeepLink(url: string): DeepLinkParams | null {
         episode: params.episode
       };
     }
-
-    // Handle search deep links (share-to-search)
-    if (path === 'search') {
-      const params = Object.fromEntries(parsedUrl.searchParams);
-      const query = params.q || params.query || params.text || '';
-      if (!query) return null;
-      return {
-        type: 'search',
-        query: query
-      };
-    }
     
     return null;
   } catch (error) {
@@ -63,13 +51,6 @@ export function parseDeepLink(url: string): DeepLinkParams | null {
 }
 
 export function navigateFromDeepLink(router: any, params: DeepLinkParams) {
-  if (params.type === 'search' && params.query) {
-    router.push({
-      name: 'home',
-      query: { q: params.query }
-    });
-    return;
-  }
   const mediaType = params.type === 'movie' ? 'movie' : 'tv';
   const id = params.tmdbId || params.imdbId;
   const idType = params.tmdbId ? 'tmdb' : 'imdb';

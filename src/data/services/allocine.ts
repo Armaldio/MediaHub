@@ -14,31 +14,17 @@ export const allocine: Service = {
   deepLinks: [
     {
       mediaType: "movie",
-      enabled: (data) => data.type === "movie" && !!data.allocineId,
+      enabled: (data) => data.type === "movie",
       name: "App",
-      url: (data) => `allocine://film/${data.allocineId}`,
+      url: (data) => `allocine://film/${data.tmdbId}`,
       requiresApp: true,
     },
     {
       mediaType: "tv",
-      enabled: (data) => data.type === "tv" && !!data.allocineId,
+      enabled: (data) => data.type === "tv",
       name: "App",
-      url: (data) => `allocine://series/${data.allocineId}`,
+      url: (data) => `allocine://series/${data.tmdbId}`,
       requiresApp: true,
-    },
-    {
-      mediaType: "movie",
-      enabled: (data) => data.type === "movie" && !!data.allocineId,
-      name: "Website",
-      url: (data) =>
-        `https://www.allocine.fr/film/fichefilm_gen_cfilm=${data.allocineId}.html`,
-    },
-    {
-      mediaType: "tv",
-      enabled: (data) => data.type === "tv" && !!data.allocineId,
-      name: "Website",
-      url: (data) =>
-        `https://www.allocine.fr/film/fichefilm_gen_cfilm=${data.allocineId}.html`,
     },
   ],
 };

@@ -1,6 +1,5 @@
 import primeVideoIcon from "../../assets/apps/images/prime_video/assets/play_store.png";
 import { Service } from "../../types/index";
-import { withAffiliate } from "../../utils/affiliate";
 
 export const primeVideo: Service = {
   id: "prime_video",
@@ -25,10 +24,7 @@ export const primeVideo: Service = {
       mediaType: "all",
       enabled: (data) => !!data.amazonPrimeId,
       url: (data) =>
-        withAffiliate(
-          `https://www.amazon.com/gp/video/detail/${data.amazonPrimeId}/`,
-          "prime_video"
-        ),
+        `https://www.amazon.com/gp/video/detail/${data.amazonPrimeId}/`,
     },
   ],
 };

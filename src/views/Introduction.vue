@@ -56,7 +56,7 @@
             <!-- Selected checkmark (always show when selected) -->
             <div
               v-if="servicesStore.isServiceSelected(service.id)"
-              class="w-5 h-5 flex items-center justify-center bg-primary-600 rounded-full text-white pointer-events-none"
+              class="w-5 h-5 flex items-center justify-center bg-indigo-600 rounded-full text-white pointer-events-none"
               title="Selected"
             >
               <svg
@@ -87,7 +87,7 @@
             <!-- Dot for web-only services with native app option -->
             <div
               v-else-if="service.androidAppId"
-              class="w-4 h-4 flex items-center justify-center bg-primary-600/90 rounded-full text-white text-[10px] pointer-events-none"
+              class="w-4 h-4 flex items-center justify-center bg-blue-600/90 rounded-full text-white text-[10px] pointer-events-none"
               title="Native app available but not installed"
             >
               ⬇️

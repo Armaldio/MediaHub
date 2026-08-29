@@ -21,7 +21,7 @@ export const moviebase: Service = {
     {
       name: "App",
       mediaType: "tv",
-      enabled: (data) => data.type === "tv" && !!data.imdbId,
+      enabled: (data) => data.type === "tv",
       url: (data) => `moviebase://imdb/${data.imdbId}`,
       requiresApp: true,
     },

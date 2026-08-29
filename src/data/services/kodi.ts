@@ -18,12 +18,12 @@ export const kodi: Service = {
       mediaType: "all",
       url: (data, instance) => {
         if (instance) {
-          return `${instance.baseUrl.replace(/\/$/, "")}/web/index.html`;
+          return `kodi://${instance.baseUrl}`;
         }
         return `kodi://`;
       },
       customUrlBuilder: (data, instance) => {
-        return `${instance.baseUrl.replace(/\/$/, "")}/web/index.html`;
+        return `http://${instance.baseUrl}`;
       },
     },
     {

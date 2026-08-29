@@ -1,6 +1,5 @@
 import appleTvPlusIcon from "../../assets/apps/images/apple_tv_plus/assets/play_store.png";
 import { Service } from "../../types/index";
-import { withAffiliate } from "../../utils/affiliate";
 
 export const appleTvPlus: Service = {
   id: "apple_tv_plus",
@@ -31,20 +30,14 @@ export const appleTvPlus: Service = {
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
       url: (data) =>
-        withAffiliate(
-          `https://tv.apple.com/movie/${data.appleTvId || data.tmdbId}`,
-          "apple_tv_plus"
-        ),
+        `https://tv.apple.com/movie/${data.appleTvId || data.tmdbId}`,
     },
     {
       name: "Website",
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       url: (data) =>
-        withAffiliate(
-          `https://tv.apple.com/show/${data.appleTvId || data.tmdbId}`,
-          "apple_tv_plus"
-        ),
+        `https://tv.apple.com/show/${data.appleTvId || data.tmdbId}`,
     },
   ],
 };
