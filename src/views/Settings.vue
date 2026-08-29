@@ -323,6 +323,20 @@
           </button>
         </div>
       </div>
+
+      <!-- Contact Support Section -->
+      <div class="bg-gray-800 rounded-lg p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-2">Contact Support</h2>
+        <p class="text-gray-400 mb-4">
+          Need help? Send us an email and we'll get back to you.
+        </p>
+        <button
+          @click="contactSupport"
+          class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+        >
+          Contact Support
+        </button>
+      </div>
     </div>
 
     <!-- Add/Edit Instance Modal -->
@@ -578,6 +592,7 @@ import { ref, computed, onMounted } from "vue";
 import { useServicesStore } from "@/stores/services";
 import type { Service, CustomServiceInstance } from "@/types";
 import { useProducts } from "@/composables/products";
+import { Device } from "@capacitor/device";
 import { Purchases } from "@revenuecat/purchases-capacitor";
 import {
   RevenueCatUI,
@@ -887,6 +902,19 @@ const handleRestorePurchases = async () => {
   } finally {
     restoreLoading.value = false;
   }
+};
+
+const contactSupport = async () => {
+  let body = "";
+  try {
+    const info = await Device.getInfo();
+    body = `Platform: ${info.platform}\nOS: ${info.operatingSystem} ${info.osVersion}\nModel: ${info.model}`;
+  } catch {
+    body = `User Agent: ${navigator.userAgent}`;
+  }
+  const subject = encodeURIComponent("MediaHub Support");
+  const mailto = `mailto:contact@armaldio.xyz?subject=${subject}&body=${encodeURIComponent(body)}`;
+  window.open(mailto, "_blank");
 };
 </script>
 
