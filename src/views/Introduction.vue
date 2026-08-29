@@ -3,7 +3,7 @@
     <div class="max-w-6xl w-full">
       <!-- Header -->
       <div class="text-center mb-12 animate-fade-in">
-        <h1 class="text-5xl font-bold gradient-text mb-4">Movie Hub</h1>
+        <h1 class="text-5xl font-bold text-white mb-4">Movie Hub</h1>
         <p class="text-xl text-gray-300 mb-4">
           Choose your movie apps and services
         </p>
@@ -15,7 +15,7 @@
           </span>
         </div>
         <div
-          class="w-24 h-1 bg-gradient-to-r from-primary-500 to-secondary-500 mx-auto rounded-full"
+          class="w-24 h-1 bg-gray-700 mx-auto rounded-full"
         ></div>
       </div>
 
@@ -207,7 +207,7 @@
         <button
           @click="goToHome"
           :disabled="!servicesStore.hasSelectedServices"
-          class="px-8 py-4 bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          class="px-8 py-4 bg-primary-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           :class="{
             'hover:scale-105': servicesStore.hasSelectedServices,
             'animate-pulse': !servicesStore.hasSelectedServices,

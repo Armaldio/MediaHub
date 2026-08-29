@@ -17,7 +17,7 @@
         </div>
         
         <!-- Overlay -->
-        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
           <div class="absolute bottom-2 left-2 right-2">
             <div class="flex items-center justify-between text-white text-sm">
               <span v-if="rating" class="flex items-center gap-1">

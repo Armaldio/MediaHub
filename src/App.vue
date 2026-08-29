@@ -1,5 +1,5 @@
 <template>
-  <div id="app" class="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
+  <div id="app" class="min-h-screen bg-gray-900">
     <!-- Fixed strips painted behind the system bars so that content scrolling
          up can never appear under the status-bar icons or the nav bar. They are
          app-colored and sit behind the (translucent) native bars, keeping the

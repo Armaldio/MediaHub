@@ -28,7 +28,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #111827 0%, #581c87 50%, #111827 100%);
+  background-color: #0f0f0f;
   overscroll-behavior-y: contain;
 }
 
@@ -85,13 +85,7 @@ html {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Text Effects */
-.gradient-text {
-  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
+
 
 /* Scrollbar Utilities */
 .scrollbar-hide::-webkit-scrollbar {

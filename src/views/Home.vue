@@ -4,7 +4,7 @@
     <header class="flex-shrink-0 z-50 bg-gray-900 border-b border-gray-800" style="padding-top: env(safe-area-inset-top, 0px)">
       <div class="max-w-7xl mx-auto px-4 py-4">
         <div class="flex items-center justify-between">
-          <h1 class="text-2xl font-bold gradient-text">Movie Hub</h1>
+          <h1 class="text-2xl font-bold text-white">Movie Hub</h1>
           <div class="flex space-x-2"> 
           <button
             @click="goToIntroduction"

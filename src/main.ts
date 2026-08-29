@@ -26,7 +26,7 @@ const configure = async () => {
     try {
       // The plugin insets the WebView by default; disable that so the app
       // renders full-bleed. MainActivity already set the window to draw behind
-      // the bars, so the app's gradient shows through the transparent bars.
+      // the bars, so the app's background color shows through the transparent bars.
       await EdgeToEdge.disable();
       await EdgeToEdge.setBackgroundColor({ color: "#00000000" });
       await StatusBar.setStyle({ style: Style.Dark });

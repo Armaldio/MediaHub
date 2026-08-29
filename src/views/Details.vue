@@ -83,9 +83,7 @@
             backgroundImage: `url(${backdrop})`,
           }"
         >
-          <div
-            class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/70 to-transparent"
-          ></div>
+          <div class="absolute inset-0 bg-gray-900/90"></div>
         </div>
 
         <!-- Content -->
@@ -165,11 +163,6 @@
                           "No description available."
                         }}
                       </p>
-                      <!-- Gradient overlay when collapsed -->
-                      <!-- <div
-                        v-if="!isOverviewExpanded && showReadMore"
-                        class="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-gray-900 via-gray-900/90 to-transparent pointer-events-none"
-                      ></div> -->
                     </div>
 
                     <!-- Read More Button -->
@@ -245,9 +238,9 @@
       </div>
 
       <!-- Gradient transition -->
-      <div
-        class="relative z-10 h-24 -mt-24 bg-gradient-to-t from-gray-900 via-gray-900/90 to-transparent pointer-events-none"
-      ></div>
+          <div
+            class="relative z-10 h-24 -mt-24 bg-gray-900 pointer-events-none"
+          ></div>
 
       <!-- Services Section -->
       <div class="relative z-20 bg-gray-900">
@@ -1023,28 +1016,17 @@ const retryLoading = async () => {
   left: 0;
   right: 0;
   height: 40px;
-  background: linear-gradient(
-    to bottom,
-    rgba(17, 24, 39, 0.8) 0%,
-    rgba(17, 24, 39, 0.6) 50%,
-    rgba(17, 24, 39, 0) 100%
-  );
+  background: rgba(17, 24, 39, 0.8);
   pointer-events: none;
   z-index: 10;
 }
 
-/* Gradient transition between sections */
 .transition-gradient {
   position: relative;
   z-index: 10;
   height: 80px;
   margin-top: -40px;
-  background: linear-gradient(
-    to bottom,
-    rgba(17, 24, 39, 0) 0%,
-    rgba(17, 24, 39, 0.8) 30%,
-    rgba(17, 24, 39, 1) 100%
-  );
+  background: rgba(17, 24, 39, 1);
   pointer-events: none;
 }
 </style>

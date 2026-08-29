@@ -178,7 +178,7 @@
               :class="isPro ? 'bg-green-500' : 'bg-red-500'"
             ></div>
             <span class="text-lg font-medium">
-              {{ isPro ? "Active Subscription" : "No Active Subscription" }}
+              {{ isPro ? "You're subscribed" : "Not subscribed" }}
             </span>
           </div>
           <p v-if="isPro" class="text-gray-400">
@@ -186,18 +186,6 @@
           </p>
           <p v-else class="text-gray-400">
             Subscribe to unlock unlimited services and custom instances.
-          </p>
-        </div>
-
-        <!-- Customer ID -->
-        <div v-if="customerId" class="mb-4">
-          <p class="text-xs text-gray-500">RevenueCat ID</p>
-          <p class="text-sm text-gray-400 font-mono break-all">{{ customerId }}</p>
-          <p v-if="activeEntitlements.length" class="text-xs text-green-400 mt-1">
-            Active: {{ activeEntitlements.join(", ") }}
-          </p>
-          <p v-else class="text-xs text-yellow-400 mt-1">
-            No active entitlements found
           </p>
         </div>
 
@@ -209,9 +197,8 @@
           <h3 class="text-lg font-medium mb-2">
             {{ currentOffering.serverDescription }}
           </h3>
-          <ul class="text-sm text-gray-400 mb-3 space-y-1">
-            <li>• Unlimited service selection</li>
-            <li>• Custom service instances</li>
+          <ul v-if="features.length" class="text-sm text-gray-400 mb-3 space-y-1">
+            <li v-for="feature in features" :key="feature">• {{ feature }}</li>
           </ul>
           <div v-for="p in currentOffering.availablePackages" :key="p.id">
             <p class="text-gray-300 mb-2">
@@ -623,6 +610,7 @@ const loadingOfferings = ref(false);
 const offeringsError = ref<string | null>(null);
 const purchaseLoading = ref(false);
 const restoreLoading = ref(false);
+const features = ref<string[]>([]);
 
 const instanceForm = ref({
   name: "",
@@ -657,8 +645,22 @@ const fetchOfferings = async () => {
   try {
     const offerings = await Purchases.getOfferings();
     console.log("offerings", JSON.stringify(offerings, null, 2));
-    // Get the current offering (usually the first one)
     currentOffering.value = offerings.current;
+
+    if (currentOffering.value?.availablePackages?.length) {
+      const pkg = currentOffering.value.availablePackages[0];
+      const meta = pkg?.product?.metadata;
+      const raw = meta?.features;
+      if (Array.isArray(raw)) {
+        features.value = raw.filter(Boolean);
+      } else if (typeof raw === "string") {
+        try {
+          features.value = JSON.parse(raw).filter(Boolean);
+        } catch {
+          // ignore invalid JSON
+        }
+      }
+    }
   } catch (error) {
     console.error("Error fetching offerings:", error);
     offeringsError.value =
