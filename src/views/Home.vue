@@ -87,25 +87,45 @@
 
       <!-- Search Results -->
       <section v-else-if="moviesStore.searchResults.length > 0" class="mb-12">
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex justify-between items-center mb-4">
           <h2 class="text-2xl font-bold text-white">Search Results</h2>
           <span class="text-gray-400">{{ filteredResults.length }} results</span>
         </div>
-        <div class="relative">
-          <div class="flex space-x-4 py-4 overflow-x-auto scrollbar-hide">
-            <MediaCard
-              v-for="item in filteredResults.slice(0, 14)"
-              :key="`search-${item.id}`"
-              :media="item"
-              @click="goToDetails(item)"
-              class="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 transition-transform duration-200"
+        <div class="space-y-2">
+          <div
+            v-for="item in filteredResults"
+            :key="`search-${item.id}`"
+            @click="goToDetails(item)"
+            class="flex items-center gap-4 p-2 rounded-lg hover:bg-gray-800 cursor-pointer transition-colors"
+          >
+            <img
+              v-if="getResultPoster(item)"
+              :src="getResultPoster(item)"
+              :alt="getResultTitle(item)"
+              class="w-12 h-18 object-cover rounded-md bg-gray-800 flex-shrink-0"
             />
+            <div v-else class="w-12 h-18 bg-gray-800 rounded-md flex items-center justify-center flex-shrink-0">
+              <Film class="h-6 w-6 text-gray-500" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-white font-medium truncate">
+                {{ getResultTitle(item) }}
+              </h3>
+              <div class="flex items-center gap-2 text-sm text-gray-400 mt-0.5">
+                <span v-if="getResultYear(item)">
+                  {{ getResultYear(item) }}
+                </span>
+                <span v-if="(item as any).media_type" class="px-1.5 py-0.5 bg-gray-700 rounded text-xs">
+                  {{ (item as any).media_type === 'movie' ? 'Movie' : 'TV' }}
+                </span>
+                <span v-if="getResultRating(item)" class="flex items-center gap-1">
+                  <Star class="h-3 w-3 text-yellow-500 fill-current" />
+                  {{ getResultRating(item).toFixed(1) }}
+                </span>
+              </div>
+            </div>
+            <ChevronRight class="h-5 w-5 text-gray-500 flex-shrink-0" />
           </div>
-        </div>
-        <div v-if="filteredResults.length > 14" class="mt-6 text-center">
-          <button class="px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors">
-            Load More Results
-          </button>
         </div>
       </section>
 
@@ -235,7 +255,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Search, X, Cog } from 'lucide-vue-next'
+import { Search, X, Cog, Film, Star, ChevronRight } from 'lucide-vue-next'
 import { useMoviesStore } from '@/stores/movies'
 import MediaCard from '@/components/MediaCard.vue'
 import { MultiSearchResult } from 'tmdb-ts'
@@ -274,6 +294,25 @@ const filteredResults = computed(() => {
   if (filterType.value === 'all') return moviesStore.searchResults
   return moviesStore.searchResults.filter(r => r.media_type === filterType.value)
 })
+
+const getResultPoster = (item: MultiSearchResult) => {
+  const path = (item as any).poster_path as string | null | undefined
+  if (!path) return undefined
+  return moviesStore.getImageUrl(path, 'w92') as string | undefined
+}
+
+const getResultTitle = (item: MultiSearchResult) => {
+  return (item as any).title || (item as any).name || ''
+}
+
+const getResultYear = (item: MultiSearchResult) => {
+  const date = (item as any).release_date || (item as any).first_air_date || ''
+  return date ? new Date(date).getFullYear() : null
+}
+
+const getResultRating = (item: MultiSearchResult) => {
+  return (item as any).vote_average || 0
+}
 
 const selectRecent = (q: string) => {
   searchQuery.value = q
