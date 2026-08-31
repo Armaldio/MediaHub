@@ -216,9 +216,9 @@
           {{
             servicesStore.hasSelectedServices
               ? `Continue with ${
-                  servicesStore.selectedServices.length
+                  selectedServices.length
                 } service${
-                  servicesStore.selectedServices.length > 1 ? "s" : ""
+                  selectedServices.length > 1 ? "s" : ""
                 }`
               : "Select at least one service to continue"
           }}
@@ -357,7 +357,10 @@ const showInstalledOnly = ref(false);
 const { isPro } = useProducts();
 
 const selectedServices = computed({
-  get: () => servicesStore.selectedServices,
+  get: () =>
+    servicesStore.selectedServices.filter(
+      (service) => !(service.supportsCustomInstances && !('isInstance' in service))
+    ),
   set: (value) => {
     // Update the order in the store
     servicesStore.reorderServices(value);
@@ -365,10 +368,14 @@ const selectedServices = computed({
 });
 
 const availableServices = computed(() => {
+  let services = servicesStore.availableServices.filter(
+    (service) => !(service.supportsCustomInstances && !('isInstance' in service))
+  );
+
   if (!showInstalledOnly.value) {
-    return servicesStore.availableServices;
+    return services;
   }
-  return servicesStore.availableServices.filter((service) =>
+  return services.filter((service) =>
     servicesStore.isServiceInstalled(service)
   );
 });

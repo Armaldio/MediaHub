@@ -633,18 +633,20 @@ const isLinkVisible = (service: Service, link: DeepLink) => {
 
 const filteredServices = computed<Service[]>(() => {
   const query = searchQuery.value.toLowerCase();
-  return servicesStore.selectedServices.filter((service) => {
-    // Check if at least one deep link is enabled and available
-    const hasEnabledLink = service.deepLinks?.some((link) =>
-      isLinkVisible(service, link)
-    ) ?? false;
+  return servicesStore.selectedServices
+    .filter((service) => !(service.supportsCustomInstances && !('isInstance' in service)))
+    .filter((service) => {
+      // Check if at least one deep link is enabled and available
+      const hasEnabledLink = service.deepLinks?.some((link) =>
+        isLinkVisible(service, link)
+      ) ?? false;
 
-    // Check search match
-    const matchesSearch = service.name.toLowerCase().includes(query) ||
-      (service.description && service.description.toLowerCase().includes(query));
+      // Check search match
+      const matchesSearch = service.name.toLowerCase().includes(query) ||
+        (service.description && service.description.toLowerCase().includes(query));
 
-    return hasEnabledLink && matchesSearch;
-  });
+      return hasEnabledLink && matchesSearch;
+    });
 });
 
 // Scroll to a specific service
