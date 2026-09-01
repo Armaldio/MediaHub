@@ -16,13 +16,13 @@ export const plex: Service = {
     {
       name: "App",
       mediaType: "all",
-      url: (data, instance) => {
+      url: (_data, instance) => {
         if (instance) {
           return `${instance.baseUrl}/web/index.html`;
         }
         return `plex://preferences`;
       },
-      customUrlBuilder: (data, instance) => {
+      customUrlBuilder: (_data, instance) => {
         return `${instance.baseUrl}/web/index.html`;
       },
     },

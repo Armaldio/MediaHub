@@ -27,24 +27,6 @@ interface TVDBImage {
   language: string;
 }
 
-interface TVDBSeriesImages {
-  poster: TVDBImage[];
-  fanart: TVDBImage[];
-  season: TVDBImage[];
-  seasonwide: TVDBImage[];
-  series: TVDBImage[];
-}
-
-interface TVDBMovieImages {
-  poster: TVDBImage[];
-  fanart: TVDBImage[];
-  background: TVDBImage[];
-  banner: TVDBImage[];
-  icon: TVDBImage[];
-  clearart: TVDBImage[];
-  clearlogo: TVDBImage[];
-}
-
 // TVDB API base URL
 const TVDB_BASE_URL = "https://api4.thetvdb.com/v4";
 
@@ -150,12 +132,10 @@ export const useTVDBStore = defineStore("tvdb", () => {
   const getBestPosterUrl = (images: TVDBImage[]): string | null => {
     if (!images || images.length === 0) return null;
 
-    // Sort by ratings (highest rated first)
-    const sorted = images.sort(
+    const sorted = [...images].sort(
       (a, b) => b.ratingsInfo.average - a.ratingsInfo.average
     );
 
-    // Return the highest rated poster
     return sorted[0]?.fileName
       ? `https://artworks.thetvdb.com/banners/${sorted[0].fileName}`
       : null;
@@ -165,12 +145,10 @@ export const useTVDBStore = defineStore("tvdb", () => {
   const getBestFanartUrl = (images: TVDBImage[]): string | null => {
     if (!images || images.length === 0) return null;
 
-    // Sort by ratings (highest rated first)
-    const sorted = images.sort(
+    const sorted = [...images].sort(
       (a, b) => b.ratingsInfo.average - a.ratingsInfo.average
     );
 
-    // Return the highest rated fanart
     return sorted[0]?.fileName
       ? `https://artworks.thetvdb.com/banners/${sorted[0].fileName}`
       : null;
@@ -202,6 +180,10 @@ export const useTVDBStore = defineStore("tvdb", () => {
 
       const data = await response.json();
       const details = data.data;
+      if (!details) {
+        setCached(cacheKey, null);
+        return null;
+      }
       const result = { ...details, slug: details.slug };
 
       setCached(cacheKey, result);
@@ -240,6 +222,10 @@ export const useTVDBStore = defineStore("tvdb", () => {
 
       const data = await response.json();
       const details = data.data;
+      if (!details) {
+        setCached(cacheKey, null);
+        return null;
+      }
       const result = { ...details, slug: details.slug };
 
       setCached(cacheKey, result);

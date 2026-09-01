@@ -66,8 +66,8 @@ export const useServicesStore = defineStore('services', () => {
       .filter((service): service is Service => service !== undefined);
   })
 
-  const installedServices = computed(() => 
-    availableServices.value // All services are available, we just filter by selection
+  const installedServices = computed(() =>
+    availableServices.value.filter((service) => isServiceInstalled(service))
   )
 
   const isServiceSelected = (serviceId: string) => 

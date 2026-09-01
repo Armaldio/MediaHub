@@ -472,12 +472,12 @@ interface InstanceService extends Service {
   parentServiceId: string;
   instanceData: CustomServiceInstance;
 }
-import type { AppendToResponse, MovieDetails, TvShowDetails } from "tmdb-ts";
+
 import { useRouter } from "vue-router";
 import { ArrowLeft, Star, Film, Tv, Film as MovieIcon } from "lucide-vue-next";
 import { useMoviesStore } from "@/stores/movies";
 import { useServicesStore } from "@/stores/services";
-import { FormattedDetails, ExternalIds } from "@/models/models";
+import { FormattedDetails } from "@/models/models";
 import { MediaType } from "tmdb-ts";
 import { fetchTVDBData } from "@/data/services";
 
@@ -497,24 +497,6 @@ const overviewHeight = ref(0);
 const isOverviewExpanded = ref(false);
 const showReadMore = ref(false);
 const isAnimating = ref(false);
-
-// Get unique media types supported by a service's deep links
-const getServiceMediaTypes = (service: Service) => {
-  if (!service.deepLinks || service.deepLinks.length === 0) return [];
-
-  const mediaTypes = new Set<string>();
-
-  service.deepLinks.forEach((link) => {
-    if (link.mediaType === "all") {
-      mediaTypes.add("movie");
-      mediaTypes.add("tv");
-    } else if (link.mediaType === "movie" || link.mediaType === "tv") {
-      mediaTypes.add(link.mediaType);
-    }
-  });
-
-  return Array.from(mediaTypes);
-};
 
 // Check if overview text needs a "Read More" button
 const checkOverviewHeight = async () => {
@@ -567,12 +549,6 @@ const moviesStore = useMoviesStore();
 const servicesStore = useServicesStore();
 const errorMessage = ref<string | null>(null);
 const detailsLoading = ref(true);
-
-const title = computed(() => {
-  const details = moviesStore.currentDetails;
-  if (!details) return "Loading...";
-  return ("title" in details ? details.title : details.name) || "Untitled";
-});
 
 const overview = computed(() => moviesStore.currentDetails?.overview || "");
 

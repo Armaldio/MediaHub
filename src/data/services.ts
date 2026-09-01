@@ -48,11 +48,9 @@ export const fetchTVDBData = async (
     let details: any = null;
 
     if (formattedDetails.type === "tv") {
-      console.log("Fetching series images from TVDB");
       console.log("Fetching series details from TVDB");
       details = await tvdbStore.getSeriesDetails(formattedDetails.tvdbId);
     } else if (formattedDetails.type === "movie") {
-      console.log("Fetching movie images from TVDB");
       console.log("Fetching movie details from TVDB");
       details = await tvdbStore.getMovieDetails(formattedDetails.tvdbId);
     }

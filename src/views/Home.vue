@@ -171,7 +171,7 @@
               <MediaCard
                 v-for="show in moviesStore.popularTVShows.slice(0, 14)"
                 :key="`show-${show.id}`"
-                :media="{ ...show, media_type: 'tv' }"
+                :media="{ ...show, media_type: 'tv' } as (Movie | TV) & { media_type?: string }"
                 @click="goToDetails({ ...show, media_type: 'tv' })"
                 class="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 transition-transform duration-200"
               />
@@ -205,17 +205,13 @@
                     vote_average: item.vote_average || 0,
                     genre_ids: item.genre_ids || [],
                     original_title: item.original_title || '',
+                    original_language: item.original_language || 'en',
                     adult: item.adult || false,
                     video: item.video || false,
                     vote_count: item.vote_count || 0,
                     popularity: item.popularity || 0
                   }"
-                  @click="goToDetails({
-                    id: item.id,
-                    media_type: 'movie',
-                    title: item.title || '',
-                    release_date: item.release_date
-                  })"
+                  @click="goToDetails({ media_type: 'movie', id: item.id })"
                   class="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 transition-transform duration-200"
                 />
                 <MediaCard
@@ -232,15 +228,11 @@
                     origin_country: item.origin_country || [],
                     original_language: item.original_language || 'en',
                     original_name: item.original_name || '',
+                    adult: item.adult || false,
                     popularity: item.popularity || 0,
                     vote_count: item.vote_count || 0
                   }"
-                  @click="goToDetails({
-                    id: item.id,
-                    media_type: 'tv',
-                    title: item.name || '',
-                    first_air_date: item.first_air_date
-                  })"
+                  @click="goToDetails({ media_type: 'tv', id: item.id })"
                   class="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 transition-transform duration-200"
                 />
               </template>
@@ -258,7 +250,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { Search, X, Cog, Film, Star, ChevronRight } from 'lucide-vue-next'
 import { useMoviesStore } from '@/stores/movies'
 import MediaCard from '@/components/MediaCard.vue'
-import { MultiSearchResult } from 'tmdb-ts'
+import { MultiSearchResult, Movie, TV } from 'tmdb-ts'
 
 const router = useRouter()
 const route = useRoute()
@@ -266,7 +258,7 @@ const moviesStore = useMoviesStore()
 const searchQuery = ref('')
 const filterType = ref<'all' | 'movie' | 'tv'>('all')
 const recentSearches = ref<string[]>(JSON.parse(localStorage.getItem('recentSearches') || '[]'))
-let searchTimeout: number
+let searchTimeout: ReturnType<typeof setTimeout>
 
 const saveRecent = (q: string) => {
   const normalized = q.trim()
@@ -331,7 +323,7 @@ watch(() => route.query.q, (q) => {
   }
 }, { immediate: true })
 
-const goToDetails = (item: MultiSearchResult) => {
+const goToDetails = (item: { id: number; media_type: string }) => {
   const mediaType = item.media_type
   router.push({name: 'details-tmdb', params: { mediaType, tmdbId: item.id }})
 }

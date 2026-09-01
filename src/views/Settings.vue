@@ -679,7 +679,7 @@ const fetchOfferings = async () => {
   } catch (error) {
     console.error("Error fetching offerings:", error);
     offeringsError.value =
-      "Failed to load subscription details. Please try again." + error;
+      "Failed to load subscription details. Please try again.";
   } finally {
     loadingOfferings.value = false;
   }
@@ -690,9 +690,7 @@ onMounted(async () => {
 
   // Fetch customer ID and entitlements for display
   try {
-    const { customerInfo } = await Purchases.getCustomerInfo({
-      forceRefresh: true,
-    });
+    const { customerInfo } = await Purchases.getCustomerInfo();
     customerId.value = customerInfo.originalAppUserId;
     activeEntitlements.value = Object.keys(customerInfo.entitlements.active);
   } catch (e) {
@@ -889,7 +887,8 @@ const handleRestorePurchases = async () => {
   try {
     const { customerInfo } = await Purchases.restorePurchases();
     const restored =
-      typeof customerInfo.entitlements.active["MediaHub Pro"] !== "undefined";
+      typeof customerInfo.entitlements.active["custom-instances"] !== "undefined" ||
+      typeof customerInfo.entitlements.active["unlimited-services"] !== "undefined"
     isPro.value = restored;
     alert(
       restored

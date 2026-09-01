@@ -18,7 +18,7 @@ const handleDeepLink: NavigationGuard = (to, _from, next) => {
       const params = parseDeepLink(deepLink);
       if (params) {
         navigateFromDeepLink(router, params);
-        return;
+        return next(false);
       }
     }
   }
@@ -66,7 +66,7 @@ const router = createRouter({
       component: Details,
       props: true,
       meta: { requiresServices: true },
-      beforeEnter: (to, from, next) => {
+      beforeEnter: (to, _unused, next) => {
         // Ensure at least one ID type is provided
         if (!to.params.tmdbId && !to.params.imdbId) {
           next('/'); // Redirect to home if no ID is provided
@@ -98,14 +98,12 @@ const router = createRouter({
     // Catch-all route for web-based deep links
     {
       path: '/:pathMatch(.*)*',
-      beforeEnter: (_to, _from, next) => {
-        next('/');
-      }
+      redirect: { name: 'introduction' }
     }
   ]
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const servicesStore = useServicesStore()
   
   // Always load services from localStorage first
