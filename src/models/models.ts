@@ -27,6 +27,7 @@ export interface FormattedDetails {
   paramountPlusId?: string;
   letterboxdId?: string;
   mubiId?: string;
+  traktSlug?: string;
   wikidataId?: string;
   facebookId?: string;
   instagramId?: string;

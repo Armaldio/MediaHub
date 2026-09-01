@@ -480,6 +480,7 @@ import { useServicesStore } from "@/stores/services";
 import { FormattedDetails } from "@/models/models";
 import { MediaType } from "tmdb-ts";
 import { fetchTVDBData } from "@/data/services";
+import { getTraktSlug } from "@/utils/traktLookup";
 
 interface Props {
   mediaType: MediaType;
@@ -772,8 +773,19 @@ watch(
       mubiId,
     };
 
+    // Look up the Trakt slug from TMDB ID (async, parallel with TVDB fetch)
+    const traktSlug = getTraktSlug(formattedDetails.value);
+
     // Fetch TVDB data and enhance the formatted details
     formattedDetails.value = await fetchTVDBData(formattedDetails.value);
+
+    const slug = await traktSlug;
+    if (slug) {
+      formattedDetails.value = {
+        ...formattedDetails.value,
+        traktSlug: slug,
+      };
+    }
   },
   { immediate: true }
 );

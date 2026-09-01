@@ -10,10 +10,13 @@ const slugify = (value: string): string =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-const traktSlug = (data: FormattedDetails): string => {
+const fallbackSlug = (data: FormattedDetails): string => {
   const base = slugify(data.title) || data.tmdbId;
   return data.releaseYear ? `${base}-${data.releaseYear}` : base;
 };
+
+const traktSlug = (data: FormattedDetails): string =>
+  data.traktSlug || fallbackSlug(data);
 
 export const trakt: Service = {
   id: "trakt",
