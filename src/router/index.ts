@@ -66,7 +66,7 @@ const router = createRouter({
       component: Details,
       props: true,
       meta: { requiresServices: true },
-      beforeEnter: (to, _unused, next) => {
+      beforeEnter: (to, _from, next) => {
         // Ensure at least one ID type is provided
         if (!to.params.tmdbId && !to.params.imdbId) {
           next('/'); // Redirect to home if no ID is provided

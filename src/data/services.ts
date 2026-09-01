@@ -46,21 +46,40 @@ export const fetchTVDBData = async (
 
   try {
     let details: any = null;
+    let artwork: { poster: string | null; backdrop: string | null; logo: string | null; banner?: string | null } | null = null;
 
     if (formattedDetails.type === "tv") {
       console.log("Fetching series details from TVDB");
       details = await tvdbStore.getSeriesDetails(formattedDetails.tvdbId);
+      if (details) {
+        console.log("Fetching series artwork from TVDB");
+        artwork = await tvdbStore.getSeriesArtwork(formattedDetails.tvdbId);
+      }
     } else if (formattedDetails.type === "movie") {
       console.log("Fetching movie details from TVDB");
       details = await tvdbStore.getMovieDetails(formattedDetails.tvdbId);
+      if (details) {
+        console.log("Fetching movie artwork from TVDB");
+        artwork = await tvdbStore.getMovieArtwork(formattedDetails.tvdbId);
+      }
     }
 
     // Enhance the formatted details with TVDB data
     const enhancedDetails = { ...formattedDetails };
 
-    if (details && details.slug) {
+    if (details?.slug) {
       enhancedDetails.tvdbSlug = details.slug;
       console.log("Added TVDB slug to enhanced details");
+    }
+
+    if (artwork) {
+      enhancedDetails.tvdbPoster = artwork.poster ?? undefined;
+      enhancedDetails.tvdbBackdrop = artwork.backdrop ?? undefined;
+      enhancedDetails.tvdbLogo = artwork.logo ?? undefined;
+      if ('banner' in artwork) {
+        enhancedDetails.tvdbBanner = artwork.banner ?? undefined;
+      }
+      console.log("Added TVDB artwork to enhanced details");
     }
 
     console.log("Returning enhanced details with TVDB data");

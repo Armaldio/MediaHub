@@ -34,8 +34,8 @@ function buildItemUrl(instance: CustomServiceInstance, itemId: string): string {
   return `${instance.baseUrl}/web/index.html#!/item?id=${itemId}`;
 }
 
-function buildSearchUrl(instance: CustomServiceInstance, tmdbId: string): string {
-  return `${instance.baseUrl}/web/index.html#!/search?query=${encodeURIComponent(tmdbId)}`;
+function buildSearchUrl(instance: CustomServiceInstance, query: string): string {
+  return `${instance.baseUrl}/web/index.html#!/search?query=${encodeURIComponent(query)}`;
 }
 
 export const jellyfin: Service = {
@@ -58,11 +58,11 @@ export const jellyfin: Service = {
           const itemId = await findJellyfinItemId(instance, data.tmdbId, data.type);
           if (itemId) return buildItemUrl(instance, itemId);
         }
-        if (instance) return buildSearchUrl(instance, data.tmdbId);
+        if (instance) return buildSearchUrl(instance, data.title);
         return `jellyfin://`;
       },
       customUrlBuilder: (data: FormattedDetails, instance: CustomServiceInstance) => {
-        return buildSearchUrl(instance, data.tmdbId);
+        return buildSearchUrl(instance, data.title);
       },
     },
     {
@@ -74,7 +74,7 @@ export const jellyfin: Service = {
           const itemId = await findJellyfinItemId(instance, data.tmdbId, "movie");
           if (itemId) return buildItemUrl(instance, itemId);
         }
-        if (instance) return buildSearchUrl(instance, data.tmdbId);
+        if (instance) return buildSearchUrl(instance, data.title);
         return `jellyfin://search?query=${encodeURIComponent(data.tmdbId)}`;
       },
       requiresApp: true,
@@ -88,22 +88,7 @@ export const jellyfin: Service = {
           const itemId = await findJellyfinItemId(instance, data.tmdbId, "tv");
           if (itemId) return buildItemUrl(instance, itemId);
         }
-        if (instance) return buildSearchUrl(instance, data.tmdbId);
-        return `jellyfin://search?query=${encodeURIComponent(data.tmdbId)}`;
-      },
-      requiresApp: true,
-    },
-    {
-      name: "App",
-      mediaType: "all",
-      enabled: (data) => data.type === "movie" || data.type === "tv",
-      url: async (data: FormattedDetails, instance?: CustomServiceInstance) => {
-        if (instance?.apiKey) {
-          const type = data.type === "movie" ? "movie" : "tv";
-          const itemId = await findJellyfinItemId(instance, data.tmdbId, type);
-          if (itemId) return buildItemUrl(instance, itemId);
-        }
-        if (instance) return buildSearchUrl(instance, data.tmdbId);
+        if (instance) return buildSearchUrl(instance, data.title);
         return `jellyfin://search?query=${encodeURIComponent(data.tmdbId)}`;
       },
       requiresApp: true,

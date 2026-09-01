@@ -236,6 +236,130 @@ export const useTVDBStore = defineStore("tvdb", () => {
     }
   };
 
+  // Get artwork for a TVDB series
+  const getSeriesArtwork = async (
+    tvdbId: string
+  ): Promise<{
+    poster: string | null;
+    backdrop: string | null;
+    banner: string | null;
+    logo: string | null;
+  }> => {
+    const cacheKey = `series_artwork_${tvdbId}`;
+    const cached = getCached<{
+      poster: string | null;
+      backdrop: string | null;
+      banner: string | null;
+      logo: string | null;
+    }>(cacheKey);
+    if (cached !== null) return cached;
+
+    try {
+      await ensureAuthenticated();
+
+      const response = await fetch(
+        `${TVDB_BASE_URL}/series/${tvdbId}/artwork`,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken.value}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        setCached(cacheKey, {
+          poster: null,
+          backdrop: null,
+          banner: null,
+          logo: null,
+        });
+        return { poster: null, backdrop: null, banner: null, logo: null };
+      }
+
+      const data = await response.json();
+      const images: TVDBImage[] = data.data || [];
+      const result = {
+        poster: getBestPosterUrl(images.filter((i) => i.typeName === "poster")),
+        backdrop: getBestFanartUrl(
+          images.filter((i) => i.typeName === "fanart")
+        ),
+        banner:
+          images
+            .filter((i) => i.typeName === "series")
+            .map((i) => getBestPosterUrl([i]))
+            .find((url) => url !== null) ?? null,
+        logo:
+          images
+            .filter((i) => i.typeName === "clearlogo")
+            .map((i) => getBestPosterUrl([i]))
+            .find((url) => url !== null) ?? null,
+      };
+
+      setCached(cacheKey, result);
+      return result;
+    } catch (error) {
+      console.error("Error fetching series artwork:", error);
+      return { poster: null, backdrop: null, banner: null, logo: null };
+    }
+  };
+
+  // Get artwork for a TVDB movie
+  const getMovieArtwork = async (
+    tvdbId: string
+  ): Promise<{
+    poster: string | null;
+    backdrop: string | null;
+    logo: string | null;
+  }> => {
+    const cacheKey = `movie_artwork_${tvdbId}`;
+    const cached = getCached<{
+      poster: string | null;
+      backdrop: string | null;
+      logo: string | null;
+    }>(cacheKey);
+    if (cached !== null) return cached;
+
+    try {
+      await ensureAuthenticated();
+
+      const response = await fetch(
+        `${TVDB_BASE_URL}/movies/${tvdbId}/artwork`,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken.value}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        setCached(cacheKey, { poster: null, backdrop: null, logo: null });
+        return { poster: null, backdrop: null, logo: null };
+      }
+
+      const data = await response.json();
+      const images: TVDBImage[] = data.data || [];
+      const result = {
+        poster: getBestPosterUrl(images.filter((i) => i.typeName === "poster")),
+        backdrop: getBestFanartUrl(
+          images.filter((i) => i.typeName === "fanart")
+        ),
+        logo:
+          images
+            .filter((i) => i.typeName === "clearlogo")
+            .map((i) => getBestPosterUrl([i]))
+            .find((url) => url !== null) ?? null,
+      };
+
+      setCached(cacheKey, result);
+      return result;
+    } catch (error) {
+      console.error("Error fetching movie artwork:", error);
+      return { poster: null, backdrop: null, logo: null };
+    }
+  };
+
   // Clear cache
   const clearCache = () => {
     cache.value = {};
@@ -248,6 +372,8 @@ export const useTVDBStore = defineStore("tvdb", () => {
     ensureAuthenticated,
     getSeriesDetails,
     getMovieDetails,
+    getSeriesArtwork,
+    getMovieArtwork,
     getBestPosterUrl,
     getBestFanartUrl,
     clearCache,
