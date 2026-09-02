@@ -2,6 +2,7 @@
 
 ## Releasing
 - Use `mise` release functions (`release:stable`, `release:beta`) — they handle version bumping and Android `versionCode` automatically. **Do not** manually edit `android/app/build.gradle` or `package.json` for releases.
+- If CI fails with `"Target SDK of artifact is too low"`, bump `targetSdkVersion` (and `compileSdkVersion`) in `android/variables.gradle` — Google Play requires the latest SDK. v1.2.0 required bumping from 35 to 36.
 
 ## TMDB external IDs
 - TMDB `GET /{movie,tv}/{id}?append_to_response=external_ids` returns `external_ids.trakt` and `external_ids.wikidata_id`
