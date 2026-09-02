@@ -106,7 +106,7 @@ jobs:
           service_account_json: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           package_name: "xyz.armaldio.mediahub.app"
           aab_file_path: "app-release-signed.aab"
-          track: alpha
+          track: internal
           release_status: "completed"
 
       # - name: Upload .aab to Google Play
