@@ -107,7 +107,7 @@ jobs:
           package_name: "xyz.armaldio.mediahub.app"
           aab_file_path: "app-release-signed.aab"
           track: internal
-          release_status: "completed"
+          release_status: "inProgress"
 
       # - name: Upload .aab to Google Play
       #   uses: KevinRohn/github-action-upload-play-store@v1.0.1
