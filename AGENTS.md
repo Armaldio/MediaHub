@@ -1,5 +1,8 @@
 # Agent notes
 
+## Releasing
+- Use `mise` release functions (`release:stable`, `release:beta`) — they handle version bumping and Android `versionCode` automatically. **Do not** manually edit `android/app/build.gradle` or `package.json` for releases.
+
 ## TMDB external IDs
 - TMDB `GET /{movie,tv}/{id}?append_to_response=external_ids` returns `external_ids.trakt` and `external_ids.wikidata_id`
 - Use `external_ids.trakt` (numeric ID) to fetch slug from `GET https://api.trakt.tv/{movies,shows}/{traktId}` with `trakt-api-key` header
