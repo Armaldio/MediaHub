@@ -1,13 +1,5 @@
 # Agent notes
 
-## Releasing
-- Bump **both** `package.json` (version) AND `android/app/build.gradle` (`versionCode` + `versionName`)
-  - `versionName` in Android should match `version` in package.json
-  - `versionCode` must be unique per Play Store release — Android error: `Version code X has already been used`
-  - v1.2.0 used versionCode 1001003; v1.1.2 used 1001002
-- CI pipeline: Android Build → Upload .aab to Google Play → Update internal track
-- When CI fails on `versionCode already used`, bump both `versionCode` and `versionName` in `android/app/build.gradle`
-
 ## TMDB external IDs
 - TMDB `GET /{movie,tv}/{id}?append_to_response=external_ids` returns `external_ids.trakt` and `external_ids.wikidata_id`
 - Use `external_ids.trakt` (numeric ID) to fetch slug from `GET https://api.trakt.tv/{movies,shows}/{traktId}` with `trakt-api-key` header
