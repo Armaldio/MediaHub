@@ -1,4 +1,5 @@
 import { App, type URLOpenListenerEvent } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import { navigateFromDeepLink, parseDeepLink } from './deepLink';
 import { useRouter } from 'vue-router';
 
@@ -25,7 +26,7 @@ export function setupDeepLinkHandler() {
   });
 
   // For web, we'll handle deep links through the router
-  if (import.meta.env.MODE === 'web') {
+  if (!Capacitor.isNativePlatform()) {
     // Check for deep link in URL on initial load
     if (window.location.pathname.startsWith('/mediahub/')) {
       const deepLink = window.location.pathname.replace(/^\/mediahub\//, 'mediahub://');

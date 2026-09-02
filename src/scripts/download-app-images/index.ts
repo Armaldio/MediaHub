@@ -51,11 +51,11 @@ async function getPlayStoreImageUrl(page: Page, appId: string): Promise<{ icon: 
       const iconUrls = icons
         .filter(img => img.getAttribute('alt')?.includes('Icon image'))
         .map(img => img.getAttribute('src'))
-        .filter(src => !!src);
+        .filter((src): src is string => !!src);
 
       if (iconUrls.length === 0) return { icon: '', icons: iconUrls };
 
-      return { icon: iconUrls[0]?.replace(/=s\d+/, '=s512'), icons: iconUrls };
+      return { icon: iconUrls[0]?.replace(/=s\d+/, '=s512') ?? '', icons: iconUrls };
     }, iconSelector);
 
     

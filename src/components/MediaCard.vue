@@ -45,10 +45,10 @@
 import { computed } from 'vue'
 import { Star, Film } from 'lucide-vue-next'
 import { useMoviesStore } from '@/stores/movies'
-import type { Movie, TVShow } from '@/types'
+import { Movie, TV } from 'tmdb-ts'
 
 interface Props {
-  media: (Movie | TVShow) & { media_type?: string }
+  media: (Movie | TV) & { media_type?: string }
 }
 
 defineEmits<{

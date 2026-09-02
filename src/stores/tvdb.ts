@@ -27,24 +27,6 @@ interface TVDBImage {
   language: string;
 }
 
-interface TVDBSeriesImages {
-  poster: TVDBImage[];
-  fanart: TVDBImage[];
-  season: TVDBImage[];
-  seasonwide: TVDBImage[];
-  series: TVDBImage[];
-}
-
-interface TVDBMovieImages {
-  poster: TVDBImage[];
-  fanart: TVDBImage[];
-  background: TVDBImage[];
-  banner: TVDBImage[];
-  icon: TVDBImage[];
-  clearart: TVDBImage[];
-  clearlogo: TVDBImage[];
-}
-
 // TVDB API base URL
 const TVDB_BASE_URL = "https://api4.thetvdb.com/v4";
 
@@ -150,12 +132,10 @@ export const useTVDBStore = defineStore("tvdb", () => {
   const getBestPosterUrl = (images: TVDBImage[]): string | null => {
     if (!images || images.length === 0) return null;
 
-    // Sort by ratings (highest rated first)
-    const sorted = images.sort(
+    const sorted = [...images].sort(
       (a, b) => b.ratingsInfo.average - a.ratingsInfo.average
     );
 
-    // Return the highest rated poster
     return sorted[0]?.fileName
       ? `https://artworks.thetvdb.com/banners/${sorted[0].fileName}`
       : null;
@@ -165,12 +145,10 @@ export const useTVDBStore = defineStore("tvdb", () => {
   const getBestFanartUrl = (images: TVDBImage[]): string | null => {
     if (!images || images.length === 0) return null;
 
-    // Sort by ratings (highest rated first)
-    const sorted = images.sort(
+    const sorted = [...images].sort(
       (a, b) => b.ratingsInfo.average - a.ratingsInfo.average
     );
 
-    // Return the highest rated fanart
     return sorted[0]?.fileName
       ? `https://artworks.thetvdb.com/banners/${sorted[0].fileName}`
       : null;
@@ -202,6 +180,10 @@ export const useTVDBStore = defineStore("tvdb", () => {
 
       const data = await response.json();
       const details = data.data;
+      if (!details) {
+        setCached(cacheKey, null);
+        return null;
+      }
       const result = { ...details, slug: details.slug };
 
       setCached(cacheKey, result);
@@ -240,6 +222,10 @@ export const useTVDBStore = defineStore("tvdb", () => {
 
       const data = await response.json();
       const details = data.data;
+      if (!details) {
+        setCached(cacheKey, null);
+        return null;
+      }
       const result = { ...details, slug: details.slug };
 
       setCached(cacheKey, result);
@@ -247,6 +233,130 @@ export const useTVDBStore = defineStore("tvdb", () => {
     } catch (error) {
       console.error("Error fetching movie details:", error);
       return null;
+    }
+  };
+
+  // Get artwork for a TVDB series
+  const getSeriesArtwork = async (
+    tvdbId: string
+  ): Promise<{
+    poster: string | null;
+    backdrop: string | null;
+    banner: string | null;
+    logo: string | null;
+  }> => {
+    const cacheKey = `series_artwork_${tvdbId}`;
+    const cached = getCached<{
+      poster: string | null;
+      backdrop: string | null;
+      banner: string | null;
+      logo: string | null;
+    }>(cacheKey);
+    if (cached !== null) return cached;
+
+    try {
+      await ensureAuthenticated();
+
+      const response = await fetch(
+        `${TVDB_BASE_URL}/series/${tvdbId}/artwork`,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken.value}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        setCached(cacheKey, {
+          poster: null,
+          backdrop: null,
+          banner: null,
+          logo: null,
+        });
+        return { poster: null, backdrop: null, banner: null, logo: null };
+      }
+
+      const data = await response.json();
+      const images: TVDBImage[] = data.data || [];
+      const result = {
+        poster: getBestPosterUrl(images.filter((i) => i.typeName === "poster")),
+        backdrop: getBestFanartUrl(
+          images.filter((i) => i.typeName === "fanart")
+        ),
+        banner:
+          images
+            .filter((i) => i.typeName === "series")
+            .map((i) => getBestPosterUrl([i]))
+            .find((url) => url !== null) ?? null,
+        logo:
+          images
+            .filter((i) => i.typeName === "clearlogo")
+            .map((i) => getBestPosterUrl([i]))
+            .find((url) => url !== null) ?? null,
+      };
+
+      setCached(cacheKey, result);
+      return result;
+    } catch (error) {
+      console.error("Error fetching series artwork:", error);
+      return { poster: null, backdrop: null, banner: null, logo: null };
+    }
+  };
+
+  // Get artwork for a TVDB movie
+  const getMovieArtwork = async (
+    tvdbId: string
+  ): Promise<{
+    poster: string | null;
+    backdrop: string | null;
+    logo: string | null;
+  }> => {
+    const cacheKey = `movie_artwork_${tvdbId}`;
+    const cached = getCached<{
+      poster: string | null;
+      backdrop: string | null;
+      logo: string | null;
+    }>(cacheKey);
+    if (cached !== null) return cached;
+
+    try {
+      await ensureAuthenticated();
+
+      const response = await fetch(
+        `${TVDB_BASE_URL}/movies/${tvdbId}/artwork`,
+        {
+          headers: {
+            Authorization: `Bearer ${authToken.value}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        setCached(cacheKey, { poster: null, backdrop: null, logo: null });
+        return { poster: null, backdrop: null, logo: null };
+      }
+
+      const data = await response.json();
+      const images: TVDBImage[] = data.data || [];
+      const result = {
+        poster: getBestPosterUrl(images.filter((i) => i.typeName === "poster")),
+        backdrop: getBestFanartUrl(
+          images.filter((i) => i.typeName === "fanart")
+        ),
+        logo:
+          images
+            .filter((i) => i.typeName === "clearlogo")
+            .map((i) => getBestPosterUrl([i]))
+            .find((url) => url !== null) ?? null,
+      };
+
+      setCached(cacheKey, result);
+      return result;
+    } catch (error) {
+      console.error("Error fetching movie artwork:", error);
+      return { poster: null, backdrop: null, logo: null };
     }
   };
 
@@ -262,6 +372,8 @@ export const useTVDBStore = defineStore("tvdb", () => {
     ensureAuthenticated,
     getSeriesDetails,
     getMovieDetails,
+    getSeriesArtwork,
+    getMovieArtwork,
     getBestPosterUrl,
     getBestFanartUrl,
     clearCache,

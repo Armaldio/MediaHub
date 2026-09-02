@@ -34,7 +34,7 @@ export const useMoviesStore = defineStore('movies', () => {
   const currentLanguage = computed(() => userLanguage.value);
   const popularMovies = ref<Movie[]>([])
   const popularTVShows = ref<PopularTvShowResult[]>([])
-  const trending = ref<TrendingResults<any>['results']>([])
+  const trending = ref<TrendingResults<'all'>['results']>([])
   const searchResults = ref<MultiSearchResult[]>([])
   const currentDetails = ref<AppendToResponse<TvShowDetails, "external_ids"[], "tvShow">
   | AppendToResponse<MovieDetails, "external_ids"[], "movie"> | null>(null)
@@ -137,7 +137,7 @@ export const useMoviesStore = defineStore('movies', () => {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch details';
       error.value = `Error loading ${mediaType === 'movie' ? 'movie' : 'TV show'} details: ${errorMessage}`
       console.error('Error in fetchDetails:', err)
-      throw error.value; // Re-throw to allow component to handle the error
+      throw new Error(error.value); // Re-throw to allow component to handle the error
     } finally {
       loading.value = false
     }
@@ -177,7 +177,7 @@ export const useMoviesStore = defineStore('movies', () => {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch details by IMDB ID';
       error.value = `Error loading details: ${errorMessage}`
       console.error('Error in fetchDetailsByImdbId:', err)
-      throw error.value;
+      throw new Error(error.value);
     } finally {
       loading.value = false
     }
@@ -196,7 +196,7 @@ export const useMoviesStore = defineStore('movies', () => {
     try {
       loading.value = true;
       const response = await tmdb.trending.trending(mediaType, timeWindow, { language: userLanguage.value });
-      trending.value = response.results
+      trending.value = response.results as TrendingResults<'all'>['results']
       return response.results
     } catch (err) {
       error.value = 'Failed to fetch trending content'

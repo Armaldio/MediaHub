@@ -8,9 +8,7 @@ export const useProducts = () => {
     if (import.meta.env.VITE_BYPASS_PREMIUM === "true") return true;
 
     try {
-      const { customerInfo } = await Purchases.getCustomerInfo({
-        forceRefresh: true,
-      });
+      const { customerInfo } = await Purchases.getCustomerInfo();
 
       console.log("RevenueCat customerInfo:", customerInfo);
       console.log(

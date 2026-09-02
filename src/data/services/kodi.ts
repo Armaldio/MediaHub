@@ -16,13 +16,13 @@ export const kodi: Service = {
     {
       name: "App",
       mediaType: "all",
-      url: (data, instance) => {
+      url: (_data, instance) => {
         if (instance) {
           return `kodi://${instance.baseUrl}`;
         }
         return `kodi://`;
       },
-      customUrlBuilder: (data, instance) => {
+      customUrlBuilder: (_data, instance) => {
         return `http://${instance.baseUrl}`;
       },
     },

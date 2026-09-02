@@ -2,40 +2,73 @@ import jellyfinIcon from "../../assets/apps/images/jellyfin/assets/play_store.pn
 import { Service, CustomServiceInstance } from "../../types/index";
 import { FormattedDetails } from "../../models/models";
 
+interface JellyfinSearchHint {
+  ItemId?: string;
+  Id?: string;
+  Type?: string;
+  Name?: string;
+}
+
 async function findJellyfinItemId(
   instance: CustomServiceInstance,
   tmdbId: string,
+  title: string,
   type: "movie" | "tv"
 ): Promise<string | null> {
   if (!instance.apiKey) return null;
-  const includeItemTypes = type === "movie" ? "Movie" : "Series";
-  const url = `${instance.baseUrl}/Items?Recursive=true&IncludeItemTypes=${includeItemTypes}&Fields=ProviderIds&api_key=${instance.apiKey}`;
+  const headers = {
+    "X-MediaBrowser-Token": instance.apiKey,
+  };
+
+  const wantedKind = type === "movie" ? "Movie" : "Series";
+
+  const hintsUrl =
+    `${instance.baseUrl}/Search/Hints?` +
+    `searchTerm=${encodeURIComponent(title)}&` +
+    `${type === "movie" ? "isMovie=true" : "isSeries=true"}&` +
+    `limit=10`;
+
   try {
-    const response = await fetch(url, {
-      headers: {
-        "X-MediaBrowser-Token": instance.apiKey,
-      },
-    });
+    const response = await fetch(hintsUrl, { headers });
+    if (response.ok) {
+      const data = await response.json();
+      const hints: JellyfinSearchHint[] = data.SearchHints || [];
+      const match = hints.find(
+        (h) =>
+          (h.ItemId || h.Id) &&
+          h.Type?.toLowerCase() === wantedKind.toLowerCase()
+      );
+      if (match) return match.ItemId || match.Id || null;
+    }
+  } catch {
+    // fall through to provider scan
+  }
+
+  const itemsUrl =
+    `${instance.baseUrl}/Items?Recursive=true&` +
+    `IncludeItemTypes=${wantedKind}&Fields=ProviderIds`;
+  try {
+    const response = await fetch(itemsUrl, { headers });
     if (!response.ok) return null;
     const data = await response.json();
-    const items = data.Items || [];
-    for (const item of items) {
-      if (item.ProviderIds?.Tmdb === tmdbId) {
-        return item.Id;
-      }
-    }
+    const items: { Id?: string; ProviderIds?: { Tmdb?: string } }[] =
+      data.Items || [];
+    const match = items.find((item) => item.ProviderIds?.Tmdb === tmdbId);
+    return match?.Id ?? null;
   } catch {
     return null;
   }
-  return null;
 }
 
 function buildItemUrl(instance: CustomServiceInstance, itemId: string): string {
   return `${instance.baseUrl}/web/index.html#!/item?id=${itemId}`;
 }
 
-function buildSearchUrl(instance: CustomServiceInstance, tmdbId: string): string {
-  return `${instance.baseUrl}/web/index.html#!/search?query=${encodeURIComponent(tmdbId)}`;
+function buildSearchUrl(
+  instance: CustomServiceInstance,
+  query: string
+): string {
+  return `${instance.baseUrl}/web/index.html#!/search?query=${encodeURIComponent(query)}`;
 }
 
 export const jellyfin: Service = {
@@ -55,14 +88,19 @@ export const jellyfin: Service = {
       mediaType: "all",
       url: async (data: FormattedDetails, instance?: CustomServiceInstance) => {
         if (instance?.apiKey && (data.type === "movie" || data.type === "tv")) {
-          const itemId = await findJellyfinItemId(instance, data.tmdbId, data.type);
+          const itemId = await findJellyfinItemId(
+            instance,
+            data.tmdbId,
+            data.title,
+            data.type as "movie" | "tv"
+          );
           if (itemId) return buildItemUrl(instance, itemId);
         }
-        if (instance) return buildSearchUrl(instance, data.tmdbId);
+        if (instance) return buildSearchUrl(instance, data.title);
         return `jellyfin://`;
       },
       customUrlBuilder: (data: FormattedDetails, instance: CustomServiceInstance) => {
-        return buildSearchUrl(instance, data.tmdbId);
+        return buildSearchUrl(instance, data.title);
       },
     },
     {
@@ -71,10 +109,10 @@ export const jellyfin: Service = {
       enabled: (data) => data.type === "movie",
       url: async (data: FormattedDetails, instance?: CustomServiceInstance) => {
         if (instance?.apiKey) {
-          const itemId = await findJellyfinItemId(instance, data.tmdbId, "movie");
+          const itemId = await findJellyfinItemId(instance, data.tmdbId, data.title, "movie");
           if (itemId) return buildItemUrl(instance, itemId);
         }
-        if (instance) return buildSearchUrl(instance, data.tmdbId);
+        if (instance) return buildSearchUrl(instance, data.title);
         return `jellyfin://search?query=${encodeURIComponent(data.tmdbId)}`;
       },
       requiresApp: true,
@@ -85,25 +123,10 @@ export const jellyfin: Service = {
       enabled: (data) => data.type === "tv",
       url: async (data: FormattedDetails, instance?: CustomServiceInstance) => {
         if (instance?.apiKey) {
-          const itemId = await findJellyfinItemId(instance, data.tmdbId, "tv");
+          const itemId = await findJellyfinItemId(instance, data.tmdbId, data.title, "tv");
           if (itemId) return buildItemUrl(instance, itemId);
         }
-        if (instance) return buildSearchUrl(instance, data.tmdbId);
-        return `jellyfin://search?query=${encodeURIComponent(data.tmdbId)}`;
-      },
-      requiresApp: true,
-    },
-    {
-      name: "App",
-      mediaType: "all",
-      enabled: (data) => data.type === "movie" || data.type === "tv",
-      url: async (data: FormattedDetails, instance?: CustomServiceInstance) => {
-        if (instance?.apiKey) {
-          const type = data.type === "movie" ? "movie" : "tv";
-          const itemId = await findJellyfinItemId(instance, data.tmdbId, type);
-          if (itemId) return buildItemUrl(instance, itemId);
-        }
-        if (instance) return buildSearchUrl(instance, data.tmdbId);
+        if (instance) return buildSearchUrl(instance, data.title);
         return `jellyfin://search?query=${encodeURIComponent(data.tmdbId)}`;
       },
       requiresApp: true,
