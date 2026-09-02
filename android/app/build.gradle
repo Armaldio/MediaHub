@@ -7,7 +7,7 @@ android {
         applicationId "xyz.armaldio.mediahub.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1002001
+        versionCode 1003001
         versionName "1.2.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
