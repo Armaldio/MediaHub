@@ -28,6 +28,26 @@ import { allocine } from "./services/allocine";
 import { betaseries } from "./services/betaseries";
 import { dubbingbase } from "./services/dubbingbase";
 import { nzb360 } from "./services/nzb360";
+import { seerr } from "./services/seerr";
+import { rottenTomatoes } from "./services/rottenTomatoes";
+import { metacritic } from "./services/metacritic";
+import { anilist } from "./services/anilist";
+import { emby } from "./services/emby";
+import { tvmaze } from "./services/tvmaze";
+import { peacock } from "./services/peacock";
+import { hulu } from "./services/hulu";
+import { crunchyroll } from "./services/crunchyroll";
+import { kinopoisk } from "./services/kinopoisk";
+import { douban } from "./services/douban";
+import { filmAffinity } from "./services/filmAffinity";
+import { csfd } from "./services/csfd";
+import { itunes } from "./services/itunes";
+import { googlePlay } from "./services/googlePlay";
+import { sensCritique } from "./services/sensCritique";
+import { allMovie } from "./services/allMovie";
+import { filmweb } from "./services/filmweb";
+import { boxOfficeMojo } from "./services/boxOfficeMojo";
+import { filmarks } from "./services/filmarks";
 
 // Function to fetch TVDB data and enhance FormattedDetails
 export const fetchTVDBData = async (
@@ -119,4 +139,24 @@ export default [
   betaseries,
   dubbingbase,
   nzb360,
+  seerr,
+  rottenTomatoes,
+  metacritic,
+  anilist,
+  emby,
+  tvmaze,
+  peacock,
+  hulu,
+  crunchyroll,
+  kinopoisk,
+  douban,
+  filmAffinity,
+  csfd,
+  itunes,
+  googlePlay,
+  sensCritique,
+  allMovie,
+  filmweb,
+  boxOfficeMojo,
+  filmarks,
 ] satisfies Service[];
