@@ -48,3 +48,15 @@ depends = ["sync-dev"]
 run = "pnpm cap run android"
 env = { NODE_ENV = "production" }
 depends = ["sync-prod"]
+
+[tasks.bump-version]
+description = "Bump package.json version and mirror to android/app/build.gradle. Use: mise run bump-version 1.3.1"
+run = "./scripts/release.sh bump"
+
+[tasks."release:stable"]
+description = "Bump version, commit, tag vX.Y.Z, push. Use: mise run release:stable 1.3.1"
+run = "./scripts/release.sh release:stable"
+
+[tasks."release:beta"]
+description = "Bump to next prerelease, commit, tag, push. Use: mise run release:beta [bump|1.3.1-beta.1]"
+run = "./scripts/release.sh release:beta"
