@@ -108,20 +108,25 @@ jobs:
   upload:
     runs-on: ubuntu-latest
     needs: build
-    if: startsWith(github.ref, 'refs/tags/')
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Get tag info
+      - name: Get track
         id: tag
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          if echo "$TAG" | grep -qE 'beta|alpha|rc'; then
-            echo "track=alpha" >> "$GITHUB_OUTPUT"
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+            if echo "$TAG" | grep -qE 'beta|alpha|rc'; then
+              echo "track=alpha" >> "$GITHUB_OUTPUT"
+            else
+              echo "track=internal" >> "$GITHUB_OUTPUT"
+            fi
           else
+            echo "tag=main" >> "$GITHUB_OUTPUT"
             echo "track=internal" >> "$GITHUB_OUTPUT"
           fi
 
@@ -129,8 +134,13 @@ jobs:
         id: artifact
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          echo "name=android-app-bundle-$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Artifact: android-app-bundle-$VERSION"
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            NAME="android-app-bundle-$VERSION"
+          else
+            NAME="android-app-bundle-${VERSION}-ci${{ github.run_number }}"
+          fi
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "Artifact: $NAME"
 
       - name: Download AAB artifact
         uses: actions/download-artifact@v4
