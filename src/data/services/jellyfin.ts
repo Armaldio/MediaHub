@@ -60,14 +60,11 @@ async function findJellyfinItemId(
   }
 }
 
-function buildItemUrl(instance: CustomServiceInstance, itemId: string): string {
-  return `${instance.baseUrl}/web/index.html#!/details?id=${itemId}`;
+function buildItemUrl(itemId: string): string {
+  return `jellyfin://item/${itemId}`;
 }
 
-function buildSearchUrl(
-  instance: CustomServiceInstance,
-  query: string
-): string {
+function buildSearchUrl(instance: CustomServiceInstance, query: string): string {
   return `${instance.baseUrl}/web/index.html#!/search?query=${encodeURIComponent(query)}`;
 }
 
@@ -94,7 +91,7 @@ export const jellyfin: Service = {
             data.title,
             data.type as "movie" | "tv"
           );
-          if (itemId) return buildItemUrl(instance, itemId);
+          if (itemId) return buildItemUrl(itemId);
         }
         if (instance) return buildSearchUrl(instance, data.title);
         return `jellyfin://`;
@@ -110,7 +107,7 @@ export const jellyfin: Service = {
       url: async (data: FormattedDetails, instance?: CustomServiceInstance) => {
         if (instance?.apiKey) {
           const itemId = await findJellyfinItemId(instance, data.tmdbId, data.title, "movie");
-          if (itemId) return buildItemUrl(instance, itemId);
+          if (itemId) return buildItemUrl(itemId);
         }
         if (instance) return buildSearchUrl(instance, data.title);
         return `jellyfin://search?query=${encodeURIComponent(data.tmdbId)}`;
@@ -124,7 +121,7 @@ export const jellyfin: Service = {
       url: async (data: FormattedDetails, instance?: CustomServiceInstance) => {
         if (instance?.apiKey) {
           const itemId = await findJellyfinItemId(instance, data.tmdbId, data.title, "tv");
-          if (itemId) return buildItemUrl(instance, itemId);
+          if (itemId) return buildItemUrl(itemId);
         }
         if (instance) return buildSearchUrl(instance, data.title);
         return `jellyfin://search?query=${encodeURIComponent(data.tmdbId)}`;

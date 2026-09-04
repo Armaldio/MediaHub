@@ -322,10 +322,67 @@
                   </div>
                 </div>
 
-                <!-- Deep Links -->
-                <div v-if="service.deepLinks?.length > 0" class="px-4 pb-4">
-                  <div class="space-y-2">
-                    <template
+                    <!-- Deep Links -->
+                    <div v-if="service.deepLinks?.length > 0" class="px-4 pb-4">
+                      <!-- Seerr: API-powered request button -->
+                      <div v-if="service.id === 'seerr'">
+                        <button
+                          @click="handleSeerrRequest"
+                          class="w-full text-left px-3 py-2 text-sm rounded-lg transition-all duration-200 flex items-center justify-between gap-2 group/link relative overflow-hidden bg-white/5 hover:bg-white/10 text-white border border-white/5 active:scale-[0.98] disabled:cursor-wait"
+                          :disabled="seerr.isSubmitLoading('seerr') || seerr.isStatusLoading('seerr')"
+                        >
+                          <span class="flex items-center gap-2">
+                            <div
+                              v-if="seerr.isStatusLoading('seerr') || seerr.isSubmitLoading('seerr')"
+                              class="w-6 h-6 rounded-full bg-gray-900/90 border border-gray-700 flex items-center justify-center"
+                            >
+                              <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
+                            </div>
+                            <div
+                              v-else-if="seerr.getStatus('seerr') !== 'unknown'"
+                              class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
+                              :style="{ borderColor: seerr.getStatusColor('seerr'), backgroundColor: seerr.getStatusColor('seerr') + '20' }"
+                            >
+                              <svg
+                                v-if="seerr.getStatus('seerr') === 'available'"
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-3 w-3"
+                                :style="{ color: seerr.getStatusColor('seerr') }"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                              </svg>
+                              <div
+                                v-else-if="seerr.getStatus('seerr') === 'pending'"
+                                class="w-3 h-3 rounded-full"
+                                :style="{ backgroundColor: seerr.getStatusColor('seerr') }"
+                              ></div>
+                            </div>
+                            <div
+                              v-else
+                              class="w-6 h-6 rounded-full bg-gray-900/90 border border-gray-700 flex items-center justify-center"
+                            >
+                              <MovieIcon class="w-3 h-3 text-gray-300" />
+                            </div>
+                            <span class="text-gray-200 group-hover/link:text-white">
+                              {{ seerr.getStatus('seerr') !== 'unknown' ? seerr.getStatusLabel('seerr') : 'Request' }}
+                            </span>
+                          </span>
+                          <span
+                            v-if="seerr.getStatus('seerr') === 'unknown' && !seerr.isSubmitLoading('seerr')"
+                            class="text-gray-400 group-hover/link:text-white"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                          </span>
+                        </button>
+                      </div>
+
+                      <!-- Generic deep links -->
+                      <div v-else class="space-y-2">
+                        <template
                       v-for="(link, index) in service.deepLinks"
                       :key="index"
                     >
@@ -481,6 +538,7 @@ import { FormattedDetails } from "@/models/models";
 import { MediaType } from "tmdb-ts";
 import { fetchTVDBData } from "@/data/services";
 import { getTraktSlug } from "@/utils/traktLookup";
+import { useSeerr } from "@/composables/useSeerr";
 
 interface Props {
   mediaType: MediaType;
@@ -548,6 +606,7 @@ const backButtonStyle = {
 
 const moviesStore = useMoviesStore();
 const servicesStore = useServicesStore();
+const seerr = useSeerr();
 const errorMessage = ref<string | null>(null);
 const detailsLoading = ref(true);
 
@@ -588,6 +647,14 @@ const runtime = computed(() => {
 });
 
 const genres = computed(() => moviesStore.currentDetails?.genres || []);
+
+const seerrInstance = computed<CustomServiceInstance | null>(() => {
+  const instance = servicesStore.selectedServices.find(
+    (s): s is InstanceService => s.id === "seerr" && "instanceData" in s
+  );
+  if (!instance) return null;
+  return instance.instanceData.apiKey ? instance.instanceData : null;
+});
 
 // Filter services based on search query and ensure at least one deep link is enabled
 // Check if a deep link should be visible for a service
@@ -786,6 +853,10 @@ watch(
         traktSlug: slug,
       };
     }
+
+    if (seerrInstance.value && formattedDetails.value) {
+      seerr.fetchStatus("seerr", seerrInstance.value, formattedDetails.value);
+    }
   },
   { immediate: true }
 );
@@ -837,6 +908,24 @@ const goBack = () => {
 
 const goToIntroduction = () => {
   router.push("/");
+};
+
+const handleSeerrRequest = async () => {
+  const instance = seerrInstance.value;
+  const details = formattedDetails.value;
+  if (!instance || !details) return;
+
+  if (seerr.getStatus("seerr") === "unknown") {
+    await seerr.submitRequest("seerr", instance, details);
+    return;
+  }
+  // Already requested: open the web UI
+  const isMovie = details.type === "movie";
+  if (details.tmdbId) {
+    window.open(`${instance.baseUrl}/${isMovie ? "movie" : "tv"}/${isMovie ? details.tmdbId : details.tvdbId}`, "_blank", "noopener,noreferrer");
+  } else {
+    window.open(`${instance.baseUrl}/search?query=${encodeURIComponent(details.title)}`, "_blank", "noopener,noreferrer");
+  }
 };
 
 const loadDetails = async () => {

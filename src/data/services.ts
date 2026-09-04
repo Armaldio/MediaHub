@@ -29,6 +29,8 @@ import { betaseries } from "./services/betaseries";
 import { dubbingbase } from "./services/dubbingbase";
 import { nzb360 } from "./services/nzb360";
 import { seerr } from "./services/seerr";
+import { sonarr } from "./services/sonarr";
+import { radarr } from "./services/radarr";
 import { rottenTomatoes } from "./services/rottenTomatoes";
 import { metacritic } from "./services/metacritic";
 import { anilist } from "./services/anilist";
@@ -140,6 +142,8 @@ export default [
   dubbingbase,
   nzb360,
   seerr,
+  sonarr,
+  radarr,
   rottenTomatoes,
   metacritic,
   anilist,

@@ -1,11 +1,20 @@
+// Seerr (Overseerr / Jellyseerr) integration is implemented via the
+// useSeerr composable in src/composables/useSeerr.ts. The composable
+// handles API requests + status checks; this file only declares the
+// service shape so the service appears in the list.
 import seerrIcon from "../../assets/apps/images/emby/assets/logo.svg"; // ponytail: embys logo placeholder, add src/assets/apps/images/overseerr/assets/logo.svg when asset is sourced
-import { createRequestService } from "./requestServiceFactory";
+import { Service } from "../../types/index";
 
-// Overseerr and its Jellyfin fork Jellyseerr have been consolidated into
-// "Seerr" and share the same URL scheme, so a single service covers both.
-export const seerr = createRequestService(
-  "seerr",
-  "Seerr",
-  "Request movies & TV for your media server (Overseerr / Jellyseerr)",
-  seerrIcon
-);
+export const seerr: Service = {
+  id: "seerr",
+  name: "Seerr",
+  description: "Request movies & TV for your media server (Overseerr / Jellyseerr)",
+  icon: seerrIcon,
+  websiteUrl: "https://overseerr.dev",
+  appUrl: "https://overseerr.dev",
+  androidAppId: "",
+  color: "#00A8E8",
+  supportsCustomInstances: true,
+  customInstances: [],
+  deepLinks: [],
+};
