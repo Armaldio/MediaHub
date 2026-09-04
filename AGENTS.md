@@ -1,7 +1,9 @@
 # Agent notes
 
 ## Releasing
-- Use `mise` release functions (`release:stable`, `release:beta`) — they handle version bumping and Android `versionCode` automatically. **Do not** manually edit `android/app/build.gradle` or `package.json` for releases.
+- Use `mise run release [patch|minor|major|X.Y.Z|X.Y.Z-beta.N]` — it handles version bumping, Android `versionCode` derivation, tagging, and pushing. **Do not** manually edit `android/app/build.gradle` or `package.json` for releases.
+- Tag suffixes (`-beta.N`, `-alpha.N`, `-rc.N`) route the build to the Play `alpha` track; bare `vX.Y.Z` tags go to `internal`.
+- Pushes to `main` (no tag) also build the app, with versionName `X.Y.Z-ci{run_number}` and a unique `versionCode` for testing — but are **not** uploaded to Play.
 - If CI fails with `"Target SDK of artifact is too low"`, bump `targetSdkVersion` (and `compileSdkVersion`) in `android/variables.gradle` — Google Play requires the latest SDK. v1.2.0 required bumping from 35 to 36.
 
 ## TMDB external IDs
