@@ -416,7 +416,10 @@
             <div
               v-if="
                 currentService?.id === 'jellyfin' ||
-                currentService?.id === 'plex'
+                currentService?.id === 'plex' ||
+                currentService?.id === 'seerr' ||
+                currentService?.id === 'sonarr' ||
+                currentService?.id === 'radarr'
               "
             >
               <label
