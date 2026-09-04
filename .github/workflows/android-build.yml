@@ -52,7 +52,7 @@ jobs:
             VERSION_CODE_OFFSET=0
           else
             DISPLAY_VERSION="${BASE_VERSION}-ci${RUN_NUMBER}"
-            VERSION_CODE_OFFSET=$((RUN_NUMBER * 10))
+            VERSION_CODE_OFFSET="$RUN_NUMBER"
           fi
           BASE_CODE=$(node -p "const v='$BASE_VERSION'.match(/^[0-9]+\.[0-9]+\.[0-9]+/)[0].split('.').map(Number);v[0]*1000000+v[1]*1000+v[2];")
           VERSION_CODE=$((BASE_CODE + VERSION_CODE_OFFSET))
