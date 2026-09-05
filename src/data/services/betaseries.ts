@@ -23,7 +23,7 @@ export const betaseries: Service = {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       name: "App",
-      url: (data) => `betaseries://shows/${data.tmdbId}`,
+      url: (data) => `betaseries://show/${data.tmdbId}`,
       requiresApp: true,
     },
     {

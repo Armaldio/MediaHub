@@ -14,15 +14,15 @@ export const letterboxd: Service = {
     {
       name: "App",
       mediaType: "movie",
-      enabled: (data) => data.type === "movie",
-      url: (data) => `letterboxd://film/${data.letterboxdId || data.tmdbId}`,
+      enabled: (data) => data.type === "movie" && !!data.letterboxdId,
+      url: (data) => `https://letterboxd.com/film/${data.letterboxdId}`,
       requiresApp: true,
     },
     {
       name: "App",
       mediaType: "tv",
-      enabled: (data) => data.type === "tv",
-      url: (data) => `letterboxd://film/${data.letterboxdId || data.imdbId}`,
+      enabled: (data) => data.type === "tv" && !!data.letterboxdId,
+      url: (data) => `https://letterboxd.com/film/${data.letterboxdId}`,
       requiresApp: true,
     },
     {
