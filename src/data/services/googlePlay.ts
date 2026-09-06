@@ -12,13 +12,13 @@ export const googlePlay: Service = {
   color: "#01875F",
   deepLinks: [
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.googlePlayId,
       url: (data) => `https://play.google.com/store/movies/details?id=${data.googlePlayId}`,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.googlePlayId,
       url: (data) => `https://play.google.com/store/tv/show?id=${data.googlePlayId}`,

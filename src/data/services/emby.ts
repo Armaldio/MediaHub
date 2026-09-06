@@ -45,8 +45,8 @@ export const emby: Service = {
   description: "Personal media server",
   icon: embyIcon,
   websiteUrl: "https://emby.media",
-  appUrl: "https://play.google.com/store/apps/details?id=com.emby.emby",
-  androidAppId: "com.emby.emby",
+  appUrl: "https://play.google.com/store/apps/details?id=com.mb.android",
+  androidAppId: "com.mb.android",
   color: "#52B54B",
   supportsCustomInstances: true,
   customInstances: [],
@@ -67,7 +67,7 @@ export const emby: Service = {
       },
     },
     {
-      name: "App",
+      name: "Search",
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
       url: async (data: FormattedDetails, instance?: CustomServiceInstance) => {
@@ -81,7 +81,7 @@ export const emby: Service = {
       requiresApp: true,
     },
     {
-      name: "App",
+      name: "Search",
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       url: async (data: FormattedDetails, instance?: CustomServiceInstance) => {

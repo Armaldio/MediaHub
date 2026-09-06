@@ -14,13 +14,13 @@ export const tvdb: Service = {
     {
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.tvdbSlug,
-      name: "Website",
+      name: "Web",
       url: (data) => `https://thetvdb.com/movies/${data.tvdbSlug}`,
     },
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.tvdbSlug,
-      name: "Website",
+      name: "Web",
       url: (data) => `https://thetvdb.com/series/${data.tvdbSlug}`,
     },
   ],

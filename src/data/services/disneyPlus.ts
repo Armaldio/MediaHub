@@ -35,14 +35,14 @@ export const disneyPlus: Service = {
       requiresApp: true,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
       url: (data) =>
         `https://www.disneyplus.com/movies/wd/${data.disneyPlusId}`,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       url: (data) =>

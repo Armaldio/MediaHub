@@ -12,13 +12,13 @@ export const filmweb: Service = {
   color: "#FFCC00",
   deepLinks: [
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.filmwebId,
       url: (data) => `https://www.filmweb.pl/${data.filmwebId}`,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.filmwebId,
       url: (data) => `https://www.filmweb.pl/${data.filmwebId}`,

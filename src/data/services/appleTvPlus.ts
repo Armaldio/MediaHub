@@ -15,25 +15,25 @@ export const appleTvPlus: Service = {
       name: "App",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.appleTvId,
-      url: (data) => `apple-tv://movie/${data.appleTvId}`,
+      url: (data) => `https://tv.apple.com/movie/${data.appleTvId}`,
       requiresApp: true,
     },
     {
       name: "App",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.appleTvId,
-      url: (data) => `apple-tv://show/${data.appleTvId}`,
+      url: (data) => `https://tv.apple.com/show/${data.appleTvId}`,
       requiresApp: true,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
       url: (data) =>
         `https://tv.apple.com/movie/${data.appleTvId || data.tmdbId}`,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       url: (data) =>

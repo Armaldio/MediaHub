@@ -12,16 +12,16 @@ export const wikidata: Service = {
   color: "#006699",
   deepLinks: [
     {
-      name: "Wikidata website",
+      name: "Web",
       mediaType: "all",
       enabled: (data) => !!data.wikidataId,
       url: (data) => `https://wikidata.org/wiki/${data.wikidataId}`,
     },
     {
-      name: "Wikidata app",
+      name: "App",
       mediaType: "all",
       enabled: (data) => !!data.wikidataId,
-      url: (data) => `wikidata://entity/${data.wikidataId}`,
+      url: (data) => `wikipedia://en.wikipedia.org/wiki/${data.wikidataId}`,
       requiresApp: true,
     },
     {

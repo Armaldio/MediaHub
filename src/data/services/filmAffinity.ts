@@ -12,13 +12,13 @@ export const filmAffinity: Service = {
   color: "#447CAD",
   deepLinks: [
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.filmAffinityId,
       url: (data) => `https://www.filmaffinity.com/en/film${data.filmAffinityId}.html`,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.filmAffinityId,
       url: (data) => `https://www.filmaffinity.com/en/film${data.filmAffinityId}.html`,

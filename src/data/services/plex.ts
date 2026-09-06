@@ -41,7 +41,7 @@ export const plex: Service = {
       requiresApp: true,
     },
     {
-      name: "App",
+      name: "Search",
       mediaType: "all",
       enabled: (data) => data.type === "movie" || data.type === "tv",
       url: (data) => `plex://search?query=${data.tmdbId}`,

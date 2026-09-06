@@ -33,7 +33,7 @@ export const tvmaze: Service = {
   color: "#FF7A00",
   deepLinks: [
     {
-      name: "Website",
+      name: "Search",
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       url: async (data) => {
@@ -43,7 +43,7 @@ export const tvmaze: Service = {
       },
     },
     {
-      name: "Website",
+      name: "Search",
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
       url: async (data) => {

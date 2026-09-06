@@ -14,7 +14,7 @@ export const avaAssistant: Service = {
     {
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
-      name: "App",
+      name: "Web",
       url: (data) => {
         const url = `https://ava-assistant.app/movie/${data.tmdbId}`;
         console.log("url", url);
@@ -24,7 +24,7 @@ export const avaAssistant: Service = {
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
-      name: "App",
+      name: "Web",
       url: (data) => {
         console.log(data);
         const url = `https://ava-assistant.app/show/?id=${data.tmdbId}`;

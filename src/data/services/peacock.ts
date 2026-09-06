@@ -13,13 +13,13 @@ export const peacock: Service = {
   color: "#00B3E6",
   deepLinks: [
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.peacockId,
       url: (data) => withAffiliate(`https://www.peacocktv.com/stream-${data.peacockId}`, "peacock"),
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.peacockId,
       url: (data) => withAffiliate(`https://www.peacocktv.com/stream-${data.peacockId}`, "peacock"),

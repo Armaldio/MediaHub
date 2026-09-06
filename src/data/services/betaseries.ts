@@ -23,13 +23,13 @@ export const betaseries: Service = {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       name: "App",
-      url: (data) => `betaseries://shows/${data.tmdbId}`,
+      url: (data) => `betaseries://show/${data.tmdbId}`,
       requiresApp: true,
     },
     {
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
-      name: "Website",
+      name: "Web",
       url: (data) =>
         `https://www.betaseries.com/movie/${data.title
           ?.toLowerCase()
@@ -38,7 +38,7 @@ export const betaseries: Service = {
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
-      name: "Website",
+      name: "Web",
       url: (data) =>
         `https://www.betaseries.com/serie/${data.title
           ?.toLowerCase()

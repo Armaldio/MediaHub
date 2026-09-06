@@ -2,6 +2,7 @@ import { chromium, Browser, Page } from 'playwright';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as https from 'https';
+import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -128,6 +129,63 @@ interface ProcessAppOptions {
   force?: boolean;
 }
 
+function tryExtractIconFromApk(androidAppId: string, outPath: string): boolean {
+  // Ponytail: APK is source of truth, Play Store is fallback
+  const candidates = [
+    path.join(process.cwd(), `downloads/${androidAppId}.apk`),
+    path.join(process.cwd(), `downloads/${androidAppId}.xapk`),
+    path.join(`/tmp/${androidAppId}.apk`),
+  ];
+  let apkPath: string | null = null;
+  for (const p of candidates) if (fs.existsSync(p)) { apkPath = p; break; }
+  if (!apkPath) return false;
+  try {
+    // Use apk-deep-links extract-icon (handles XAPK, picks xxxhdpi)
+    execSync(`npx tsx scripts/apk-deep-links.ts extract-icon "${apkPath}" --out "${outPath}"`, { stdio: "ignore", timeout: 15000 });
+    if (fs.existsSync(outPath) && fs.statSync(outPath).size > 1000) {
+      console.log(`✅ Extracted icon from APK: ${apkPath} → ${outPath}`);
+      return true;
+    }
+  } catch {}
+  // Fallback: direct unzip of mipmap
+  try {
+    let apkToUse = apkPath;
+    let tmpDir: string | null = null;
+    if (apkPath.endsWith(".xapk")) {
+      tmpDir = `/tmp/icon_${Date.now()}`;
+      fs.mkdirSync(tmpDir, { recursive: true });
+      execSync(`unzip -oq "${apkPath}" -d "${tmpDir}"`, { stdio: "ignore" });
+      const files = fs.readdirSync(tmpDir).filter(f=>f.endsWith(".apk"));
+      if (files.length) {
+        let best = files[0]; let max=-1;
+        for (const f of files) { const s=fs.statSync(path.join(tmpDir,f)).size; if(s>max){max=s; best=f;} }
+        apkToUse = path.join(tmpDir, best);
+      }
+    }
+    const list: string = execSync(`unzip -l "${apkToUse}" 2>/dev/null | grep -E "mipmap.*ic_launcher\\.png" | sort -r | head -n 5`, {encoding:"utf-8"});
+    const pref = ["xxxhdpi","xxhdpi","xhdpi","hdpi"];
+    let iconPath = "";
+    for (const p of pref) {
+      const found = list.split("\n").find(l=>l.includes(p));
+      if (found) { const m=found.match(/(\S+\.png)$/); if(m) {iconPath=m[1].trim(); break;}}
+    }
+    if (!iconPath && list.trim()) {
+      const m=list.split("\n")[0].match(/(\S+\.png)$/);
+      if(m) iconPath=m[1].trim();
+    }
+    if (iconPath) {
+      execSync(`unzip -p "${apkToUse}" "${iconPath}" > "${outPath}"`, { stdio: "ignore" });
+      if (tmpDir) fs.rmSync(tmpDir,{recursive:true,force:true});
+      if (fs.existsSync(outPath) && fs.statSync(outPath).size>1000) {
+        console.log(`✅ Extracted icon via unzip: ${iconPath} → ${outPath}`);
+        return true;
+      }
+    }
+    if (tmpDir) fs.rmSync(tmpDir,{recursive:true,force:true});
+  } catch {}
+  return false;
+}
+
 async function processApp(browser: Browser, app: Service, outputDir: string, options: ProcessAppOptions = {}): Promise<void> {
   const page = await browser.newPage();
   const appDir = path.join(outputDir, app.id, 'assets');
@@ -146,7 +204,11 @@ async function processApp(browser: Browser, app: Service, outputDir: string, opt
       return;
     }
 
+    // 1. Try APK first (better than Play Store — exact icon, no Playwright, offline)
     if (app.androidAppId) {
+      if (tryExtractIconFromApk(app.androidAppId, playStorePath)) {
+        return;
+      }
       const playStoreLink = `https://play.google.com/store/apps/details?id=${app.androidAppId}`;
       console.log(`Play Store: ${playStoreLink}`);
 

@@ -13,14 +13,14 @@ export const mubi: Service = {
   deepLinks: [
     {
       mediaType: "movie",
-      enabled: (data) => data.type === "movie",
+      enabled: (data) => data.type === "movie" && !!data.mubiId,
       name: "App",
       url: (data) => `mubi://films/${data.mubiId}`,
       requiresApp: true,
     },
     {
       mediaType: "tv",
-      enabled: (data) => data.type === "tv",
+      enabled: (data) => data.type === "tv" && !!data.mubiId,
       name: "App",
       url: (data) => `mubi://films/${data.mubiId}`,
       requiresApp: true,
@@ -28,13 +28,13 @@ export const mubi: Service = {
     {
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.mubiId,
-      name: "Website",
+      name: "Web",
       url: (data) => `https://mubi.com/films/${data.mubiId}`,
     },
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.mubiId,
-      name: "Website",
+      name: "Web",
       url: (data) => `https://mubi.com/films/${data.mubiId}`,
     },
   ],

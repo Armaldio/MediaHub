@@ -12,13 +12,13 @@ export const douban: Service = {
   color: "#2E9B45",
   deepLinks: [
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.doubanId,
       url: (data) => `https://movie.douban.com/subject/${data.doubanId}/`,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.doubanId,
       url: (data) => `https://movie.douban.com/subject/${data.doubanId}/`,

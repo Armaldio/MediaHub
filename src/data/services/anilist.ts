@@ -15,7 +15,7 @@ export const anilist: Service = {
   color: "#1F1F2E",
   deepLinks: [
     {
-      name: "Website",
+      name: "Search",
       mediaType: "all",
       enabled: (data) => data.type === "movie" || data.type === "tv",
       url: (data) =>

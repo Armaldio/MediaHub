@@ -14,15 +14,15 @@ export const moviebase: Service = {
     {
       name: "App",
       mediaType: "movie",
-      enabled: (data) => data.type === "movie",
+      enabled: (data) => data.type === "movie" && !!data.tmdbId,
       url: (data) => `moviebase://movie/${data.tmdbId}`,
       requiresApp: true,
     },
     {
       name: "App",
       mediaType: "tv",
-      enabled: (data) => data.type === "tv",
-      url: (data) => `moviebase://imdb/${data.imdbId}`,
+      enabled: (data) => data.type === "tv" && !!data.tmdbId,
+      url: (data) => `moviebase://tv/${data.tmdbId}`,
       requiresApp: true,
     },
   ],

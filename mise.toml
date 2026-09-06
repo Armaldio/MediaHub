@@ -60,3 +60,27 @@ run = "./scripts/release.sh release:stable"
 [tasks."release:beta"]
 description = "Bump to next prerelease, commit, tag, push. Use: mise run release:beta [bump|1.3.1-beta.1]"
 run = "./scripts/release.sh release:beta"
+
+[tasks."apk:extract"]
+description = "Extract deep links from APK/XAPK or appId (needs APK file or apkeep). Use: mise run apk:extract -- <apk|appId> [-- --json] [-- --deep-only]"
+run = 'npx tsx scripts/apk-deep-links.ts extract "$@"'
+
+[tasks."apk:validate"]
+description = "Validate service deepLinks (guards, schemes). Use: mise run apk:validate [-- --apk <apk>] [-- --service <id>] [-- --json]"
+run = 'npx tsx scripts/apk-deep-links.ts validate "$@"'
+
+[tasks."apk:download"]
+description = "Download APK via apkeep if installed. Use: mise run apk:download -- <appId> [-- --out <dir>]"
+run = 'npx tsx scripts/apk-deep-links.ts download "$@"'
+
+[tasks."deep-links:extract"]
+description = "Alias for apk:extract"
+run = 'npx tsx scripts/apk-deep-links.ts extract "$@"'
+
+[tasks."deep-links:validate"]
+description = "Alias for apk:validate"
+run = 'npx tsx scripts/apk-deep-links.ts validate "$@"'
+
+[tasks."apk:extract-icon"]
+description = "Extract launcher icon from APK (better than Play Store). Use: mise run apk:extract-icon -- <apk|appId> [-- --out <path>]"
+run = 'npx tsx scripts/apk-deep-links.ts extract-icon "$@"'

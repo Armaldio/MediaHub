@@ -61,7 +61,7 @@ export const sonarr: Service = {
   customInstances: [],
   deepLinks: [
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       url: async (data, instance) => {
