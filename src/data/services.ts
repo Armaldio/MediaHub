@@ -18,7 +18,6 @@ import { plex } from "./services/plex";
 import { jellyfin } from "./services/jellyfin";
 import { kodi } from "./services/kodi";
 import { avaAssistant } from "./services/avaAssistant";
-import { tvTime } from "./services/tvTime";
 import { youtube } from "./services/youtube";
 import { mubi } from "./services/mubi";
 import { simkl } from "./services/simkl";
@@ -131,7 +130,6 @@ export default [
   jellyfin,
   kodi,
   avaAssistant,
-  tvTime,
   youtube,
   mubi,
   simkl,
