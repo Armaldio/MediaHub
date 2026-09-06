@@ -19,9 +19,22 @@
         ></div>
       </div>
 
-      <!-- Show installed apps only toggle -->
-      <div v-if="servicesStore.isNative" class="flex justify-center mb-8">
-        <label class="flex items-center gap-2 cursor-pointer">
+      <!-- Filters -->
+      <div class="flex flex-col items-center gap-4 mb-8">
+        <!-- Type filter: All | Apps | Web -->
+        <div class="inline-flex rounded-full bg-gray-800 p-1 border border-gray-700">
+          <button
+            v-for="opt in (['all','mobile','web'] as const)"
+            :key="opt"
+            @click="typeFilter = opt"
+            class="px-4 py-1.5 text-sm rounded-full transition-colors"
+            :class="typeFilter === opt ? 'bg-indigo-600 text-white shadow' : 'text-gray-400 hover:text-white'"
+          >
+            {{ opt === 'mobile' ? 'Apps' : opt === 'all' ? 'All' : 'Web' }}
+          </button>
+        </div>
+        <!-- Show installed apps only toggle - hidden for Web -->
+        <label v-if="servicesStore.isNative && typeFilter !== 'web'" class="flex items-center gap-2 cursor-pointer">
           <input
             v-model="showInstalledOnly"
             type="checkbox"
@@ -353,6 +366,7 @@ const router = useRouter();
 const servicesStore = useServicesStore();
 const drag = ref(false);
 const showInstalledOnly = ref(false);
+const typeFilter = ref<'all' | 'web' | 'mobile'>('all');
 
 const { isPro } = useProducts();
 
@@ -372,11 +386,18 @@ const availableServices = computed(() => {
     (service) => !(service.supportsCustomInstances && !('isInstance' in service))
   );
 
+  // Type filter: web = no androidAppId, mobile = has androidAppId
+  if (typeFilter.value === 'web') {
+    services = services.filter((s) => !s.androidAppId);
+  } else if (typeFilter.value === 'mobile') {
+    services = services.filter((s) => !!s.androidAppId);
+  }
+
   if (!showInstalledOnly.value) {
     return services;
   }
   return services.filter((service) =>
-    servicesStore.isServiceInstalled(service)
+    !service.androidAppId || servicesStore.isServiceInstalled(service)
   );
 });
 

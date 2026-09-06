@@ -67,14 +67,14 @@ export const useServicesStore = defineStore('services', () => {
   })
 
   const installedServices = computed(() =>
-    availableServices.value.filter((service) => isServiceInstalled(service))
+    availableServices.value.filter((service) => !!service.androidAppId && isServiceInstalled(service))
   )
 
   const isServiceSelected = (serviceId: string) => 
     selectedServiceIds.value.includes(serviceId)
 
   const isServiceInstalled = (service: Service) => {
-    if (!service.androidAppId) return true // Web services are always available
+    if (!service.androidAppId) return false // Web-only: no native app to install
     // Check if the service ID is in the installedApps array
     return installedApps.value.includes(service.id) || service.isInstalled || false
   }
@@ -111,9 +111,10 @@ export const useServicesStore = defineStore('services', () => {
       installedApps.value = []
 
       if (!isNative.value) {
-        // In web environment, mark all services as available
+        // In web environment, native detection is unavailable — mark all native apps as not installed
+        // Web-only services stay false (no app to install)
         availableServices.value.forEach(service => {
-          service.isInstalled = true
+          service.isInstalled = false
         })
         return
       }
@@ -136,8 +137,8 @@ export const useServicesStore = defineStore('services', () => {
               installedApps.value.push(service.id) // Store only the service ID
             }
           } else {
-            // If no package is provided, assume it's a web service
-            service.isInstalled = true
+            // Web-only service: no native app
+            service.isInstalled = false
           }
         } catch (error) {
           console.warn(`Error checking if ${service.name} is installed:`, error)
@@ -149,9 +150,9 @@ export const useServicesStore = defineStore('services', () => {
       availableServices.value = updatedServices
     } catch (error) {
       console.error('Error in checkInstalledApps:', error)
-      // Fallback: mark all services as available
+      // Fallback: mark all as not installed (unknown state)
       availableServices.value.forEach(service => {
-        service.isInstalled = true
+        service.isInstalled = false
       })
     }
   }

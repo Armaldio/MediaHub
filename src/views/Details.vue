@@ -226,9 +226,9 @@
             </div>
           </div>
 
-          <!-- Search Bar -->
-          <div class="mb-6">
-            <div class="relative">
+          <!-- Search + Type Filter -->
+          <div class="flex flex-col sm:flex-row gap-4 mb-6">
+            <div class="relative flex-1">
               <div
                 class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
               >
@@ -252,6 +252,17 @@
                 class="block w-full pl-10 pr-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                 placeholder="Search services..."
               />
+            </div>
+            <div class="inline-flex self-start rounded-full bg-gray-800 p-1 border border-gray-700">
+              <button
+                v-for="opt in (['all','mobile','web'] as const)"
+                :key="opt"
+                @click="typeFilter = opt"
+                class="px-4 py-1.5 text-sm rounded-full transition-colors"
+                :class="typeFilter === opt ? 'bg-indigo-600 text-white shadow' : 'text-gray-400 hover:text-white'"
+              >
+                {{ opt === 'mobile' ? 'Apps' : opt === 'all' ? 'All' : 'Web' }}
+              </button>
             </div>
           </div>
 
@@ -294,12 +305,12 @@
                         class="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-gray-900"
                         :class="{
                           'bg-green-500':
-                            servicesStore.isServiceInstalled(service),
+                            !!service.androidAppId && servicesStore.isServiceInstalled(service),
                           'bg-blue-500':
-                            !servicesStore.isServiceInstalled(service),
+                            !service.androidAppId || !servicesStore.isServiceInstalled(service),
                         }"
                         :title="
-                          servicesStore.isServiceInstalled(service)
+                          service.androidAppId && servicesStore.isServiceInstalled(service)
                             ? 'Native app installed'
                             : 'Web version available'
                         "
@@ -313,7 +324,7 @@
                       </h3>
                       <p class="text-xs text-gray-400 truncate">
                         {{
-                          servicesStore.isServiceInstalled(service)
+                          service.androidAppId && servicesStore.isServiceInstalled(service)
                             ? "App installed"
                             : "Web access"
                         }}
@@ -578,6 +589,7 @@ const onTransitionEnd = () => {
 };
 const servicesGrid = ref<HTMLElement | null>(null);
 const searchQuery = ref("");
+const typeFilter = ref<'all' | 'web' | 'mobile'>('all');
 const parallaxOffset = ref(0);
 
 // Handle parallax effect on scroll
@@ -679,6 +691,11 @@ const filteredServices = computed<Service[]>(() => {
   const query = searchQuery.value.toLowerCase();
   return servicesStore.selectedServices
     .filter((service) => !(service.supportsCustomInstances && !('isInstance' in service)))
+    .filter((service) => {
+      if (typeFilter.value === 'web' && service.androidAppId) return false;
+      if (typeFilter.value === 'mobile' && !service.androidAppId) return false;
+      return true;
+    })
     .filter((service) => {
       // Check if at least one deep link is enabled and available
       const hasEnabledLink = service.deepLinks?.some((link) =>
