@@ -436,7 +436,7 @@
                               loadingLinks[getLoadingKey(service, link)],
                           }"
                         >
-                          {{ getLinkDisplayName(service, link) }}
+                          {{ link.name }}
                         </span>
                         <div
                           v-if="loadingLinks[getLoadingKey(service, link)]"
@@ -673,20 +673,6 @@ const isLinkVisible = (service: Service, link: DeepLink) => {
     return false;
   }
   return ('enabled' in link && link.enabled?.(details)) || !('enabled' in link);
-};
-
-const getLinkDisplayName = (service: Service, link: DeepLink): string => {
-  const raw = link.url.toString().toLowerCase();
-  const name = link.name.toLowerCase();
-  // Search links → "Search"
-  if (name.includes("search") || raw.includes("search") || raw.includes("query=") || raw.includes("/search")) {
-    return "Search";
-  }
-  // Web links → App if installed else Web
-  if (name === "website" || name === "web" || raw.startsWith("https://") || raw.startsWith("http://")) {
-    return servicesStore.isServiceInstalled(service) ? "App" : "Web";
-  }
-  return link.name;
 };
 
 const filteredServices = computed<Service[]>(() => {

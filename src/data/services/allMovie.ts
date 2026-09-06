@@ -12,13 +12,13 @@ export const allMovie: Service = {
   color: "#333333",
   deepLinks: [
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.allMovieId,
       url: (data) => `https://www.allmovie.com/movie/-${data.allMovieId}`,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.allMovieId,
       url: (data) => `https://www.allmovie.com/movie/-${data.allMovieId}`,

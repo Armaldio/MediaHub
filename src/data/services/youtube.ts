@@ -15,7 +15,7 @@ export const youtube: Service = {
     {
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
-      name: "Search in App",
+      name: "Search",
       url: (data) =>
         `vnd.youtube://search?query=${encodeURIComponent(data.title || "")}`,
       requiresApp: true,
@@ -23,7 +23,7 @@ export const youtube: Service = {
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
-      name: "Search in App",
+      name: "Search",
       url: (data) =>
         `vnd.youtube://search?query=${encodeURIComponent(data.title || "")}`,
       requiresApp: true,
@@ -31,7 +31,7 @@ export const youtube: Service = {
     {
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
-      name: "Website",
+      name: "Web",
       url: (data) =>
         `https://www.youtube.com/results?search_query=${encodeURIComponent(
           data.title || ""
@@ -40,7 +40,7 @@ export const youtube: Service = {
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
-      name: "Website",
+      name: "Web",
       url: (data) =>
         `https://www.youtube.com/results?search_query=${encodeURIComponent(
           data.title || ""

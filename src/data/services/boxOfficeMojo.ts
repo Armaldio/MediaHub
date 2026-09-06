@@ -12,13 +12,13 @@ export const boxOfficeMojo: Service = {
   color: "#0A2342",
   deepLinks: [
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.boxOfficeMojoId,
       url: (data) => `https://www.boxofficemojo.com/movies/?id=${data.boxOfficeMojoId}.htm`,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.boxOfficeMojoId,
       url: (data) => `https://www.boxofficemojo.com/movies/?id=${data.boxOfficeMojoId}.htm`,

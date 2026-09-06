@@ -33,7 +33,7 @@ export function createRequestService(
     customInstances: [],
     deepLinks: [
       {
-        name: "Website",
+        name: "Web",
         mediaType: "movie",
         enabled: (data) => data.type === "movie",
         url: (data, instance) =>
@@ -46,7 +46,7 @@ export function createRequestService(
             : searchUrl(instance, data),
       },
       {
-        name: "Website",
+        name: "Web",
         mediaType: "tv",
         enabled: (data) => data.type === "tv",
         url: (data, instance) =>

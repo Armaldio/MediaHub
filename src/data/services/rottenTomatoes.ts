@@ -12,13 +12,13 @@ export const rottenTomatoes: Service = {
   color: "#FA320A",
   deepLinks: [
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.rottenTomatoesId,
       url: (data) => `https://www.rottentomatoes.com/${data.rottenTomatoesId}`,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.rottenTomatoesId,
       url: (data) => `https://www.rottentomatoes.com/${data.rottenTomatoesId}`,

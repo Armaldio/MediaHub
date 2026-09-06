@@ -26,7 +26,7 @@ export const letterboxd: Service = {
       requiresApp: true,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "all",
       enabled: (data) => !!data.letterboxdId,
       url: (data) => `https://letterboxd.com/film/${data.letterboxdId}`,

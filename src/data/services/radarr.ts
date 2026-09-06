@@ -41,7 +41,7 @@ export const radarr: Service = {
   customInstances: [],
   deepLinks: [
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
       url: async (data, instance) => {

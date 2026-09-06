@@ -12,13 +12,13 @@ export const metacritic: Service = {
   color: "#FC0101",
   deepLinks: [
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.metacriticId,
       url: (data) => `https://www.metacritic.com/movie/${data.metacriticId}`,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.metacriticId,
       url: (data) => `https://www.metacritic.com/tv/${data.metacriticId}`,

@@ -26,13 +26,13 @@ export const imdb: Service = {
       requiresApp: true,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.imdbId,
       url: (data) => `https://imdb.com/title/${data.imdbId}`,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.imdbId,
       url: (data) => `https://imdb.com/title/${data.imdbId}`,

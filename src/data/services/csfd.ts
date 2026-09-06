@@ -12,13 +12,13 @@ export const csfd: Service = {
   color: "#D32F2F",
   deepLinks: [
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.csfdId,
       url: (data) => `https://www.csfd.cz/film/${data.csfdId}`,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.csfdId,
       url: (data) => `https://www.csfd.cz/film/${data.csfdId}`,

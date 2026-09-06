@@ -29,7 +29,7 @@ export const betaseries: Service = {
     {
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
-      name: "Website",
+      name: "Web",
       url: (data) =>
         `https://www.betaseries.com/movie/${data.title
           ?.toLowerCase()
@@ -38,7 +38,7 @@ export const betaseries: Service = {
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
-      name: "Website",
+      name: "Web",
       url: (data) =>
         `https://www.betaseries.com/serie/${data.title
           ?.toLowerCase()

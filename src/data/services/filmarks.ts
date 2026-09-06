@@ -12,13 +12,13 @@ export const filmarks: Service = {
   color: "#00A0E9",
   deepLinks: [
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.filmarksId,
       url: (data) => `https://filmarks.com/${data.filmarksId}`,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.filmarksId,
       url: (data) => `https://filmarks.com/${data.filmarksId}`,

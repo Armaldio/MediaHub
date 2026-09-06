@@ -26,14 +26,14 @@ export const appleTvPlus: Service = {
       requiresApp: true,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
       url: (data) =>
         `https://tv.apple.com/movie/${data.appleTvId || data.tmdbId}`,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       url: (data) =>

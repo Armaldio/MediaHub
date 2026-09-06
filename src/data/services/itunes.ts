@@ -13,13 +13,13 @@ export const itunes: Service = {
   color: "#000000",
   deepLinks: [
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.itunesId,
       url: (data) => withAffiliate(`https://itunes.apple.com/us/movie/id${data.itunesId}`, "itunes"),
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.itunesId,
       url: (data) => withAffiliate(`https://itunes.apple.com/us/tv-show/id${data.itunesId}`, "itunes"),

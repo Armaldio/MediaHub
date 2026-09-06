@@ -14,13 +14,13 @@ export const tmdb: Service = {
     {
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
-      name: "Website",
+      name: "Web",
       url: (data) => `https://www.themoviedb.org/movie/${data.tmdbId}`,
     },
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
-      name: "Website",
+      name: "Web",
       url: (data) => `https://www.themoviedb.org/tv/${data.tmdbId}`,
     },
   ],

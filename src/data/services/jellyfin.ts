@@ -101,7 +101,7 @@ export const jellyfin: Service = {
       },
     },
     {
-      name: "App",
+      name: "Search",
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
       url: async (data: FormattedDetails, instance?: CustomServiceInstance) => {
@@ -115,7 +115,7 @@ export const jellyfin: Service = {
       requiresApp: true,
     },
     {
-      name: "App",
+      name: "Search",
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       url: async (data: FormattedDetails, instance?: CustomServiceInstance) => {

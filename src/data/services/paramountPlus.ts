@@ -28,14 +28,14 @@ export const paramountPlus: Service = {
       requiresApp: true,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.paramountPlusId,
       url: (data) =>
         `https://www.paramountplus.com/movies/video/${data.paramountPlusId}`,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.paramountPlusId,
       url: (data) =>

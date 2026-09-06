@@ -28,13 +28,13 @@ export const mubi: Service = {
     {
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.mubiId,
-      name: "Website",
+      name: "Web",
       url: (data) => `https://mubi.com/films/${data.mubiId}`,
     },
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.mubiId,
-      name: "Website",
+      name: "Web",
       url: (data) => `https://mubi.com/films/${data.mubiId}`,
     },
   ],

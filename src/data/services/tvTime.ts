@@ -29,13 +29,13 @@ export const tvTime: Service = {
     {
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
-      name: "Website",
+      name: "Web",
       url: (data) => `https://www.tvtime.com/en/movie/${data.tmdbId}`,
     },
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
-      name: "Website",
+      name: "Web",
       url: (data) => `https://www.tvtime.com/en/show/${data.tmdbId}`,
     },
   ],

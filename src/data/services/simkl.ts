@@ -28,13 +28,13 @@ export const simkl: Service = {
     {
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
-      name: "Website",
+      name: "Web",
       url: (data) => `https://simkl.com/movies/${data.tmdbId}`,
     },
     {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
-      name: "Website",
+      name: "Web",
       url: (data) => `https://simkl.com/tv-shows/${data.tmdbId}`,
     },
   ],

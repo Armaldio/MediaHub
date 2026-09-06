@@ -12,13 +12,13 @@ export const sensCritique: Service = {
   color: "#1A1A1A",
   deepLinks: [
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.sensCritiqueId,
       url: (data) => `https://www.senscritique.com/film/-/${data.sensCritiqueId}`,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.sensCritiqueId,
       url: (data) => `https://www.senscritique.com/serie/-/${data.sensCritiqueId}`,

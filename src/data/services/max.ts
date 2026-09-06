@@ -26,7 +26,7 @@ export const max: Service = {
       requiresApp: true,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "all",
       enabled: (data) => !!data.hboMaxId,
       url: (data) => `https://play.max.com/${data.hboMaxId}`,

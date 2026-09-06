@@ -43,13 +43,13 @@ export const trakt: Service = {
       requiresApp: true,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
       url: (data) => `https://trakt.tv/movies/${traktSlug(data)}`,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       url: (data) => `https://trakt.tv/shows/${traktSlug(data)}`,

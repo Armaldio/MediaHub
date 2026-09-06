@@ -20,7 +20,7 @@ export const primeVideo: Service = {
       requiresApp: true,
     },
     {
-      name: "Website",
+      name: "Web",
       mediaType: "all",
       enabled: (data) => !!data.amazonPrimeId,
       url: (data) =>
