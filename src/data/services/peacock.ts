@@ -13,6 +13,20 @@ export const peacock: Service = {
   color: "#00B3E6",
   deepLinks: [
     {
+      name: "App",
+      mediaType: "movie",
+      enabled: (data) => data.type === "movie" && !!data.peacockId,
+      url: (data) => `https://www.peacocktv.com/stream-${data.peacockId}`,
+      requiresApp: true,
+    },
+    {
+      name: "App",
+      mediaType: "tv",
+      enabled: (data) => data.type === "tv" && !!data.peacockId,
+      url: (data) => `https://www.peacocktv.com/stream-${data.peacockId}`,
+      requiresApp: true,
+    },
+    {
       name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.peacockId,
