@@ -12,6 +12,20 @@ export const kinopoisk: Service = {
   color: "#FF6600",
   deepLinks: [
     {
+      name: "App",
+      mediaType: "movie",
+      enabled: (data) => data.type === "movie" && !!data.kinopoiskId,
+      url: (data) => `https://www.kinopoisk.ru/film/${data.kinopoiskId}/`,
+      requiresApp: true,
+    },
+    {
+      name: "App",
+      mediaType: "tv",
+      enabled: (data) => data.type === "tv" && !!data.kinopoiskId,
+      url: (data) => `https://www.kinopoisk.ru/series/${data.kinopoiskId}/`,
+      requiresApp: true,
+    },
+    {
       name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.kinopoiskId,

@@ -13,6 +13,20 @@ export const crunchyroll: Service = {
   color: "#FF5A00",
   deepLinks: [
     {
+      name: "App",
+      mediaType: "tv",
+      enabled: (data) => data.type === "tv" && !!data.crunchyrollId,
+      url: (data) => `https://crunchyroll.com/series/${data.crunchyrollId}`,
+      requiresApp: true,
+    },
+    {
+      name: "App",
+      mediaType: "movie",
+      enabled: (data) => data.type === "movie" && !!data.crunchyrollId,
+      url: (data) => `https://crunchyroll.com/series/${data.crunchyrollId}`,
+      requiresApp: true,
+    },
+    {
       name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.crunchyrollId,

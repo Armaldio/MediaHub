@@ -13,6 +13,20 @@ export const hulu: Service = {
   color: "#1CE783",
   deepLinks: [
     {
+      name: "App",
+      mediaType: "movie",
+      enabled: (data) => data.type === "movie" && !!data.huluMovieId,
+      url: (data) => `https://www.hulu.com/movie/${data.huluMovieId}`,
+      requiresApp: true,
+    },
+    {
+      name: "App",
+      mediaType: "tv",
+      enabled: (data) => data.type === "tv" && !!data.huluSeriesId,
+      url: (data) => `https://www.hulu.com/series/${data.huluSeriesId}`,
+      requiresApp: true,
+    },
+    {
       name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.huluMovieId,
