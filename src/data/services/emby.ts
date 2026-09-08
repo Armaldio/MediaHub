@@ -1,6 +1,7 @@
 import embyIcon from "../../assets/apps/images/emby/assets/logo.svg";
 import { Service, CustomServiceInstance } from "../../types/index";
 import { FormattedDetails } from "../../models/models";
+import { checkHttpInstance } from "../../utils/instanceHealth";
 
 async function findEmbyItemId(
   instance: CustomServiceInstance,
@@ -50,6 +51,12 @@ export const emby: Service = {
   color: "#52B54B",
   supportsCustomInstances: true,
   customInstances: [],
+  testInstance: (instance) => checkHttpInstance(instance, {
+    path: "/Users/Me",
+    headers: instance.apiKey ? { "X-Emby-Token": instance.apiKey, "X-MediaBrowser-Token": instance.apiKey } : undefined,
+    capabilities: ["Web interface", "Media lookup", "API access"],
+    missingCredential: "Add an API key to verify this Emby instance.",
+  }),
   deepLinks: [
     {
       name: "App",

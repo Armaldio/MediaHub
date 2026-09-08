@@ -1,5 +1,6 @@
 import kodiIcon from "../../assets/apps/images/kodi/assets/play_store.png";
 import { Service } from "../../types/index";
+import { checkHttpInstance } from "../../utils/instanceHealth";
 
 export const kodi: Service = {
   id: "kodi",
@@ -12,6 +13,11 @@ export const kodi: Service = {
   color: "#17B2E7",
   supportsCustomInstances: true,
   customInstances: [],
+  testInstance: (instance) => checkHttpInstance(instance, {
+    path: "/jsonrpc?request=%7B%22jsonrpc%22%3A%222.0%22%2C%22method%22%3A%22JSONRPC.Ping%22%2C%22id%22%3A1%7D",
+    capabilities: ["Web interface"],
+    allowBareHost: true,
+  }),
   deepLinks: [
     {
       name: "App",

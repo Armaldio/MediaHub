@@ -166,6 +166,76 @@
         </div>
       </div>
 
+      <!-- Instance Cockpit -->
+      <section class="bg-gray-800 rounded-lg p-6 mb-6" aria-labelledby="cockpit-title">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 id="cockpit-title" class="text-xl font-semibold">Instance Cockpit</h2>
+            <p class="mt-1 text-sm text-gray-400">
+              Check connectivity, authentication, and available capabilities for your configured instances.
+            </p>
+          </div>
+          <button
+            v-if="cockpitInstances.length"
+            @click="testAllInstances"
+            :disabled="testingAll"
+            class="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {{ testingAll ? "Testing all…" : "Test all" }}
+          </button>
+        </div>
+
+        <div v-if="!cockpitInstances.length" class="mt-6 rounded-lg border border-dashed border-gray-600 p-6 text-center text-sm text-gray-400">
+          Add a custom instance above to start checking your media services.
+        </div>
+
+        <div v-else class="mt-6 space-y-3">
+          <article
+            v-for="entry in cockpitInstances"
+            :key="entry.instance.id"
+            class="rounded-lg border border-gray-700 bg-gray-700/60 p-4"
+          >
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div class="min-w-0">
+                <div class="flex items-center gap-3">
+                  <img :src="entry.service.icon" class="h-8 w-8 rounded" :alt="`${entry.service.name} icon`" />
+                  <div>
+                    <h3 class="font-medium">{{ entry.instance.name }}</h3>
+                    <p class="text-xs text-gray-400">{{ entry.service.name }} · {{ entry.instance.isDefault ? "Default instance" : "Additional instance" }}</p>
+                  </div>
+                </div>
+                <p class="mt-3 break-all font-mono text-xs text-gray-400">{{ normalizedUrl(entry.instance, entry.service.id) }}</p>
+
+                <div class="mt-3 flex flex-wrap gap-2 text-xs">
+                  <span v-for="capability in capabilitiesFor(entry)" :key="capability" class="rounded-full bg-gray-600 px-2 py-1 text-gray-200">{{ capability }}</span>
+                  <span class="rounded-full bg-gray-600 px-2 py-1 text-gray-300">{{ servicesStore.isServiceInstalled(entry.service) ? "Native app installed" : "Native app missing" }}</span>
+                </div>
+              </div>
+
+              <div class="flex min-w-[220px] flex-col items-start gap-2 lg:items-end">
+                <span class="rounded-full px-3 py-1 text-sm font-medium" :class="statusClass(statusFor(entry))">
+                  {{ statusLabel(statusFor(entry)) }}
+                </span>
+                <p class="text-right text-xs text-gray-400">{{ detailFor(entry) }}</p>
+                <p v-if="healthFor(entry)?.httpStatus" class="text-xs text-gray-500">HTTP {{ healthFor(entry)?.httpStatus }}</p>
+                <button
+                  @click="testInstance(entry)"
+                  :disabled="testingIds.has(entry.instance.id)"
+                  class="rounded-md border border-gray-500 px-3 py-1.5 text-sm text-blue-300 hover:border-blue-400 hover:text-blue-200 disabled:cursor-wait disabled:opacity-50"
+                >
+                  {{ testingIds.has(entry.instance.id) ? "Testing…" : healthFor(entry) ? "Test again" : "Test connection" }}
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="mt-6 border-t border-gray-700 pt-4">
+          <p class="text-sm text-amber-200">API keys and passwords are currently stored in this browser/device's local storage.</p>
+          <button @click="clearCredentials" class="mt-3 rounded-md border border-red-700 px-3 py-1.5 text-sm text-red-300 hover:bg-red-900/30">Clear locally stored credentials</button>
+        </div>
+      </section>
+
       <!-- Subscription Section -->
       <div class="bg-gray-800 rounded-lg p-6 mb-6">
         <h2 class="text-xl font-semibold mb-4">Subscription</h2>
@@ -593,7 +663,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { useServicesStore } from "@/stores/services";
-import type { Service, CustomServiceInstance } from "@/types";
+import type { Service, CustomServiceInstance, InstanceCheckResult, InstanceCheckStatus } from "@/types";
+import { normalizeInstanceUrl } from "@/utils/instanceHealth";
 import { useProducts } from "@/composables/products";
 import { Device } from "@capacitor/device";
 import { Purchases } from "@revenuecat/purchases-capacitor";
@@ -619,6 +690,9 @@ const urlError = ref<string | null>(null);
 const pendingDefaultChange = ref(false);
 const isSaving = ref(false);
 const isDeleting = ref(false);
+const healthResults = ref<Record<string, InstanceCheckResult>>({});
+const testingIds = ref(new Set<string>());
+const testingAll = ref(false);
 
 const isPro = ref(false);
 const customerId = ref<string | null>(null);
@@ -648,6 +722,96 @@ const servicesWithCustomInstances = computed(() => {
 const getInstancesForService = (serviceId: string) => {
   return servicesStore.getInstancesForService(serviceId);
 };
+
+const cockpitInstances = computed(() => servicesWithCustomInstances.value.flatMap(service =>
+  getInstancesForService(service.id).map(instance => ({ service, instance }))
+));
+
+function healthFor(entry: { instance: CustomServiceInstance }) {
+  return healthResults.value[entry.instance.id];
+}
+
+function statusFor(entry: { service: Service; instance: CustomServiceInstance }): InstanceCheckStatus {
+  return healthFor(entry)?.status ?? "never_checked";
+}
+
+function statusLabel(status: InstanceCheckStatus) {
+  if (status === "never_checked") return "Never checked";
+  return {
+    healthy: "Healthy",
+    authentication_required: "Authentication failed",
+    unauthorized: "Unauthorized",
+    unreachable: "Unreachable",
+    missing_credential: "Missing API key",
+    never_checked: "Never checked",
+    unsupported: "Unsupported check",
+  }[status];
+}
+
+function statusClass(status: InstanceCheckStatus) {
+  return {
+    healthy: "bg-green-900/70 text-green-200",
+    authentication_required: "bg-red-900/70 text-red-200",
+    unauthorized: "bg-red-900/70 text-red-200",
+    unreachable: "bg-orange-900/70 text-orange-200",
+    missing_credential: "bg-yellow-900/70 text-yellow-200",
+    never_checked: "bg-gray-600 text-gray-200",
+    unsupported: "bg-gray-600 text-gray-200",
+  }[status];
+}
+
+function normalizedUrl(instance: CustomServiceInstance, serviceId: string) {
+  try { return normalizeInstanceUrl(instance.baseUrl, serviceId === "kodi"); }
+  catch { return instance.baseUrl || "Invalid URL"; }
+}
+
+function capabilitiesFor(entry: { service: Service; instance: CustomServiceInstance }) {
+  return healthFor(entry)?.capabilities ?? ["Web interface", "API access"];
+}
+
+function detailFor(entry: { service: Service; instance: CustomServiceInstance }) {
+  const health = healthFor(entry);
+  if (!health) return "Not checked yet";
+  return `${health.message} · ${new Date(health.checkedAt).toLocaleString()}`;
+}
+
+async function testInstance(entry: { service: Service; instance: CustomServiceInstance }) {
+  if (!entry.service.testInstance) {
+    healthResults.value[entry.instance.id] = {
+      status: "unsupported",
+      message: "This service does not provide a meaningful connection check.",
+      checkedAt: new Date().toISOString(),
+    };
+    return;
+  }
+  testingIds.value = new Set(testingIds.value).add(entry.instance.id);
+  try {
+    healthResults.value[entry.instance.id] = await entry.service.testInstance(entry.instance);
+  } catch {
+    healthResults.value[entry.instance.id] = {
+      status: "unreachable",
+      message: "The instance check failed unexpectedly. Check the URL and server status.",
+      checkedAt: new Date().toISOString(),
+    };
+  } finally {
+    const next = new Set(testingIds.value);
+    next.delete(entry.instance.id);
+    testingIds.value = next;
+  }
+}
+
+async function testAllInstances() {
+  testingAll.value = true;
+  try { await Promise.all(cockpitInstances.value.map(testInstance)); }
+  finally { testingAll.value = false; }
+}
+
+function clearCredentials() {
+  if (!window.confirm("Clear all locally stored API keys and passwords? This cannot be undone.")) return;
+  const count = servicesStore.clearStoredCredentials();
+  Object.keys(healthResults.value).forEach(id => delete healthResults.value[id]);
+  alert(count ? `Cleared credentials for ${count} instance${count === 1 ? "" : "s"}.` : "No stored credentials found.");
+}
 
 const filteredServices = computed(() => {
   if (!searchQuery.value) return servicesWithCustomInstances.value;
@@ -818,6 +982,7 @@ async function saveInstance() {
         editingInstance.value.id,
         instanceData
       );
+      delete healthResults.value[editingInstance.value.id];
     } else {
       servicesStore.addCustomInstance(currentService.value.id, instanceData);
     }
@@ -849,6 +1014,7 @@ async function deleteInstance() {
       instanceToDelete.value.serviceId,
       instanceToDelete.value.instance.id
     );
+    delete healthResults.value[instanceToDelete.value.instance.id];
 
     showDeleteModal.value = false;
     instanceToDelete.value = null;

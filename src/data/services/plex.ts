@@ -1,5 +1,6 @@
 import plexIcon from "../../assets/apps/images/plex/assets/play_store.png";
 import { Service } from "../../types/index";
+import { checkHttpInstance } from "../../utils/instanceHealth";
 
 export const plex: Service = {
   id: "plex",
@@ -12,6 +13,11 @@ export const plex: Service = {
   color: "#e5a00d",
   supportsCustomInstances: true,
   customInstances: [],
+  testInstance: (instance) => checkHttpInstance(instance, {
+    path: "/identity",
+    headers: instance.apiKey ? { "X-Plex-Token": instance.apiKey } : undefined,
+    capabilities: ["Web interface", "Media lookup", "API access"],
+  }),
   deepLinks: [
     {
       name: "App",

@@ -383,6 +383,21 @@ export const useServicesStore = defineStore('services', () => {
     return parentService.customInstances.find(i => i.isDefault) || parentService.customInstances[0] || null
   }
 
+  const clearStoredCredentials = () => {
+    let cleared = 0
+    availableServices.value.forEach(service => {
+      if ('isInstance' in service) return
+      service.customInstances?.forEach(instance => {
+        if (instance.apiKey || instance.username || instance.password) cleared++
+        delete instance.apiKey
+        delete instance.username
+        delete instance.password
+      })
+    })
+    saveToLocalStorage()
+    return cleared
+  }
+
   return {
     availableServices,
     selectedServices,
@@ -403,6 +418,7 @@ export const useServicesStore = defineStore('services', () => {
     addCustomInstance,
     updateCustomInstance,
     removeCustomInstance,
-    getDefaultInstance
+    getDefaultInstance,
+    clearStoredCredentials
   }
 })
