@@ -26,205 +26,21 @@
         <h1 class="text-2xl font-bold">Settings</h1>
       </div>
 
-      <section class="cockpit-panel bg-gray-800 rounded-lg p-6 mb-6" aria-labelledby="cockpit-title">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-5">
-          <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-blue-300">Local connections</p>
-            <h2 id="cockpit-title" class="mt-1 text-2xl font-semibold tracking-tight">Instance Cockpit</h2>
-            <p class="mt-1 max-w-2xl text-sm text-gray-400">
-              Manage instances and verify connectivity, authentication, and capabilities in one place.
-            </p>
-          </div>
-          <div class="flex shrink-0 flex-col items-start gap-2 sm:items-end">
-            <button
-              v-if="cockpitInstances.length"
-              @click="testAllInstances"
-              :disabled="testingAll"
-              class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {{ testingAll ? "Testing all…" : "Test all" }}
-            </button>
-            <p v-if="cockpitInstances.length" class="text-xs text-gray-500">
-              {{ cockpitInstances.length }} configured · {{ checkedInstanceCount }} checked
-            </p>
-          </div>
-        </div>
-
-        <!-- Search functionality -->
-        <div class="mb-6">
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Search services…"
-            class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            aria-label="Search services"
-          />
-        </div>
-
-        <div v-for="service in filteredServices" :key="service.id" class="mb-8">
-          <div class="flex justify-between items-center mb-3">
-            <h3 class="text-lg font-medium flex items-center text-wrap">
-              <img
-                :src="service.icon"
-                width="24"
-                height="24"
-                class="w-6 h-6 rounded mr-2"
-                :alt="`${service.name} icon`"
-              />
-              {{ service.name }}
-            </h3>
-          </div>
-
-          <div
-            :id="`service-instances-${service.id}`"
-            class="pl-3 border-l border-gray-700/80"
-          >
-            <div
-              v-if="getInstancesForService(service.id).length"
-              class="mb-4 space-y-2"
-            >
-              <div
-                v-for="instance in getInstancesForService(service.id)"
-                :key="instance.id"
-                class="bg-gray-700 rounded-lg p-4 flex flex-col gap-3 relative group"
-                :class="{ 'border-2 border-blue-500': instance.isDefault }"
-                role="listitem"
-                :aria-label="`${instance.name} instance`"
-              >
-                <div class="flex min-w-0 flex-1 items-start justify-between gap-3">
-                  <div class="min-w-0">
-                    <div class="truncate font-medium">{{ instance.name }}</div>
-                    <div class="break-all font-mono text-xs text-gray-400">
-                    {{ normalizedUrl(instance, service.id) }}
-                    </div>
-                  </div>
-                  <div class="flex shrink-0 space-x-2">
-                  <button
-                    @click="editInstance(service, instance)"
-                    class="p-1.5 text-blue-400 transition-colors hover:text-blue-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
-                    aria-label="Edit instance"
-                    :title="`Edit ${instance.name}`"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    @click="confirmDeleteInstance(service, instance)"
-                    class="p-1.5 text-red-400 transition-colors hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
-                    aria-label="Delete instance"
-                    :title="`Delete ${instance.name}`"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
-                </div>
-                </div>
-                <div class="flex flex-col gap-3 border-t border-gray-600/70 pt-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div class="flex flex-wrap gap-2 text-xs">
-                    <span v-for="capability in capabilitiesFor(getCockpitEntry(service, instance))" :key="capability" class="rounded-full bg-gray-600 px-2 py-1 text-gray-200">{{ capability }}</span>
-                    <span class="rounded-full bg-gray-600 px-2 py-1 text-gray-300">{{ servicesStore.isServiceInstalled(service) ? "Native app installed" : "Native app missing" }}</span>
-                  </div>
-                  <div class="flex items-center gap-3 sm:justify-end">
-                    <div class="text-left sm:text-right">
-                      <span class="rounded-full px-2 py-1 text-xs font-medium" role="status" aria-live="polite" :class="statusClass(statusFor(getCockpitEntry(service, instance)))">
-                        {{ statusLabel(statusFor(getCockpitEntry(service, instance))) }}
-                      </span>
-                      <p class="mt-1 text-xs text-gray-400">{{ detailFor(getCockpitEntry(service, instance)) }}</p>
-                      <p v-if="healthFor(getCockpitEntry(service, instance))?.httpStatus" class="text-xs text-gray-500">HTTP {{ healthFor(getCockpitEntry(service, instance))?.httpStatus }}</p>
-                    </div>
-                    <button
-                      @click="testInstance(getCockpitEntry(service, instance))"
-                      :disabled="testingIds.has(instance.id)"
-                      class="rounded-md border border-gray-500 px-3 py-1.5 text-sm text-blue-300 hover:border-blue-400 hover:text-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:cursor-wait disabled:opacity-50"
-                    >
-                      {{ testingIds.has(instance.id) ? "Testing…" : healthFor(getCockpitEntry(service, instance)) ? "Test again" : "Test connection" }}
-                    </button>
-                  </div>
-                </div>
-                <!-- Default instance badge -->
-                <div
-                  v-if="instance.isDefault"
-                  class="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full"
-                >
-                  Default
-                </div>
-              </div>
-            </div>
-
-            <button
-              @click="addNewInstance(service)"
-              :disabled="!isPro"
-              class="mt-2 flex items-center text-blue-400 hover:text-blue-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors text-sm"
-              :aria-label="`Add ${service.name} instance`"
-              :title="
-                !isPro
-                  ? 'Subscription required to add custom instances'
-                  : `Add ${service.name} instance`
-              "
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
-              Add {{ service.name }} instance
-            </button>
-          </div>
-        </div>
-
-        <div
-          v-if="!filteredServices.length"
-          class="text-center py-6 text-gray-400"
-        >
-          No services with custom instances support found.
-        </div>
-
-        <div
-          v-else-if="!cockpitInstances.length"
-          class="text-center py-6 text-gray-400"
-          role="status"
-        >
-          Add a custom instance above to start checking your media services.
-        </div>
-
-        <div class="mt-6 border-t border-gray-700 pt-4">
-          <p class="text-sm text-amber-200">API keys and passwords are currently stored in this browser/device's local storage.</p>
-          <button @click="clearCredentials" class="mt-3 rounded-md border border-red-700 px-3 py-1.5 text-sm text-red-300 hover:bg-red-900/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300">Clear locally stored credentials</button>
-        </div>
-      </section>
+      <InstanceCockpit
+        :instances="cockpitInstances"
+        :services="servicesWithCustomInstances"
+        :health-results="healthResults"
+        :testing-ids="testingIds"
+        :testing-all="testingAll"
+        :is-pro="isPro"
+        :is-service-installed="servicesStore.isServiceInstalled"
+        @test-all="testAllInstances"
+        @test-instance="testInstance"
+        @add-instance="addNewInstance"
+        @edit-instance="editCockpitInstance"
+        @delete-instance="deleteCockpitInstance"
+        @clear-credentials="clearCredentials"
+      />
 
       <!-- Subscription Section -->
       <div class="bg-gray-800 rounded-lg p-6 mb-6">
@@ -652,9 +468,9 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import InstanceCockpit from "@/components/InstanceCockpit.vue";
 import { useServicesStore } from "@/stores/services";
-import type { Service, CustomServiceInstance, InstanceCheckResult, InstanceCheckStatus } from "@/types";
-import { normalizeInstanceUrl } from "@/utils/instanceHealth";
+import type { Service, CustomServiceInstance, InstanceCheckResult } from "@/types";
 import { useProducts } from "@/composables/products";
 import { Device } from "@capacitor/device";
 import { Purchases } from "@revenuecat/purchases-capacitor";
@@ -674,7 +490,6 @@ const instanceToDelete = ref<{
   serviceId: string;
   instance: CustomServiceInstance;
 } | null>(null);
-const searchQuery = ref("");
 const nameError = ref<string | null>(null);
 const urlError = ref<string | null>(null);
 const pendingDefaultChange = ref(false);
@@ -717,60 +532,6 @@ const cockpitInstances = computed(() => servicesWithCustomInstances.value.flatMa
   getInstancesForService(service.id).map(instance => ({ service, instance }))
 ));
 
-const checkedInstanceCount = computed(() => cockpitInstances.value.filter(entry => Boolean(healthFor(entry))).length);
-
-function getCockpitEntry(service: Service, instance: CustomServiceInstance) {
-  return { service, instance };
-}
-
-function healthFor(entry: { instance: CustomServiceInstance }) {
-  return healthResults.value[entry.instance.id];
-}
-
-function statusFor(entry: { service: Service; instance: CustomServiceInstance }): InstanceCheckStatus {
-  return healthFor(entry)?.status ?? "never_checked";
-}
-
-function statusLabel(status: InstanceCheckStatus) {
-  if (status === "never_checked") return "Never checked";
-  return {
-    healthy: "Healthy",
-    authentication_required: "Authentication failed",
-    unauthorized: "Unauthorized",
-    unreachable: "Unreachable",
-    missing_credential: "Missing API key",
-    never_checked: "Never checked",
-    unsupported: "Unsupported check",
-  }[status];
-}
-
-function statusClass(status: InstanceCheckStatus) {
-  return {
-    healthy: "bg-green-900/70 text-green-200",
-    authentication_required: "bg-red-900/70 text-red-200",
-    unauthorized: "bg-red-900/70 text-red-200",
-    unreachable: "bg-orange-900/70 text-orange-200",
-    missing_credential: "bg-yellow-900/70 text-yellow-200",
-    never_checked: "bg-gray-600 text-gray-200",
-    unsupported: "bg-gray-600 text-gray-200",
-  }[status];
-}
-
-function normalizedUrl(instance: CustomServiceInstance, serviceId: string) {
-  try { return normalizeInstanceUrl(instance.baseUrl, serviceId === "kodi"); }
-  catch { return instance.baseUrl || "Invalid URL"; }
-}
-
-function capabilitiesFor(entry: { service: Service; instance: CustomServiceInstance }) {
-  return healthFor(entry)?.capabilities ?? ["Web interface", "API access"];
-}
-
-function detailFor(entry: { service: Service; instance: CustomServiceInstance }) {
-  const health = healthFor(entry);
-  if (!health) return "Not checked yet";
-  return `${health.message} · ${new Date(health.checkedAt).toLocaleString()}`;
-}
-
 async function testInstance(entry: { service: Service; instance: CustomServiceInstance }) {
   if (!entry.service.testInstance) {
     healthResults.value[entry.instance.id] = {
@@ -808,14 +569,6 @@ function clearCredentials() {
   Object.keys(healthResults.value).forEach(id => delete healthResults.value[id]);
   alert(count ? `Cleared credentials for ${count} instance${count === 1 ? "" : "s"}.` : "No stored credentials found.");
 }
-
-const filteredServices = computed(() => {
-  if (!searchQuery.value) return servicesWithCustomInstances.value;
-  const query = searchQuery.value.toLowerCase();
-  return servicesWithCustomInstances.value.filter((service) =>
-    service.name.toLowerCase().includes(query)
-  );
-});
 
 const fetchOfferings = async () => {
   loadingOfferings.value = true;
@@ -889,6 +642,14 @@ function editInstance(service: Service, instance: CustomServiceInstance) {
   };
   resetValidation();
   showInstanceModal.value = true;
+}
+
+function editCockpitInstance(entry: { service: Service; instance: CustomServiceInstance }) {
+  editInstance(entry.service, entry.instance);
+}
+
+function deleteCockpitInstance(entry: { service: Service; instance: CustomServiceInstance }) {
+  confirmDeleteInstance(entry.service, entry.instance);
 }
 
 function validateName() {
