@@ -9,6 +9,7 @@ export default defineConfig((env) => {
   console.log(env);
   return {
     plugins: [vue(), vueDevTools(), tailwindcss()],
+    base: process.env.VITE_BASE_PATH || "/",
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
