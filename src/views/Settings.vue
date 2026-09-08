@@ -39,7 +39,6 @@
         @add-instance="addNewInstance"
         @edit-instance="editCockpitInstance"
         @delete-instance="deleteCockpitInstance"
-        @clear-credentials="clearCredentials"
       />
 
       <!-- Subscription Section -->
@@ -561,13 +560,6 @@ async function testAllInstances() {
   testingAll.value = true;
   try { await Promise.all(cockpitInstances.value.map(testInstance)); }
   finally { testingAll.value = false; }
-}
-
-function clearCredentials() {
-  if (!window.confirm("Clear all locally stored API keys and passwords? This cannot be undone.")) return;
-  const count = servicesStore.clearStoredCredentials();
-  Object.keys(healthResults.value).forEach(id => delete healthResults.value[id]);
-  alert(count ? `Cleared credentials for ${count} instance${count === 1 ? "" : "s"}.` : "No stored credentials found.");
 }
 
 const fetchOfferings = async () => {

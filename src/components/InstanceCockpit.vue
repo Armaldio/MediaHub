@@ -1,12 +1,11 @@
 <template>
-  <section class="mb-6 rounded-lg bg-gray-800 p-5 sm:p-6" aria-labelledby="cockpit-title">
+  <section class="mb-6 rounded-lg bg-gray-800 p-5 sm:p-6" aria-label="Service connections">
     <header class="flex flex-col gap-4 border-b border-gray-700 pb-5 lg:flex-row lg:items-start lg:justify-between">
       <div>
         <p class="text-xs font-semibold uppercase tracking-[0.18em] text-blue-300">Local connections</p>
-        <h2 id="cockpit-title" class="mt-1 text-2xl font-semibold tracking-tight">Instance Cockpit</h2>
         <p class="mt-1 max-w-2xl text-sm text-gray-400">Test, manage, and troubleshoot your configured media services.</p>
       </div>
-      <div class="flex flex-wrap gap-2 lg:justify-end">
+      <div v-if="instances.length" class="flex flex-wrap gap-2 lg:justify-end">
         <button
           @click="openProviderPicker"
           :disabled="!isPro"
@@ -16,7 +15,6 @@
           Add instance
         </button>
         <button
-          v-if="instances.length"
           @click="emit('test-all')"
           :disabled="testingAll"
           class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:cursor-wait disabled:opacity-50"
@@ -122,11 +120,6 @@
       <button @click="activeFilter = 'all'" class="mt-4 text-sm font-medium text-blue-300 hover:text-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300">Show all instances</button>
     </div>
 
-    <footer class="mt-6 flex flex-col gap-3 border-t border-gray-700 pt-4 sm:flex-row sm:items-center sm:justify-between">
-      <p class="text-xs text-amber-200">Credentials are stored in this browser/device’s local storage.</p>
-      <button @click="emit('clear-credentials')" class="self-start rounded-md border border-red-700 px-3 py-1.5 text-sm text-red-300 hover:bg-red-900/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300">Clear local credentials</button>
-    </footer>
-
     <div v-if="showProviderPicker" class="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4" role="dialog" aria-modal="true" aria-labelledby="provider-picker-title">
       <div class="w-full max-w-md rounded-lg bg-gray-800 p-6 shadow-2xl">
         <div class="flex items-start justify-between gap-4">
@@ -183,7 +176,6 @@ const emit = defineEmits<{
   "add-instance": [service: Service];
   "edit-instance": [entry: InstanceEntry];
   "delete-instance": [entry: InstanceEntry];
-  "clear-credentials": [];
 }>();
 
 const activeFilter = ref<HealthFilter>("all");
