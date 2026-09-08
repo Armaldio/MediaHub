@@ -26,22 +26,28 @@
         <h1 class="text-2xl font-bold">Settings</h1>
       </div>
 
-      <section class="bg-gray-800 rounded-lg p-6 mb-6" aria-labelledby="cockpit-title">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
+      <section class="cockpit-panel bg-gray-800 rounded-lg p-6 mb-6" aria-labelledby="cockpit-title">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-5">
           <div>
-            <h2 id="cockpit-title" class="text-xl font-semibold">Instance Cockpit</h2>
-            <p class="mt-1 text-sm text-gray-400">
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-blue-300">Local connections</p>
+            <h2 id="cockpit-title" class="mt-1 text-2xl font-semibold tracking-tight">Instance Cockpit</h2>
+            <p class="mt-1 max-w-2xl text-sm text-gray-400">
               Manage instances and verify connectivity, authentication, and capabilities in one place.
             </p>
           </div>
-          <button
-            v-if="cockpitInstances.length"
-            @click="testAllInstances"
-            :disabled="testingAll"
-            class="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {{ testingAll ? "Testing all…" : "Test all" }}
-          </button>
+          <div class="flex shrink-0 flex-col items-start gap-2 sm:items-end">
+            <button
+              v-if="cockpitInstances.length"
+              @click="testAllInstances"
+              :disabled="testingAll"
+              class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {{ testingAll ? "Testing all…" : "Test all" }}
+            </button>
+            <p v-if="cockpitInstances.length" class="text-xs text-gray-500">
+              {{ cockpitInstances.length }} configured · {{ checkedInstanceCount }} checked
+            </p>
+          </div>
         </div>
 
         <!-- Search functionality -->
@@ -49,7 +55,7 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search services..."
+            placeholder="Search services…"
             class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             aria-label="Search services"
           />
@@ -57,9 +63,11 @@
 
         <div v-for="service in filteredServices" :key="service.id" class="mb-8">
           <div class="flex justify-between items-center mb-3">
-            <h3 class="text-lg font-medium flex items-center">
+            <h3 class="text-lg font-medium flex items-center text-wrap">
               <img
                 :src="service.icon"
+                width="24"
+                height="24"
                 class="w-6 h-6 rounded mr-2"
                 :alt="`${service.name} icon`"
               />
@@ -69,7 +77,7 @@
 
           <div
             :id="`service-instances-${service.id}`"
-            class="pl-2 border-l-2 border-gray-700"
+            class="pl-3 border-l border-gray-700/80"
           >
             <div
               v-if="getInstancesForService(service.id).length"
@@ -83,16 +91,17 @@
                 role="listitem"
                 :aria-label="`${instance.name} instance`"
               >
-                <div>
-                  <div class="font-medium">{{ instance.name }}</div>
-                  <div class="text-sm text-gray-400">
+                <div class="flex min-w-0 flex-1 items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <div class="truncate font-medium">{{ instance.name }}</div>
+                    <div class="break-all font-mono text-xs text-gray-400">
                     {{ normalizedUrl(instance, service.id) }}
+                    </div>
                   </div>
-                </div>
-                <div class="flex space-x-2">
+                  <div class="flex shrink-0 space-x-2">
                   <button
                     @click="editInstance(service, instance)"
-                    class="p-1.5 text-blue-400 hover:text-blue-300 transition-colors"
+                    class="p-1.5 text-blue-400 transition-colors hover:text-blue-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
                     aria-label="Edit instance"
                     :title="`Edit ${instance.name}`"
                   >
@@ -113,7 +122,7 @@
                   </button>
                   <button
                     @click="confirmDeleteInstance(service, instance)"
-                    class="p-1.5 text-red-400 hover:text-red-300 transition-colors"
+                    class="p-1.5 text-red-400 transition-colors hover:text-red-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
                     aria-label="Delete instance"
                     :title="`Delete ${instance.name}`"
                   >
@@ -133,14 +142,15 @@
                     </svg>
                   </button>
                 </div>
-                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                </div>
+                <div class="flex flex-col gap-3 border-t border-gray-600/70 pt-3 sm:flex-row sm:items-center sm:justify-between">
                   <div class="flex flex-wrap gap-2 text-xs">
                     <span v-for="capability in capabilitiesFor(getCockpitEntry(service, instance))" :key="capability" class="rounded-full bg-gray-600 px-2 py-1 text-gray-200">{{ capability }}</span>
                     <span class="rounded-full bg-gray-600 px-2 py-1 text-gray-300">{{ servicesStore.isServiceInstalled(service) ? "Native app installed" : "Native app missing" }}</span>
                   </div>
                   <div class="flex items-center gap-3 sm:justify-end">
                     <div class="text-left sm:text-right">
-                      <span class="rounded-full px-2 py-1 text-xs font-medium" :class="statusClass(statusFor(getCockpitEntry(service, instance)))">
+                      <span class="rounded-full px-2 py-1 text-xs font-medium" role="status" aria-live="polite" :class="statusClass(statusFor(getCockpitEntry(service, instance)))">
                         {{ statusLabel(statusFor(getCockpitEntry(service, instance))) }}
                       </span>
                       <p class="mt-1 text-xs text-gray-400">{{ detailFor(getCockpitEntry(service, instance)) }}</p>
@@ -149,7 +159,7 @@
                     <button
                       @click="testInstance(getCockpitEntry(service, instance))"
                       :disabled="testingIds.has(instance.id)"
-                      class="rounded-md border border-gray-500 px-3 py-1.5 text-sm text-blue-300 hover:border-blue-400 hover:text-blue-200 disabled:cursor-wait disabled:opacity-50"
+                      class="rounded-md border border-gray-500 px-3 py-1.5 text-sm text-blue-300 hover:border-blue-400 hover:text-blue-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:cursor-wait disabled:opacity-50"
                     >
                       {{ testingIds.has(instance.id) ? "Testing…" : healthFor(getCockpitEntry(service, instance)) ? "Test again" : "Test connection" }}
                     </button>
@@ -212,7 +222,7 @@
 
         <div class="mt-6 border-t border-gray-700 pt-4">
           <p class="text-sm text-amber-200">API keys and passwords are currently stored in this browser/device's local storage.</p>
-          <button @click="clearCredentials" class="mt-3 rounded-md border border-red-700 px-3 py-1.5 text-sm text-red-300 hover:bg-red-900/30">Clear locally stored credentials</button>
+          <button @click="clearCredentials" class="mt-3 rounded-md border border-red-700 px-3 py-1.5 text-sm text-red-300 hover:bg-red-900/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-300">Clear locally stored credentials</button>
         </div>
       </section>
 
@@ -706,6 +716,8 @@ const getInstancesForService = (serviceId: string) => {
 const cockpitInstances = computed(() => servicesWithCustomInstances.value.flatMap(service =>
   getInstancesForService(service.id).map(instance => ({ service, instance }))
 ));
+
+const checkedInstanceCount = computed(() => cockpitInstances.value.filter(entry => Boolean(healthFor(entry))).length);
 
 function getCockpitEntry(service: Service, instance: CustomServiceInstance) {
   return { service, instance };
