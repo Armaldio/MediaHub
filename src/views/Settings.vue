@@ -26,8 +26,23 @@
         <h1 class="text-2xl font-bold">Settings</h1>
       </div>
 
-      <div class="bg-gray-800 rounded-lg p-6 mb-6">
-        <h2 class="text-xl font-semibold mb-4">Custom Service Instances</h2>
+      <section class="bg-gray-800 rounded-lg p-6 mb-6" aria-labelledby="cockpit-title">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-4">
+          <div>
+            <h2 id="cockpit-title" class="text-xl font-semibold">Instance Cockpit</h2>
+            <p class="mt-1 text-sm text-gray-400">
+              Manage instances and verify connectivity, authentication, and capabilities in one place.
+            </p>
+          </div>
+          <button
+            v-if="cockpitInstances.length"
+            @click="testAllInstances"
+            :disabled="testingAll"
+            class="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {{ testingAll ? "Testing all…" : "Test all" }}
+          </button>
+        </div>
 
         <!-- Search functionality -->
         <div class="mb-6">
@@ -63,7 +78,7 @@
               <div
                 v-for="instance in getInstancesForService(service.id)"
                 :key="instance.id"
-                class="bg-gray-700 rounded-lg p-4 flex justify-between items-center relative group"
+                class="bg-gray-700 rounded-lg p-4 flex flex-col gap-3 relative group"
                 :class="{ 'border-2 border-blue-500': instance.isDefault }"
                 role="listitem"
                 :aria-label="`${instance.name} instance`"
@@ -71,7 +86,7 @@
                 <div>
                   <div class="font-medium">{{ instance.name }}</div>
                   <div class="text-sm text-gray-400">
-                    {{ instance.baseUrl }}
+                    {{ normalizedUrl(instance, service.id) }}
                   </div>
                 </div>
                 <div class="flex space-x-2">
@@ -117,6 +132,28 @@
                       />
                     </svg>
                   </button>
+                </div>
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div class="flex flex-wrap gap-2 text-xs">
+                    <span v-for="capability in capabilitiesFor(getCockpitEntry(service, instance))" :key="capability" class="rounded-full bg-gray-600 px-2 py-1 text-gray-200">{{ capability }}</span>
+                    <span class="rounded-full bg-gray-600 px-2 py-1 text-gray-300">{{ servicesStore.isServiceInstalled(service) ? "Native app installed" : "Native app missing" }}</span>
+                  </div>
+                  <div class="flex items-center gap-3 sm:justify-end">
+                    <div class="text-left sm:text-right">
+                      <span class="rounded-full px-2 py-1 text-xs font-medium" :class="statusClass(statusFor(getCockpitEntry(service, instance)))">
+                        {{ statusLabel(statusFor(getCockpitEntry(service, instance))) }}
+                      </span>
+                      <p class="mt-1 text-xs text-gray-400">{{ detailFor(getCockpitEntry(service, instance)) }}</p>
+                      <p v-if="healthFor(getCockpitEntry(service, instance))?.httpStatus" class="text-xs text-gray-500">HTTP {{ healthFor(getCockpitEntry(service, instance))?.httpStatus }}</p>
+                    </div>
+                    <button
+                      @click="testInstance(getCockpitEntry(service, instance))"
+                      :disabled="testingIds.has(instance.id)"
+                      class="rounded-md border border-gray-500 px-3 py-1.5 text-sm text-blue-300 hover:border-blue-400 hover:text-blue-200 disabled:cursor-wait disabled:opacity-50"
+                    >
+                      {{ testingIds.has(instance.id) ? "Testing…" : healthFor(getCockpitEntry(service, instance)) ? "Test again" : "Test connection" }}
+                    </button>
+                  </div>
                 </div>
                 <!-- Default instance badge -->
                 <div
@@ -164,70 +201,13 @@
         >
           No services with custom instances support found.
         </div>
-      </div>
 
-      <!-- Instance Cockpit -->
-      <section class="bg-gray-800 rounded-lg p-6 mb-6" aria-labelledby="cockpit-title">
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h2 id="cockpit-title" class="text-xl font-semibold">Instance Cockpit</h2>
-            <p class="mt-1 text-sm text-gray-400">
-              Check connectivity, authentication, and available capabilities for your configured instances.
-            </p>
-          </div>
-          <button
-            v-if="cockpitInstances.length"
-            @click="testAllInstances"
-            :disabled="testingAll"
-            class="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {{ testingAll ? "Testing all…" : "Test all" }}
-          </button>
-        </div>
-
-        <div v-if="!cockpitInstances.length" class="mt-6 rounded-lg border border-dashed border-gray-600 p-6 text-center text-sm text-gray-400">
+        <div
+          v-else-if="!cockpitInstances.length"
+          class="text-center py-6 text-gray-400"
+          role="status"
+        >
           Add a custom instance above to start checking your media services.
-        </div>
-
-        <div v-else class="mt-6 space-y-3">
-          <article
-            v-for="entry in cockpitInstances"
-            :key="entry.instance.id"
-            class="rounded-lg border border-gray-700 bg-gray-700/60 p-4"
-          >
-            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div class="min-w-0">
-                <div class="flex items-center gap-3">
-                  <img :src="entry.service.icon" class="h-8 w-8 rounded" :alt="`${entry.service.name} icon`" />
-                  <div>
-                    <h3 class="font-medium">{{ entry.instance.name }}</h3>
-                    <p class="text-xs text-gray-400">{{ entry.service.name }} · {{ entry.instance.isDefault ? "Default instance" : "Additional instance" }}</p>
-                  </div>
-                </div>
-                <p class="mt-3 break-all font-mono text-xs text-gray-400">{{ normalizedUrl(entry.instance, entry.service.id) }}</p>
-
-                <div class="mt-3 flex flex-wrap gap-2 text-xs">
-                  <span v-for="capability in capabilitiesFor(entry)" :key="capability" class="rounded-full bg-gray-600 px-2 py-1 text-gray-200">{{ capability }}</span>
-                  <span class="rounded-full bg-gray-600 px-2 py-1 text-gray-300">{{ servicesStore.isServiceInstalled(entry.service) ? "Native app installed" : "Native app missing" }}</span>
-                </div>
-              </div>
-
-              <div class="flex min-w-[220px] flex-col items-start gap-2 lg:items-end">
-                <span class="rounded-full px-3 py-1 text-sm font-medium" :class="statusClass(statusFor(entry))">
-                  {{ statusLabel(statusFor(entry)) }}
-                </span>
-                <p class="text-right text-xs text-gray-400">{{ detailFor(entry) }}</p>
-                <p v-if="healthFor(entry)?.httpStatus" class="text-xs text-gray-500">HTTP {{ healthFor(entry)?.httpStatus }}</p>
-                <button
-                  @click="testInstance(entry)"
-                  :disabled="testingIds.has(entry.instance.id)"
-                  class="rounded-md border border-gray-500 px-3 py-1.5 text-sm text-blue-300 hover:border-blue-400 hover:text-blue-200 disabled:cursor-wait disabled:opacity-50"
-                >
-                  {{ testingIds.has(entry.instance.id) ? "Testing…" : healthFor(entry) ? "Test again" : "Test connection" }}
-                </button>
-              </div>
-            </div>
-          </article>
         </div>
 
         <div class="mt-6 border-t border-gray-700 pt-4">
@@ -726,6 +706,10 @@ const getInstancesForService = (serviceId: string) => {
 const cockpitInstances = computed(() => servicesWithCustomInstances.value.flatMap(service =>
   getInstancesForService(service.id).map(instance => ({ service, instance }))
 ));
+
+function getCockpitEntry(service: Service, instance: CustomServiceInstance) {
+  return { service, instance };
+}
 
 function healthFor(entry: { instance: CustomServiceInstance }) {
   return healthResults.value[entry.instance.id];
