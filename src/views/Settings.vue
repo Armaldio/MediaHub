@@ -26,145 +26,20 @@
         <h1 class="text-2xl font-bold">Settings</h1>
       </div>
 
-      <div class="bg-gray-800 rounded-lg p-6 mb-6">
-        <h2 class="text-xl font-semibold mb-4">Custom Service Instances</h2>
-
-        <!-- Search functionality -->
-        <div class="mb-6">
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Search services..."
-            class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            aria-label="Search services"
-          />
-        </div>
-
-        <div v-for="service in filteredServices" :key="service.id" class="mb-8">
-          <div class="flex justify-between items-center mb-3">
-            <h3 class="text-lg font-medium flex items-center">
-              <img
-                :src="service.icon"
-                class="w-6 h-6 rounded mr-2"
-                :alt="`${service.name} icon`"
-              />
-              {{ service.name }}
-            </h3>
-          </div>
-
-          <div
-            :id="`service-instances-${service.id}`"
-            class="pl-2 border-l-2 border-gray-700"
-          >
-            <div
-              v-if="getInstancesForService(service.id).length"
-              class="mb-4 space-y-2"
-            >
-              <div
-                v-for="instance in getInstancesForService(service.id)"
-                :key="instance.id"
-                class="bg-gray-700 rounded-lg p-4 flex justify-between items-center relative group"
-                :class="{ 'border-2 border-blue-500': instance.isDefault }"
-                role="listitem"
-                :aria-label="`${instance.name} instance`"
-              >
-                <div>
-                  <div class="font-medium">{{ instance.name }}</div>
-                  <div class="text-sm text-gray-400">
-                    {{ instance.baseUrl }}
-                  </div>
-                </div>
-                <div class="flex space-x-2">
-                  <button
-                    @click="editInstance(service, instance)"
-                    class="p-1.5 text-blue-400 hover:text-blue-300 transition-colors"
-                    aria-label="Edit instance"
-                    :title="`Edit ${instance.name}`"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    @click="confirmDeleteInstance(service, instance)"
-                    class="p-1.5 text-red-400 hover:text-red-300 transition-colors"
-                    aria-label="Delete instance"
-                    :title="`Delete ${instance.name}`"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                  </button>
-                </div>
-                <!-- Default instance badge -->
-                <div
-                  v-if="instance.isDefault"
-                  class="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-0.5 rounded-full"
-                >
-                  Default
-                </div>
-              </div>
-            </div>
-
-            <button
-              @click="addNewInstance(service)"
-              :disabled="!isPro"
-              class="mt-2 flex items-center text-blue-400 hover:text-blue-300 disabled:text-gray-500 disabled:cursor-not-allowed transition-colors text-sm"
-              :aria-label="`Add ${service.name} instance`"
-              :title="
-                !isPro
-                  ? 'Subscription required to add custom instances'
-                  : `Add ${service.name} instance`
-              "
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
-              Add {{ service.name }} instance
-            </button>
-          </div>
-        </div>
-
-        <div
-          v-if="!filteredServices.length"
-          class="text-center py-6 text-gray-400"
-        >
-          No services with custom instances support found.
-        </div>
-      </div>
+      <InstanceCockpit
+        :instances="cockpitInstances"
+        :services="servicesWithCustomInstances"
+        :health-results="healthResults"
+        :testing-ids="testingIds"
+        :testing-all="testingAll"
+        :is-pro="isPro"
+        :is-service-installed="servicesStore.isServiceInstalled"
+        @test-all="testAllInstances"
+        @test-instance="testInstance"
+        @add-instance="addNewInstance"
+        @edit-instance="editCockpitInstance"
+        @delete-instance="deleteCockpitInstance"
+      />
 
       <!-- Subscription Section -->
       <div class="bg-gray-800 rounded-lg p-6 mb-6">
@@ -592,8 +467,9 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import InstanceCockpit from "@/components/InstanceCockpit.vue";
 import { useServicesStore } from "@/stores/services";
-import type { Service, CustomServiceInstance } from "@/types";
+import type { Service, CustomServiceInstance, InstanceCheckResult } from "@/types";
 import { useProducts } from "@/composables/products";
 import { Device } from "@capacitor/device";
 import { Purchases } from "@revenuecat/purchases-capacitor";
@@ -613,12 +489,14 @@ const instanceToDelete = ref<{
   serviceId: string;
   instance: CustomServiceInstance;
 } | null>(null);
-const searchQuery = ref("");
 const nameError = ref<string | null>(null);
 const urlError = ref<string | null>(null);
 const pendingDefaultChange = ref(false);
 const isSaving = ref(false);
 const isDeleting = ref(false);
+const healthResults = ref<Record<string, InstanceCheckResult>>({});
+const testingIds = ref(new Set<string>());
+const testingAll = ref(false);
 
 const isPro = ref(false);
 const customerId = ref<string | null>(null);
@@ -649,13 +527,40 @@ const getInstancesForService = (serviceId: string) => {
   return servicesStore.getInstancesForService(serviceId);
 };
 
-const filteredServices = computed(() => {
-  if (!searchQuery.value) return servicesWithCustomInstances.value;
-  const query = searchQuery.value.toLowerCase();
-  return servicesWithCustomInstances.value.filter((service) =>
-    service.name.toLowerCase().includes(query)
-  );
-});
+const cockpitInstances = computed(() => servicesWithCustomInstances.value.flatMap(service =>
+  getInstancesForService(service.id).map(instance => ({ service, instance }))
+));
+
+async function testInstance(entry: { service: Service; instance: CustomServiceInstance }) {
+  if (!entry.service.testInstance) {
+    healthResults.value[entry.instance.id] = {
+      status: "unsupported",
+      message: "This service does not provide a meaningful connection check.",
+      checkedAt: new Date().toISOString(),
+    };
+    return;
+  }
+  testingIds.value = new Set(testingIds.value).add(entry.instance.id);
+  try {
+    healthResults.value[entry.instance.id] = await entry.service.testInstance(entry.instance);
+  } catch {
+    healthResults.value[entry.instance.id] = {
+      status: "unreachable",
+      message: "The instance check failed unexpectedly. Check the URL and server status.",
+      checkedAt: new Date().toISOString(),
+    };
+  } finally {
+    const next = new Set(testingIds.value);
+    next.delete(entry.instance.id);
+    testingIds.value = next;
+  }
+}
+
+async function testAllInstances() {
+  testingAll.value = true;
+  try { await Promise.all(cockpitInstances.value.map(testInstance)); }
+  finally { testingAll.value = false; }
+}
 
 const fetchOfferings = async () => {
   loadingOfferings.value = true;
@@ -729,6 +634,14 @@ function editInstance(service: Service, instance: CustomServiceInstance) {
   };
   resetValidation();
   showInstanceModal.value = true;
+}
+
+function editCockpitInstance(entry: { service: Service; instance: CustomServiceInstance }) {
+  editInstance(entry.service, entry.instance);
+}
+
+function deleteCockpitInstance(entry: { service: Service; instance: CustomServiceInstance }) {
+  confirmDeleteInstance(entry.service, entry.instance);
 }
 
 function validateName() {
@@ -818,6 +731,7 @@ async function saveInstance() {
         editingInstance.value.id,
         instanceData
       );
+      delete healthResults.value[editingInstance.value.id];
     } else {
       servicesStore.addCustomInstance(currentService.value.id, instanceData);
     }
@@ -849,6 +763,7 @@ async function deleteInstance() {
       instanceToDelete.value.serviceId,
       instanceToDelete.value.instance.id
     );
+    delete healthResults.value[instanceToDelete.value.instance.id];
 
     showDeleteModal.value = false;
     instanceToDelete.value = null;

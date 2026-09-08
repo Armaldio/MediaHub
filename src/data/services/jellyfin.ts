@@ -1,6 +1,7 @@
 import jellyfinIcon from "../../assets/apps/images/jellyfin/assets/play_store.png";
 import { Service, CustomServiceInstance } from "../../types/index";
 import { FormattedDetails } from "../../models/models";
+import { checkHttpInstance } from "../../utils/instanceHealth";
 
 interface JellyfinSearchHint {
   ItemId?: string;
@@ -79,6 +80,12 @@ export const jellyfin: Service = {
   color: "#00A4DC",
   supportsCustomInstances: true,
   customInstances: [],
+  testInstance: (instance) => checkHttpInstance(instance, {
+    path: "/Users/Me",
+    headers: instance.apiKey ? { "X-MediaBrowser-Token": instance.apiKey } : undefined,
+    capabilities: ["Web interface", "Media lookup", "API access"],
+    missingCredential: "Add an API key to verify this Jellyfin instance.",
+  }),
   deepLinks: [
     {
       name: "App",

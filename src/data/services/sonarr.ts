@@ -2,6 +2,7 @@ import sonarrIcon from "../../assets/apps/images/jellyfin/assets/play_store.png"
 import { Service, CustomServiceInstance } from "../../types/index";
 import { FormattedDetails } from "../../models/models";
 import { arrHeaders, arrItemUrl, arrSearchUrl } from "./arrShared";
+import { checkHttpInstance } from "../../utils/instanceHealth";
 
 interface SonarrSeries {
   id: number;
@@ -59,6 +60,12 @@ export const sonarr: Service = {
   color: "#3F8AE3",
   supportsCustomInstances: true,
   customInstances: [],
+  testInstance: (instance) => checkHttpInstance(instance, {
+    path: "/api/v3/system/status",
+    headers: arrHeaders(instance),
+    capabilities: ["Web interface", "Media lookup", "API access"],
+    missingCredential: "Add an API key to verify this Sonarr instance.",
+  }),
   deepLinks: [
     {
       name: "Web",

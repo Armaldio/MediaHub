@@ -4,6 +4,7 @@
 // service shape so the service appears in the list.
 import seerrIcon from "../../assets/apps/images/emby/assets/logo.svg"; // ponytail: embys logo placeholder, add src/assets/apps/images/overseerr/assets/logo.svg when asset is sourced
 import { Service } from "../../types/index";
+import { checkHttpInstance } from "../../utils/instanceHealth";
 
 export const seerr: Service = {
   id: "seerr",
@@ -16,5 +17,11 @@ export const seerr: Service = {
   color: "#00A8E8",
   supportsCustomInstances: true,
   customInstances: [],
+  testInstance: (instance) => checkHttpInstance(instance, {
+    path: "/api/v1/auth/me",
+    headers: instance.apiKey ? { "X-Api-Key": instance.apiKey } : undefined,
+    capabilities: ["Web interface", "Request support", "API access"],
+    missingCredential: "Add an API key to verify this Seerr instance.",
+  }),
   deepLinks: [],
 };

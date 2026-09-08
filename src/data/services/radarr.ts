@@ -1,6 +1,7 @@
 import radarrIcon from "../../assets/apps/images/jellyfin/assets/play_store.png"; // ponytail: add src/assets/apps/images/radarr/assets/logo.svg when sourced
 import { Service, CustomServiceInstance } from "../../types/index";
 import { arrHeaders, arrItemUrl, arrSearchUrl } from "./arrShared";
+import { checkHttpInstance } from "../../utils/instanceHealth";
 
 interface RadarrMovie {
   id: number;
@@ -39,6 +40,12 @@ export const radarr: Service = {
   color: "#F18E33",
   supportsCustomInstances: true,
   customInstances: [],
+  testInstance: (instance) => checkHttpInstance(instance, {
+    path: "/api/v3/system/status",
+    headers: arrHeaders(instance),
+    capabilities: ["Web interface", "Media lookup", "API access"],
+    missingCredential: "Add an API key to verify this Radarr instance.",
+  }),
   deepLinks: [
     {
       name: "Web",

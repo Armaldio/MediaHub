@@ -5,6 +5,9 @@ export const useProducts = () => {
   const isPro = ref(false);
 
   const hasPro = async () => {
+    // Keep local development focused on feature work; production still requires
+    // a real RevenueCat entitlement.
+    if (import.meta.env.DEV) return true;
     if (import.meta.env.VITE_BYPASS_PREMIUM === "true") return true;
 
     try {

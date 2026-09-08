@@ -13,6 +13,24 @@ export interface Service {
   isInstalled?: boolean;
   supportsCustomInstances?: boolean;
   customInstances?: CustomServiceInstance[];
+  testInstance?: (instance: CustomServiceInstance) => Promise<InstanceCheckResult>;
+}
+
+export type InstanceCheckStatus =
+  | "healthy"
+  | "authentication_required"
+  | "unauthorized"
+  | "unreachable"
+  | "missing_credential"
+  | "never_checked"
+  | "unsupported";
+
+export interface InstanceCheckResult {
+  status: InstanceCheckStatus;
+  message: string;
+  checkedAt: string;
+  capabilities?: string[];
+  httpStatus?: number;
 }
 
 export interface CustomServiceInstance {
