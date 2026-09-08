@@ -45,7 +45,7 @@ const handleDeepLink: NavigationGuard = (to, _from, next) => {
 };
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes: [
     {
       path: '/',
