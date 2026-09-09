@@ -65,6 +65,15 @@
               <div class="flex flex-wrap items-center gap-2">
                 <h3 class="truncate font-medium text-white">{{ entry.instance.name }}</h3>
                 <span v-if="entry.instance.isDefault" class="rounded-full bg-blue-500 px-2 py-0.5 text-xs font-medium text-white">Default</span>
+                <button
+                  @click="emit('toggle-instance', entry)"
+                  :aria-pressed="entry.selected"
+                  :aria-label="`${entry.selected ? 'Disable' : 'Enable'} ${entry.instance.name}`"
+                  class="rounded-full px-2 py-0.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+                  :class="entry.selected ? 'bg-green-900/70 text-green-200 hover:bg-green-900' : 'bg-gray-600 text-gray-300 hover:bg-gray-500'"
+                >
+                  {{ entry.selected ? "Enabled" : "Disabled" }}
+                </button>
               </div>
               <p class="text-xs text-gray-400">{{ entry.service.name }}</p>
               <p class="mt-2 break-all font-mono text-xs text-gray-400">{{ normalizedUrl(entry) }}</p>
@@ -157,7 +166,7 @@ import { computed, ref } from "vue";
 import type { CustomServiceInstance, InstanceCheckResult, InstanceCheckStatus, Service } from "@/types";
 import { normalizeInstanceUrl } from "@/utils/instanceHealth";
 
-type InstanceEntry = { service: Service; instance: CustomServiceInstance };
+type InstanceEntry = { service: Service; instance: CustomServiceInstance; selected: boolean };
 type HealthFilter = "all" | "attention" | "unchecked";
 
 const props = defineProps<{
@@ -173,6 +182,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   "test-all": [];
   "test-instance": [entry: InstanceEntry];
+  "toggle-instance": [entry: InstanceEntry];
   "add-instance": [service: Service];
   "edit-instance": [entry: InstanceEntry];
   "delete-instance": [entry: InstanceEntry];

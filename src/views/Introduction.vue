@@ -21,6 +21,16 @@
 
       <!-- Filters -->
       <div class="flex flex-col items-center gap-4 mb-8">
+        <label class="relative w-full max-w-md">
+          <span class="sr-only">Search services</span>
+          <input
+            v-model="serviceQuery"
+            type="search"
+            placeholder="Search services…"
+            aria-label="Search services"
+            class="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-sm text-white placeholder-gray-500 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/40"
+          />
+        </label>
         <!-- Type filter: All | Apps | Web -->
         <div class="inline-flex rounded-full bg-gray-800 p-1 border border-gray-700">
           <button
@@ -46,6 +56,7 @@
 
       <!-- Available Services -->
       <div
+        v-if="availableServices.length"
         class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-7 gap-3 mb-12"
       >
         <div
@@ -133,6 +144,9 @@
             </div>
           </div>
         </div>
+      </div>
+      <div v-else class="mb-12 rounded-xl border border-gray-800 bg-gray-900/40 px-6 py-12 text-center text-gray-400">
+        No services match “{{ serviceQuery }}”.
       </div>
 
       <!-- Selected Services (Reorderable) -->
@@ -367,13 +381,14 @@ const servicesStore = useServicesStore();
 const drag = ref(false);
 const showInstalledOnly = ref(false);
 const typeFilter = ref<'all' | 'web' | 'mobile'>('all');
+const serviceQuery = ref('');
 
 const { isPro } = useProducts();
 
 const selectedServices = computed({
   get: () =>
     servicesStore.selectedServices.filter(
-      (service) => !(service.supportsCustomInstances && !('isInstance' in service))
+      (service) => !('isInstance' in service)
     ),
   set: (value) => {
     // Update the order in the store
@@ -383,8 +398,15 @@ const selectedServices = computed({
 
 const availableServices = computed(() => {
   let services = servicesStore.availableServices.filter(
-    (service) => !(service.supportsCustomInstances && !('isInstance' in service))
+    (service) => !('isInstance' in service)
   );
+
+  const query = serviceQuery.value.trim().toLowerCase();
+  if (query) {
+    services = services.filter((service) =>
+      `${service.name} ${service.description}`.toLowerCase().includes(query)
+    );
+  }
 
   // Type filter: web = no androidAppId, mobile = has androidAppId
   if (typeFilter.value === 'web') {

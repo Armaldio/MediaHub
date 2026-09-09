@@ -36,6 +36,7 @@
         :is-service-installed="servicesStore.isServiceInstalled"
         @test-all="testAllInstances"
         @test-instance="testInstance"
+        @toggle-instance="toggleCockpitInstance"
         @add-instance="addNewInstance"
         @edit-instance="editCockpitInstance"
         @delete-instance="deleteCockpitInstance"
@@ -528,8 +529,16 @@ const getInstancesForService = (serviceId: string) => {
 };
 
 const cockpitInstances = computed(() => servicesWithCustomInstances.value.flatMap(service =>
-  getInstancesForService(service.id).map(instance => ({ service, instance }))
+  getInstancesForService(service.id).map(instance => ({
+    service,
+    instance,
+    selected: servicesStore.isServiceSelected(`${service.id}-${instance.id}`),
+  }))
 ));
+
+function toggleCockpitInstance(entry: { service: Service; instance: CustomServiceInstance }) {
+  servicesStore.toggleService(`${entry.service.id}-${entry.instance.id}`);
+}
 
 async function testInstance(entry: { service: Service; instance: CustomServiceInstance }) {
   if (!entry.service.testInstance) {
