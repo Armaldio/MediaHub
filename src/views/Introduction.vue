@@ -111,10 +111,24 @@
             <!-- Dot for web-only services with native app option -->
             <div
               v-else-if="service.androidAppId"
-              class="w-4 h-4 flex items-center justify-center bg-blue-600/90 rounded-full text-white text-[10px] pointer-events-none"
+              class="flex h-5 w-5 items-center justify-center text-blue-400 pointer-events-none"
               title="Native app available but not installed"
             >
-              ⬇️
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 3v12" />
+                <path d="m7 10 5 5 5-5" />
+                <path d="M5 21h14" />
+              </svg>
             </div>
           </div>
 
