@@ -1,5 +1,6 @@
 import metacriticIcon from "../../assets/apps/images/metacritic/assets/logo.svg";
 import { Service } from "../../types/index";
+import { metacriticUrl } from "../../utils/knownProviderLinks";
 
 export const metacritic: Service = {
   id: "metacritic",
@@ -15,13 +16,13 @@ export const metacritic: Service = {
       name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie" && !!data.metacriticId,
-      url: (data) => `https://www.metacritic.com/movie/${data.metacriticId}`,
+      url: metacriticUrl,
     },
     {
       name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv" && !!data.metacriticId,
-      url: (data) => `https://www.metacritic.com/tv/${data.metacriticId}`,
+      url: metacriticUrl,
     },
   ],
 };

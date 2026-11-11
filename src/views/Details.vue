@@ -334,40 +334,40 @@
                 </div>
 
                     <!-- Deep Links -->
-                    <div v-if="service.deepLinks?.length > 0" class="px-4 pb-4">
+                    <div v-if="service.deepLinks?.length > 0 || isSeerrService(service)" class="px-4 pb-4">
                       <!-- Seerr: API-powered request button -->
-                      <div v-if="service.id === 'seerr'">
+                      <div v-if="isSeerrService(service)">
                         <button
-                          @click="handleSeerrRequest"
+                          @click="handleSeerrRequest(service)"
                           class="w-full text-left px-3 py-2 text-sm rounded-lg transition-all duration-200 flex items-center justify-between gap-2 group/link relative overflow-hidden bg-white/5 hover:bg-white/10 text-white border border-white/5 active:scale-[0.98] disabled:cursor-wait"
-                          :disabled="seerr.isSubmitLoading('seerr') || seerr.isStatusLoading('seerr')"
+                          :disabled="seerr.isSubmitLoading(service.id) || seerr.isStatusLoading(service.id)"
                         >
                           <span class="flex items-center gap-2">
                             <div
-                              v-if="seerr.isStatusLoading('seerr') || seerr.isSubmitLoading('seerr')"
+                              v-if="seerr.isStatusLoading(service.id) || seerr.isSubmitLoading(service.id)"
                               class="w-6 h-6 rounded-full bg-gray-900/90 border border-gray-700 flex items-center justify-center"
                             >
                               <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
                             </div>
                             <div
-                              v-else-if="seerr.getStatus('seerr') !== 'unknown'"
+                              v-else-if="seerr.getStatus(service.id) !== 'unknown'"
                               class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
-                              :style="{ borderColor: seerr.getStatusColor('seerr'), backgroundColor: seerr.getStatusColor('seerr') + '20' }"
+                              :style="{ borderColor: seerr.getStatusColor(service.id), backgroundColor: seerr.getStatusColor(service.id) + '20' }"
                             >
                               <svg
-                                v-if="seerr.getStatus('seerr') === 'available'"
+                                v-if="seerr.getStatus(service.id) === 'available'"
                                 xmlns="http://www.w3.org/2000/svg"
                                 class="h-3 w-3"
-                                :style="{ color: seerr.getStatusColor('seerr') }"
+                                :style="{ color: seerr.getStatusColor(service.id) }"
                                 viewBox="0 0 20 20"
                                 fill="currentColor"
                               >
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                               </svg>
                               <div
-                                v-else-if="seerr.getStatus('seerr') === 'pending'"
+                                v-else-if="seerr.getStatus(service.id) === 'pending'"
                                 class="w-3 h-3 rounded-full"
-                                :style="{ backgroundColor: seerr.getStatusColor('seerr') }"
+                                :style="{ backgroundColor: seerr.getStatusColor(service.id) }"
                               ></div>
                             </div>
                             <div
@@ -377,11 +377,11 @@
                               <MovieIcon class="w-3 h-3 text-gray-300" />
                             </div>
                             <span class="text-gray-200 group-hover/link:text-white">
-                              {{ seerr.getStatus('seerr') !== 'unknown' ? seerr.getStatusLabel('seerr') : 'Request' }}
+                              {{ seerr.getStatus(service.id) !== 'unknown' ? seerr.getStatusLabel(service.id) : 'Request' }}
                             </span>
                           </span>
                           <span
-                            v-if="seerr.getStatus('seerr') === 'unknown' && !seerr.isSubmitLoading('seerr')"
+                            v-if="seerr.getStatus(service.id) === 'unknown' && !seerr.isSubmitLoading(service.id)"
                             class="text-gray-400 group-hover/link:text-white"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -548,6 +548,7 @@ import { useServicesStore } from "@/stores/services";
 import { FormattedDetails } from "@/models/models";
 import { MediaType } from "tmdb-ts";
 import { fetchTVDBData } from "@/data/services";
+import { extractWikidataProviderIds } from "@/utils/wikidataProviderIds";
 import { getTraktSlug } from "@/utils/traktLookup";
 import { useSeerr } from "@/composables/useSeerr";
 
@@ -660,13 +661,15 @@ const runtime = computed(() => {
 
 const genres = computed(() => moviesStore.currentDetails?.genres || []);
 
-const seerrInstance = computed<CustomServiceInstance | null>(() => {
-  const instance = servicesStore.selectedServices.find(
-    (s): s is InstanceService => s.id === "seerr" && "instanceData" in s
-  );
-  if (!instance) return null;
-  return instance.instanceData.apiKey ? instance.instanceData : null;
-});
+const isSeerrService = (service: Service) =>
+  service.id === "seerr" || (isInstance(service) && service.parentServiceId === "seerr");
+
+const fetchSeerrStatuses = (details: FormattedDetails) => {
+  servicesStore.selectedServices
+    .filter((service): service is InstanceService => isInstance(service) && service.parentServiceId === "seerr")
+    .filter((service) => !!service.instanceData.apiKey)
+    .forEach((service) => seerr.fetchStatus(service.id, service.instanceData, details));
+};
 
 // Filter services based on search query and ensure at least one deep link is enabled
 // Check if a deep link should be visible for a service
@@ -698,9 +701,9 @@ const filteredServices = computed<Service[]>(() => {
     })
     .filter((service) => {
       // Check if at least one deep link is enabled and available
-      const hasEnabledLink = service.deepLinks?.some((link) =>
+      const hasEnabledLink = isSeerrService(service) || (service.deepLinks?.some((link) =>
         isLinkVisible(service, link)
-      ) ?? false;
+      ) ?? false);
 
       // Check search match
       const matchesSearch = service.name.toLowerCase().includes(query) ||
@@ -733,19 +736,15 @@ const scrollToService = (serviceId: string) => {
 
 const formattedDetails = ref<FormattedDetails | null>(null);
 
-// Fetch a single Wikidata claim property
-const fetchWikidataClaim = async (
-  wikidataId: string,
-  property: string
-): Promise<string | undefined> => {
+const fetchWikidataClaims = async (wikidataId: string) => {
   try {
-    const url = `https://www.wikidata.org/w/api.php?action=wbgetclaims&entity=${wikidataId}&property=${property}&format=json&origin=*`;
+    const url = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${wikidataId}&props=claims&format=json&origin=*`;
     const response = await fetch(url);
     const data = await response.json();
-    return data?.claims?.[property]?.[0]?.mainsnak?.datavalue?.value;
+    return data?.entities?.[wikidataId]?.claims ?? {};
   } catch (error) {
-    console.error(`Error fetching ${property} from Wikidata:`, error);
-    return undefined;
+    console.error("Error fetching provider IDs from Wikidata:", error);
+    return {};
   }
 };
 
@@ -805,39 +804,22 @@ watch(
       type: props.mediaType,
     };
 
+    fetchSeerrStatuses(formattedDetails.value);
+
     if (!wikidata_id) {
       console.log("No Wikidata ID available");
       return;
     }
 
     // Fetch all external IDs from Wikidata in parallel
+    const claims = await fetchWikidataClaims(wikidata_id);
+    const claimValue = (property: string) => {
+      const value = claims[property]?.[0]?.mainsnak?.datavalue?.value;
+      return typeof value === "string" || typeof value === "number" ? String(value) : undefined;
+    };
+    const providerIds = extractWikidataProviderIds(claims, props.mediaType);
     const tvdbProperty = props.mediaType === "movie" ? "P12196" : "P4835";
-    const disneyProperty = props.mediaType === "movie" ? "P7595" : "P7596";
-    const appleProperty = props.mediaType === "movie" ? "P9586" : "P9751";
-
-    const [
-      tvdbClaim,
-      netflixId,
-      amazonPrimeId,
-      disneyPlusId,
-      hboMaxId,
-      appleTvId,
-      paramountPlusId,
-      letterboxdId,
-      mubiId,
-    ] = await Promise.all([
-      externalIds.tvdb_id
-        ? Promise.resolve(undefined)
-        : fetchWikidataClaim(wikidata_id, tvdbProperty),
-      fetchWikidataClaim(wikidata_id, "P1874"),
-      fetchWikidataClaim(wikidata_id, "P8055"),
-      fetchWikidataClaim(wikidata_id, disneyProperty),
-      fetchWikidataClaim(wikidata_id, "P8298"),
-      fetchWikidataClaim(wikidata_id, appleProperty),
-      fetchWikidataClaim(wikidata_id, "P13147"),
-      fetchWikidataClaim(wikidata_id, "P6127"),
-      fetchWikidataClaim(wikidata_id, "P7299"),
-    ]);
+    const tvdbClaim = externalIds.tvdb_id ? undefined : claimValue(tvdbProperty);
 
     const tvdbId =
       externalIds.tvdb_id?.toString() ||
@@ -847,14 +829,15 @@ watch(
     formattedDetails.value = {
       ...formattedDetails.value,
       tvdbId,
-      netflixId,
-      amazonPrimeId,
-      disneyPlusId,
-      hboMaxId,
-      appleTvId: appleTvId ? String(appleTvId) : undefined,
-      paramountPlusId,
-      letterboxdId,
-      mubiId,
+      ...providerIds,
+      netflixId: claimValue("P1874"),
+      amazonPrimeId: claimValue("P8055"),
+      disneyPlusId: claimValue(props.mediaType === "movie" ? "P7595" : "P7596"),
+      hboMaxId: claimValue("P8298"),
+      appleTvId: claimValue(props.mediaType === "movie" ? "P9586" : "P9751"),
+      paramountPlusId: claimValue("P13147"),
+      letterboxdId: claimValue("P6127"),
+      mubiId: claimValue("P7299"),
     };
 
     // Look up the Trakt slug from TMDB ID (async, parallel with TVDB fetch)
@@ -871,9 +854,6 @@ watch(
       };
     }
 
-    if (seerrInstance.value && formattedDetails.value) {
-      seerr.fetchStatus("seerr", seerrInstance.value, formattedDetails.value);
-    }
   },
   { immediate: true }
 );
@@ -927,22 +907,24 @@ const goToIntroduction = () => {
   router.push("/");
 };
 
-const handleSeerrRequest = async () => {
-  const instance = seerrInstance.value;
+const handleSeerrRequest = async (service: Service) => {
+  if (!isInstance(service)) return;
+  const instance = service.instanceData;
   const details = formattedDetails.value;
-  if (!instance || !details) return;
+  if (!details) return;
 
-  if (seerr.getStatus("seerr") === "unknown") {
-    await seerr.submitRequest("seerr", instance, details);
+  const mediaUrl = `${instance.baseUrl.replace(/\/$/, "")}/${details.type === "movie" ? "movie" : "tv"}/${details.tmdbId}`;
+  if (!instance.apiKey) {
+    window.open(mediaUrl, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  if (seerr.getStatus(service.id) === "unknown") {
+    await seerr.submitRequest(service.id, instance, details);
     return;
   }
   // Already requested: open the web UI
-  const isMovie = details.type === "movie";
-  if (details.tmdbId) {
-    window.open(`${instance.baseUrl}/${isMovie ? "movie" : "tv"}/${isMovie ? details.tmdbId : details.tvdbId}`, "_blank", "noopener,noreferrer");
-  } else {
-    window.open(`${instance.baseUrl}/search?query=${encodeURIComponent(details.title)}`, "_blank", "noopener,noreferrer");
-  }
+  window.open(mediaUrl, "_blank", "noopener,noreferrer");
 };
 
 const loadDetails = async () => {

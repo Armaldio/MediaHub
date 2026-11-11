@@ -15,9 +15,9 @@ export const disneyPlus: Service = {
     {
       name: "App",
       mediaType: "movie",
-      enabled: (data) => data.type === "movie",
+      enabled: (data) => data.type === "movie" && !!data.disneyPlusId,
       url: (data) => {
-        const id = data.disneyPlusId || data.tmdbId;
+        const id = data.disneyPlusId;
         console.log("Disney+ movie deep link ID:", id, "Type:", typeof id);
         return `disneyplus://content/${id}`;
       },
@@ -26,9 +26,9 @@ export const disneyPlus: Service = {
     {
       name: "App",
       mediaType: "tv",
-      enabled: (data) => data.type === "tv",
+      enabled: (data) => data.type === "tv" && !!data.disneyPlusId,
       url: (data) => {
-        const id = data.disneyPlusId || data.tmdbId;
+        const id = data.disneyPlusId;
         console.log("Disney+ tv deep link ID:", id, "Type:", typeof id);
         return `disneyplus://content/${id}`;
       },
@@ -37,14 +37,14 @@ export const disneyPlus: Service = {
     {
       name: "Web",
       mediaType: "movie",
-      enabled: (data) => data.type === "movie",
+      enabled: (data) => data.type === "movie" && !!data.disneyPlusId,
       url: (data) =>
         `https://www.disneyplus.com/movies/wd/${data.disneyPlusId}`,
     },
     {
       name: "Web",
       mediaType: "tv",
-      enabled: (data) => data.type === "tv",
+      enabled: (data) => data.type === "tv" && !!data.disneyPlusId,
       url: (data) =>
         `https://www.disneyplus.com/series/wd/${data.disneyPlusId}`,
     },

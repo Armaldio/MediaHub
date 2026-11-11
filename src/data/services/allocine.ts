@@ -1,5 +1,6 @@
 import allocineIcon from "../../assets/apps/images/allocine/assets/play_store.png";
 import { Service } from "../../types/index";
+import { allocineUrl, hasAllocineMovieId } from "../../utils/knownProviderLinks";
 
 export const allocine: Service = {
   id: "allocine",
@@ -14,17 +15,9 @@ export const allocine: Service = {
   deepLinks: [
     {
       mediaType: "movie",
-      enabled: (data) => data.type === "movie",
-      name: "App",
-      url: (data) => `allocine://film/${data.tmdbId}`,
-      requiresApp: true,
-    },
-    {
-      mediaType: "tv",
-      enabled: (data) => data.type === "tv",
-      name: "App",
-      url: (data) => `allocine://series/${data.tmdbId}`,
-      requiresApp: true,
+      enabled: hasAllocineMovieId,
+      name: "Web",
+      url: allocineUrl,
     },
   ],
 };
