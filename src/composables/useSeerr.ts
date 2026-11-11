@@ -96,10 +96,8 @@ export function useSeerr() {
 }
 
 type SeerrRequest = {
-  id: number;
   status: number;
   type: "movie" | "tv";
-  media: { tmdbId: number };
 };
 
 type SeerrMediaInfo = {
@@ -120,10 +118,9 @@ export function hasSeerrRequest(
   requests: SeerrRequest[],
   data: FormattedDetails
 ): SeerrRequest | undefined {
-  return requests.find((request) =>
-    request.type === (data.type === "movie" ? "movie" : "tv") &&
-    request.media.tmdbId === Number(data.tmdbId)
-  );
+  // The caller reads requests from this title's mediaInfo response, so only
+  // the type needs to distinguish movie requests from TV requests.
+  return requests.find((request) => request.type === (data.type === "movie" ? "movie" : "tv"));
 }
 
 const REQUEST_STATUS: Record<number, RequestStatus> = {
