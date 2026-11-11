@@ -14,17 +14,17 @@ export const paramountPlus: Service = {
     {
       name: "App",
       mediaType: "movie",
-      enabled: (data) => data.type === "movie",
+      enabled: (data) => data.type === "movie" && !!data.paramountPlusId,
       url: (data) =>
-        `paramountplus://content/${data.paramountPlusId || data.tmdbId}`,
+        `paramountplus://content/${data.paramountPlusId}`,
       requiresApp: true,
     },
     {
       name: "App",
       mediaType: "tv",
-      enabled: (data) => data.type === "tv",
+      enabled: (data) => data.type === "tv" && !!data.paramountPlusId,
       url: (data) =>
-        `paramountplus://content/${data.paramountPlusId || data.tmdbId}`,
+        `paramountplus://content/${data.paramountPlusId}`,
       requiresApp: true,
     },
     {

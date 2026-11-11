@@ -96,18 +96,40 @@ export function useSeerr() {
 }
 
 type SeerrRequest = {
-  id: number;
   status: number;
-  type: number;
-  movie?: { tmdbId: number };
-  tv?: { tvdbId: number };
+  type: "movie" | "tv";
 };
 
-const SEERR_STATUS: Record<number, RequestStatus> = {
+type SeerrMediaInfo = {
+  status?: number;
+  requests?: SeerrRequest[];
+};
+
+export function buildSeerrRequestPayload(data: FormattedDetails) {
+  return {
+    mediaType: data.type === "movie" ? "movie" : "tv",
+    mediaId: Number(data.tmdbId),
+    ...(data.type === "tv" && data.tvdbId ? { tvdbId: Number(data.tvdbId) } : {}),
+    ...(data.type === "tv" ? { seasons: "all" as const } : {}),
+  };
+}
+
+export function hasSeerrRequest(
+  requests: SeerrRequest[],
+  data: FormattedDetails
+): SeerrRequest | undefined {
+  // The caller reads requests from this title's mediaInfo response, so only
+  // the type needs to distinguish movie requests from TV requests.
+  return requests.find((request) => request.type === (data.type === "movie" ? "movie" : "tv"));
+}
+
+const REQUEST_STATUS: Record<number, RequestStatus> = {
   1: "pending",
-  2: "available",
+  2: "pending",
   3: "declined",
 };
+
+const MEDIA_AVAILABLE = 5;
 
 function baseUrl(instance: CustomServiceInstance): string {
   return instance.baseUrl?.replace(/\/$/, "") || "";
@@ -126,24 +148,19 @@ async function getStatusFromApi(
 ): Promise<RequestStatus> {
   if (!instance.apiKey) return "unknown";
 
-  const tmdbId = parseInt(data.tmdbId);
-  const isMovie = data.type === "movie";
-
   try {
-    const res = await fetch(`${baseUrl(instance)}/api/v1/request?take=50&skip=0`, {
+    const mediaType = data.type === "movie" ? "movie" : "tv";
+    const res = await fetch(`${baseUrl(instance)}/api/v1/${mediaType}/${data.tmdbId}`, {
       headers: headers(instance),
     });
     if (!res.ok) return "unknown";
     const body = await res.json();
-    const requests: SeerrRequest[] = body.results || [];
+    const mediaInfo: SeerrMediaInfo | undefined = body.mediaInfo;
+    if (!mediaInfo) return "unknown";
+    if (mediaInfo.status === MEDIA_AVAILABLE) return "available";
 
-    const match = requests.find((r) => {
-      if (isMovie) return r.type === 1 && r.movie?.tmdbId === tmdbId;
-      const tvdbId = data.tvdbId ? parseInt(data.tvdbId) : undefined;
-      return r.type === 2 && r.tv?.tvdbId === tvdbId;
-    });
-
-    return match ? (SEERR_STATUS[match.status] ?? "unknown") : "unknown";
+    const match = hasSeerrRequest(mediaInfo.requests ?? [], data);
+    return match ? (REQUEST_STATUS[match.status] ?? "unknown") : "unknown";
   } catch {
     return "unknown";
   }
@@ -155,10 +172,7 @@ async function postRequest(
 ): Promise<RequestStatus> {
   if (!instance.apiKey) return "unknown";
 
-  const isMovie = data.type === "movie";
-  const payload = isMovie
-    ? { tmdbId: parseInt(data.tmdbId) }
-    : { tvdbId: data.tvdbId ? parseInt(data.tvdbId) : 0 };
+  const payload = buildSeerrRequestPayload(data);
 
   try {
     const res = await fetch(`${baseUrl(instance)}/api/v1/request`, {

@@ -28,16 +28,14 @@ export const appleTvPlus: Service = {
     {
       name: "Web",
       mediaType: "movie",
-      enabled: (data) => data.type === "movie",
-      url: (data) =>
-        `https://tv.apple.com/movie/${data.appleTvId || data.tmdbId}`,
+      enabled: (data) => data.type === "movie" && !!data.appleTvId,
+      url: (data) => `https://tv.apple.com/movie/${data.appleTvId}`,
     },
     {
       name: "Web",
       mediaType: "tv",
-      enabled: (data) => data.type === "tv",
-      url: (data) =>
-        `https://tv.apple.com/show/${data.appleTvId || data.tmdbId}`,
+      enabled: (data) => data.type === "tv" && !!data.appleTvId,
+      url: (data) => `https://tv.apple.com/show/${data.appleTvId}`,
     },
   ],
 };
