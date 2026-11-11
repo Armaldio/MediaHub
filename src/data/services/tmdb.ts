@@ -1,5 +1,6 @@
 import tmdbIcon from "../../assets/apps/images/the_movie_database/assets/favicon.png";
 import { Service } from "../../types/index";
+import { tmdbTvUrl } from "./providerUrls";
 
 export const tmdb: Service = {
   id: "the_movie_database",
@@ -21,7 +22,7 @@ export const tmdb: Service = {
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
       name: "Web",
-      url: (data) => `https://www.themoviedb.org/tv/${data.tmdbId}`,
+      url: tmdbTvUrl,
     },
   ],
 };

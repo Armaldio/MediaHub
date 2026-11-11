@@ -11,8 +11,16 @@ import {
   PopularTvShowResult,
   MediaType,
   AvailableLanguage,
-  TrendingMediaType
+  TrendingMediaType,
+  SeasonDetails,
+  Episode
 } from 'tmdb-ts';
+import { resolveTvFindResult } from '@/utils/tmdbFind';
+import { fetchTvDetailsForScope, type TvScopeSelection } from '@/utils/tvDetails';
+
+type TvScopeDetails =
+  | AppendToResponse<SeasonDetails, 'external_ids'[], 'tvSeason'>
+  | AppendToResponse<Omit<Episode, 'show_id'>, 'external_ids'[], 'tvEpisode'>;
 
 // Default language fallback
 const DEFAULT_LANGUAGE = 'en-US';
@@ -38,8 +46,11 @@ export const useMoviesStore = defineStore('movies', () => {
   const searchResults = ref<MultiSearchResult[]>([])
   const currentDetails = ref<AppendToResponse<TvShowDetails, "external_ids"[], "tvShow">
   | AppendToResponse<MovieDetails, "external_ids"[], "movie"> | null>(null)
+  const currentTvScope = ref<TvScopeDetails | null>(null)
+  const currentTvSeason = ref<AppendToResponse<SeasonDetails, 'external_ids'[], 'tvSeason'> | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
+  let detailsRequestId = 0
 
   // Initialize TMDB client
   const tmdb = new TMDB(import.meta.env.VITE_TMDB_API_KEY);
@@ -104,6 +115,7 @@ export const useMoviesStore = defineStore('movies', () => {
   }
 
   const fetchDetails = async (id: number, mediaType: MediaType) => {
+    const requestId = ++detailsRequestId
     try {
       loading.value = true;
       error.value = null;
@@ -130,23 +142,81 @@ export const useMoviesStore = defineStore('movies', () => {
         throw new Error('No data returned from API');
       }
 
+      if (requestId !== detailsRequestId) return detailsResponse
+      currentTvScope.value = null
+      currentTvSeason.value = null
       currentDetails.value = detailsResponse
 
       return detailsResponse;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch details';
-      error.value = `Error loading ${mediaType === 'movie' ? 'movie' : 'TV show'} details: ${errorMessage}`
+      if (requestId === detailsRequestId) {
+        error.value = `Error loading ${mediaType === 'movie' ? 'movie' : 'TV show'} details: ${errorMessage}`
+      }
       console.error('Error in fetchDetails:', err)
-      throw new Error(error.value); // Re-throw to allow component to handle the error
+      throw new Error(requestId === detailsRequestId ? error.value! : errorMessage);
     } finally {
-      loading.value = false
+      if (requestId === detailsRequestId) loading.value = false
     }
   }
 
-  const fetchDetailsByImdbId = async (imdbId: string, mediaType: MediaType) => {
+  const cancelPendingDetails = () => {
+    detailsRequestId += 1
+    loading.value = false
+    error.value = null
+  }
+
+  const fetchTvDetails = async (
+    showId: number,
+    scope: TvScopeSelection = {},
+    requestId = ++detailsRequestId
+  ) => {
     try {
       loading.value = true
       error.value = null
+      currentDetails.value = null
+      currentTvScope.value = null
+      currentTvSeason.value = null
+
+      if (scope.episodeNumber !== undefined && scope.seasonNumber === undefined) {
+        throw new Error('An episode requires a season number')
+      }
+      const { show, season, scope: scopedDetails } = await fetchTvDetailsForScope(
+        tmdb, showId, scope, userLanguage.value
+      )
+
+      if (requestId === detailsRequestId) {
+        currentDetails.value = show
+        currentTvScope.value = scopedDetails
+        currentTvSeason.value = season
+      }
+      return { show, scope: scopedDetails }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch TV details'
+      if (requestId === detailsRequestId) {
+        currentDetails.value = null
+        currentTvScope.value = null
+        currentTvSeason.value = null
+        error.value = `Error loading TV details: ${errorMessage}`
+      }
+      throw new Error(error.value ?? `Error loading TV details: ${errorMessage}`)
+    } finally {
+      if (requestId === detailsRequestId) loading.value = false
+    }
+  }
+
+  const fetchDetailsByImdbId = async (
+    imdbId: string,
+    mediaType: MediaType,
+    requestedScope: TvScopeSelection = {}
+  ) => {
+    const requestId = ++detailsRequestId
+    try {
+      loading.value = true
+      error.value = null
+      currentDetails.value = null
+      currentTvScope.value = null
+      currentTvSeason.value = null
       
       if (!imdbId) {
         throw new Error('No IMDB ID provided');
@@ -158,6 +228,7 @@ export const useMoviesStore = defineStore('movies', () => {
       if (!searchResponse) {
         throw new Error('No response from TMDB API');
       }
+      if (requestId !== detailsRequestId) return;
 
       console.log('searchResponse', JSON.stringify(searchResponse))
       
@@ -167,19 +238,22 @@ export const useMoviesStore = defineStore('movies', () => {
         if (!movieResults) throw new Error('No movie found with this IMDB ID');
         return await fetchDetails(movieResults.id, 'movie');
       } else if (mediaType === 'tv') {
-        const tvResults = searchResponse.tv_results?.[0] ?? searchResponse.tv_episode_results?.[0] ?? searchResponse.tv_season_results?.[0];
-        if (!tvResults) throw new Error('No TV show found with this IMDB ID');
-        return await fetchDetails(tvResults.id, 'tv');
+        const resolved = resolveTvFindResult(searchResponse);
+        if (!resolved) throw new Error('No TV show found with this IMDB ID');
+        return await fetchTvDetails(resolved.showId, {
+          seasonNumber: requestedScope.seasonNumber ?? resolved.seasonNumber,
+          episodeNumber: requestedScope.episodeNumber ?? resolved.episodeNumber,
+        }, requestId);
       } else {
         throw new Error('Invalid media type');
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch details by IMDB ID';
-      error.value = `Error loading details: ${errorMessage}`
+      if (requestId === detailsRequestId) error.value = `Error loading details: ${errorMessage}`
       console.error('Error in fetchDetailsByImdbId:', err)
-      throw new Error(error.value);
+      throw new Error(requestId === detailsRequestId ? error.value! : errorMessage);
     } finally {
-      loading.value = false
+      if (requestId === detailsRequestId) loading.value = false
     }
   }
 
@@ -213,6 +287,8 @@ export const useMoviesStore = defineStore('movies', () => {
     trending,
     searchResults,
     currentDetails,
+    currentTvScope,
+    currentTvSeason,
     loading,
     error,
     currentLanguage,
@@ -221,6 +297,8 @@ export const useMoviesStore = defineStore('movies', () => {
     fetchPopularTVShows,
     searchMulti,
     fetchDetails,
+    cancelPendingDetails,
+    fetchTvDetails,
     fetchDetailsByImdbId,
     getImageUrl,
     clearSearch,

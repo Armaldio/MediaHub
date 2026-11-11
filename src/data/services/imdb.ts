@@ -1,5 +1,6 @@
 import imdbIcon from "../../assets/apps/images/imdb/assets/play_store.png";
 import { Service } from "../../types/index";
+import { imdbTvId, imdbTvUrl } from "./providerUrls";
 
 export const imdb: Service = {
   id: "imdb",
@@ -21,8 +22,8 @@ export const imdb: Service = {
     {
       name: "App",
       mediaType: "tv",
-      enabled: (data) => data.type === "tv" && !!data.imdbId,
-      url: (data) => `imdb:///title/${data.imdbId}`,
+      enabled: (data) => data.type === "tv" && (!!data.episodeImdbId || !!data.imdbId),
+      url: (data) => `imdb:///title/${imdbTvId(data)}`,
       requiresApp: true,
     },
     {
@@ -34,8 +35,8 @@ export const imdb: Service = {
     {
       name: "Web",
       mediaType: "tv",
-      enabled: (data) => data.type === "tv" && !!data.imdbId,
-      url: (data) => `https://imdb.com/title/${data.imdbId}`,
+      enabled: (data) => data.type === "tv" && (!!data.episodeImdbId || !!data.imdbId),
+      url: imdbTvUrl,
     },
   ],
 };

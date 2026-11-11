@@ -52,6 +52,12 @@ export interface FormattedDetails {
   instagramId?: string;
   twitterId?: string;
   title: string;
+  /** Scope identity for TV links; tmdbId/imdbId above always identify the parent show. */
+  seasonNumber?: number;
+  episodeNumber?: number;
+  seasonTmdbId?: string;
+  episodeTmdbId?: string;
+  episodeImdbId?: string;
   releaseYear?: string;
   rating?: number;
   runtime?: string;
