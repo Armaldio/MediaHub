@@ -49,6 +49,8 @@ import { allMovie } from "./services/allMovie";
 import { filmweb } from "./services/filmweb";
 import { boxOfficeMojo } from "./services/boxOfficeMojo";
 import { filmarks } from "./services/filmarks";
+import { floppy } from "./services/floppy";
+import { yamtrack } from "./services/yamtrack";
 
 // Function to fetch TVDB data and enhance FormattedDetails
 export const fetchTVDBData = async (
@@ -161,4 +163,6 @@ export default [
   filmweb,
   boxOfficeMojo,
   filmarks,
+  floppy,
+  yamtrack,
 ] satisfies Service[];
