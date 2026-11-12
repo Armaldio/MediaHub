@@ -4,7 +4,7 @@ import Home from '@/views/Home.vue'
 import Details from '@/views/Details.vue'
 import Settings from '@/views/Settings.vue'
 import { useServicesStore } from '@/stores/services'
-import { parseDeepLink, navigateFromDeepLink } from '@/utils/deepLink'
+import { parseDeepLink, getDeepLinkLocation } from '@/utils/deepLink'
 
 // Handle deep link navigation
 const handleDeepLink: NavigationGuard = (to, _from, next) => {
@@ -17,8 +17,8 @@ const handleDeepLink: NavigationGuard = (to, _from, next) => {
     if (deepLink) {
       const params = parseDeepLink(deepLink);
       if (params) {
-        navigateFromDeepLink(router, params);
-        return next(false);
+        const location = getDeepLinkLocation(params);
+        if (location) return next(location);
       }
     }
   }
@@ -29,11 +29,12 @@ const handleDeepLink: NavigationGuard = (to, _from, next) => {
     const id = to.params[`${idType}id`];
     
     if (id) {
+      const paramKey = idType === 'tmdb' ? 'tmdbId' : 'imdbId';
       next({
         name: `details-${idType}`,
         params: {
           ...to.params,
-          [`${idType}id`]: id
+          [paramKey]: id
         },
         query: to.query
       });
@@ -61,33 +62,23 @@ const router = createRouter({
       beforeEnter: handleDeepLink
     },
     {
-      path: '/details/:mediaType',
-      name: 'details',
+      path: '/details/:mediaType/tmdb/:tmdbId',
+      name: 'details-tmdb',
       component: Details,
       props: true,
       meta: { requiresServices: true },
-      beforeEnter: (to, _from, next) => {
-        // Ensure at least one ID type is provided
-        if (!to.params.tmdbId && !to.params.imdbId) {
-          next('/'); // Redirect to home if no ID is provided
-          return;
-        }
-        next();
-      },
-      children: [
-        {
-          path: 'tmdb/:tmdbId',
-          name: 'details-tmdb',
-          component: Details,
-          props: true
-        },
-        {
-          path: 'imdb/:imdbId',
-          name: 'details-imdb',
-          component: Details,
-          props: true
-        }
-      ]
+    },
+    {
+      path: '/details/:mediaType/imdb/:imdbId',
+      name: 'details-imdb',
+      component: Details,
+      props: true,
+      meta: { requiresServices: true },
+    },
+    {
+      path: '/details/:mediaType',
+      name: 'details',
+      redirect: { name: 'introduction' },
     },
     {
       path: '/settings',
@@ -111,7 +102,7 @@ router.beforeEach((to, _from, next) => {
 
   // If we're going to introduction but have services selected, redirect to home
   if (to.name === 'introduction' && servicesStore.hasSelectedServices && to.query.force !== '1') {
-    next({ name: 'home' })
+    next({ name: 'home', query: to.query })
     return
   }
   

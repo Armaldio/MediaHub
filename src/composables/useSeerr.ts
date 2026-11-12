@@ -22,6 +22,14 @@ export function useSeerr() {
   const requestStatus = ref<Record<string, RequestStatus>>({});
   const requestLoading = ref<Record<string, boolean>>({});
   const submitLoading = ref<Record<string, boolean>>({});
+  let generation = 0;
+
+  function reset() {
+    generation += 1;
+    requestStatus.value = {};
+    requestLoading.value = {};
+    submitLoading.value = {};
+  }
 
   function statusKey(serviceId: string): string {
     return serviceId;
@@ -32,14 +40,15 @@ export function useSeerr() {
     instance: CustomServiceInstance,
     data: FormattedDetails
   ) {
+    const currentGeneration = generation;
     const key = statusKey(serviceId);
     if (requestLoading.value[key]) return;
     requestLoading.value[key] = true;
     try {
       const status = await getStatusFromApi(instance, data);
-      requestStatus.value[key] = status;
+      if (generation === currentGeneration) requestStatus.value[key] = status;
     } finally {
-      requestLoading.value[key] = false;
+      if (generation === currentGeneration) requestLoading.value[key] = false;
     }
   }
 
@@ -48,14 +57,15 @@ export function useSeerr() {
     instance: CustomServiceInstance,
     data: FormattedDetails
   ): Promise<RequestStatus> {
+    const currentGeneration = generation;
     const key = statusKey(serviceId);
     submitLoading.value[key] = true;
     try {
       const result = await postRequest(instance, data);
-      requestStatus.value[key] = result;
+      if (generation === currentGeneration) requestStatus.value[key] = result;
       return result;
     } finally {
-      submitLoading.value[key] = false;
+      if (generation === currentGeneration) submitLoading.value[key] = false;
     }
   }
 
@@ -80,6 +90,7 @@ export function useSeerr() {
   }
 
   return {
+    reset,
     requestStatus,
     requestLoading,
     submitLoading,
@@ -98,11 +109,13 @@ export function useSeerr() {
 type SeerrRequest = {
   status: number;
   type: "movie" | "tv";
+  seasons?: { seasonNumber: number; status: number }[];
 };
 
 type SeerrMediaInfo = {
   status?: number;
   requests?: SeerrRequest[];
+  seasons?: { seasonNumber: number; status: number }[];
 };
 
 export function buildSeerrRequestPayload(data: FormattedDetails) {
@@ -110,7 +123,9 @@ export function buildSeerrRequestPayload(data: FormattedDetails) {
     mediaType: data.type === "movie" ? "movie" : "tv",
     mediaId: Number(data.tmdbId),
     ...(data.type === "tv" && data.tvdbId ? { tvdbId: Number(data.tvdbId) } : {}),
-    ...(data.type === "tv" ? { seasons: "all" as const } : {}),
+    ...(data.type === "tv"
+      ? { seasons: data.seasonNumber === undefined ? "all" as const : [data.seasonNumber] }
+      : {}),
   };
 }
 
@@ -118,6 +133,14 @@ export function hasSeerrRequest(
   requests: SeerrRequest[],
   data: FormattedDetails
 ): SeerrRequest | undefined {
+  if (data.type === "tv" && data.seasonNumber !== undefined) {
+    return requests.find((request) =>
+      request.type === "tv" && request.seasons?.some(
+        (season) => season.seasonNumber === data.seasonNumber
+      )
+    );
+  }
+
   // The caller reads requests from this title's mediaInfo response, so only
   // the type needs to distinguish movie requests from TV requests.
   return requests.find((request) => request.type === (data.type === "movie" ? "movie" : "tv"));
@@ -157,7 +180,13 @@ async function getStatusFromApi(
     const body = await res.json();
     const mediaInfo: SeerrMediaInfo | undefined = body.mediaInfo;
     if (!mediaInfo) return "unknown";
-    if (mediaInfo.status === MEDIA_AVAILABLE) return "available";
+    const scopedSeason = data.type === "tv" && data.seasonNumber !== undefined
+      ? mediaInfo.seasons?.find((season) => season.seasonNumber === data.seasonNumber)
+      : undefined;
+    if (scopedSeason?.status === MEDIA_AVAILABLE) return "available";
+    if (!scopedSeason && data.seasonNumber === undefined && mediaInfo.status === MEDIA_AVAILABLE) {
+      return "available";
+    }
 
     const match = hasSeerrRequest(mediaInfo.requests ?? [], data);
     return match ? (REQUEST_STATUS[match.status] ?? "unknown") : "unknown";

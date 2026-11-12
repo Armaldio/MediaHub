@@ -19,7 +19,7 @@ export function parseDeepLink(url: string): DeepLinkParams | null {
       if (!params.tmdbId && !params.imdbId) {
         throw new Error('Missing required parameter: tmdb or imdb');
       }
-      
+
       return {
         type: 'movie',
         tmdbId: params.tmdbId,
@@ -32,6 +32,16 @@ export function parseDeepLink(url: string): DeepLinkParams | null {
       const params = Object.fromEntries(parsedUrl.searchParams);
       if (!params.tmdbId && !params.imdbId) {
         throw new Error('Missing required parameter: tmdb or imdb');
+      }
+
+      if (params.season !== undefined && !/^\d+$/.test(params.season)) {
+        throw new Error('Season must be a non-negative number');
+      }
+      if (params.episode !== undefined && (!/^\d+$/.test(params.episode) || Number(params.episode) < 1)) {
+        throw new Error('Episode must be a positive number');
+      }
+      if (params.episode !== undefined && params.season === undefined) {
+        throw new Error('Episode requires a season');
       }
       
       return {
@@ -50,32 +60,33 @@ export function parseDeepLink(url: string): DeepLinkParams | null {
   }
 }
 
-export function navigateFromDeepLink(router: any, params: DeepLinkParams) {
+export function getDeepLinkLocation(params: DeepLinkParams) {
   const mediaType = params.type === 'movie' ? 'movie' : 'tv';
   const id = params.tmdbId || params.imdbId;
   const idType = params.tmdbId ? 'tmdb' : 'imdb';
   
-  if (!id) return;
+  if (!id) return null;
   
   const query: Record<string, string> = { 
     source: idType,
   };
+
+  if (params.type === 'show' && params.season !== undefined) {
+    query.season = params.season;
+    if (params.episode !== undefined) query.episode = params.episode;
+  }
   
-  // if (params.type === 'show') {
-  //   if (params.season) {
-  //     query.season = params.season;
-  //     if (params.episode) {
-  //       query.episode = params.episode;
-  //     }
-  //   }
-  // }
-  
-  router.push({
+  return {
     name: `details-${idType}`,
     params: { 
       mediaType,
       [`${idType}Id`]: id
     },
     query
-  });
+  };
+}
+
+export function navigateFromDeepLink(router: any, params: DeepLinkParams) {
+  const location = getDeepLinkLocation(params);
+  if (location) return router.push(location);
 }

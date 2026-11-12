@@ -1,22 +1,6 @@
 import traktIcon from "../../assets/apps/images/trakt/assets/play_store.png";
 import { Service } from "../../types/index";
-import { FormattedDetails } from "../../models/models";
-
-const slugify = (value: string): string =>
-  value
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-
-const fallbackSlug = (data: FormattedDetails): string => {
-  const base = slugify(data.title) || data.tmdbId;
-  return data.releaseYear ? `${base}-${data.releaseYear}` : base;
-};
-
-const traktSlug = (data: FormattedDetails): string =>
-  data.traktSlug || fallbackSlug(data);
+import { traktSlug, traktTvUrl } from "./providerUrls";
 
 export const trakt: Service = {
   id: "trakt",
@@ -32,27 +16,27 @@ export const trakt: Service = {
       name: "App",
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
-      url: (data) => `trakt://movie/${traktSlug(data)}`,
+      url: (data) => `trakt://movie/${data.traktSlug || traktSlug(data)}`,
       requiresApp: true,
     },
     {
       name: "App",
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
-      url: (data) => `trakt://show/${traktSlug(data)}`,
+      url: (data) => `trakt://show/${data.traktSlug || traktSlug(data)}`,
       requiresApp: true,
     },
     {
       name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
-      url: (data) => `https://trakt.tv/movies/${traktSlug(data)}`,
+      url: (data) => `https://trakt.tv/movies/${data.traktSlug || traktSlug(data)}`,
     },
     {
       name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
-      url: (data) => `https://trakt.tv/shows/${traktSlug(data)}`,
+      url: traktTvUrl,
     },
   ],
 };

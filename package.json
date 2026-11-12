@@ -9,6 +9,9 @@
     "build": "vite build",
     "lint": "eslint .",
     "check": "vue-tsc -b",
+    "test:tmdb-find": "tsx scripts/test-tmdb-find.ts",
+    "test:tv-navigation": "tsx scripts/test-tv-navigation.ts",
+    "test:season-episode-links": "tsx scripts/test-season-episode-links.ts",
     "preview": "vite preview",
     "download-app-icons": "npx tsx src/scripts/download-app-images/index.ts"
   },

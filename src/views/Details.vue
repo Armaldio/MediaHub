@@ -66,7 +66,7 @@
                   <img
                     v-if="poster"
                     :src="poster"
-                    :alt="formattedDetails?.title || 'Media poster'"
+                    :alt="displayTitle"
                     class="h-48 object-cover rounded-xl shadow-2xl transform transition-transform duration-300 group-hover:scale-102"
                   />
                   <div
@@ -83,7 +83,7 @@
             <div class="flex-1 text-white">
               <div>
                 <h1 class="text-4xl md:text-6xl font-bold mb-4">
-                  {{ formattedDetails?.title || "Untitled" }}
+                  {{ displayTitle }}
                 </h1>
 
                 <!-- Meta Info -->
@@ -127,11 +127,8 @@
                       }"
                       @transitionend="onTransitionEnd"
                     >
-                      <p v-if="overview" class="mb-8">
-                        {{
-                          formattedDetails?.overview ||
-                          "No description available."
-                        }}
+                      <p v-if="overview || moviesStore.currentTvScope" class="mb-8">
+                        {{ overview || "No description available." }}
                       </p>
                     </div>
 
@@ -211,13 +208,45 @@
             class="relative z-10 h-24 -mt-24 bg-gray-900 pointer-events-none"
           ></div>
 
+      <section v-if="isTv" class="max-w-7xl mx-auto px-4 pt-6" aria-label="TV show navigation">
+        <nav class="flex flex-wrap items-center gap-2 text-sm text-indigo-300 mb-4" aria-label="Show hierarchy">
+          <button v-if="seasonNumber !== undefined" @click="navigateToScope()" class="hover:text-white">{{ parentShowTitle }}</button>
+          <span v-if="seasonNumber !== undefined" aria-hidden="true">›</span>
+          <button v-if="seasonNumber !== undefined" @click="navigateToScope(seasonNumber)" class="hover:text-white">Season {{ seasonNumber }}</button>
+          <template v-if="episodeNumber !== undefined"><span aria-hidden="true">›</span><span class="text-gray-300">Episode {{ episodeNumber }}</span></template>
+        </nav>
+        <div v-if="seasonNumber === undefined && tvSeasons.length" class="mb-8">
+          <h2 class="text-xl font-semibold text-white mb-3">Seasons</h2>
+          <div class="flex flex-wrap gap-2">
+            <button v-for="season in tvSeasons" :key="season.id" @click="navigateToScope(season.season_number)" class="rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-left text-white hover:border-indigo-400" :aria-label="`Open season ${season.season_number}: ${season.name}`">
+              Season {{ season.season_number }} · {{ season.name }}
+            </button>
+          </div>
+        </div>
+        <div v-if="seasonDetails" class="mb-8">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-xl font-semibold text-white">Episodes</h2>
+            <button v-if="episodeNumber !== undefined" @click="navigateToScope(seasonNumber)" class="text-sm text-indigo-300 hover:text-white">All episodes</button>
+          </div>
+          <ol class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <li v-for="episode in seasonDetails.episodes" :key="episode.id">
+              <button @click="navigateToScope(seasonNumber, episode.episode_number)" class="w-full rounded-lg border border-gray-700 bg-gray-800 p-4 text-left text-white hover:border-indigo-400" :aria-label="`Open season ${seasonNumber} episode ${episode.episode_number}: ${episode.name}`">
+                <span class="block text-xs text-gray-400">Episode {{ episode.episode_number }}</span>
+                <span class="block font-medium">{{ episode.name }}</span>
+                <span v-if="episode.air_date" class="block text-xs text-gray-400 mt-1">{{ episode.air_date }}</span>
+              </button>
+            </li>
+          </ol>
+        </div>
+      </section>
+
       <!-- Services Section -->
       <div class="relative z-20 bg-gray-900">
         <div class="max-w-7xl mx-auto px-4 py-12">
           <div class="flex items-center justify-between mb-8">
             <div>
               <h2 class="text-2xl font-bold text-white mb-1">Open with</h2>
-              <p class="text-gray-400 text-sm">Your connected services</p>
+              <p class="text-gray-400 text-sm">{{ seasonNumber !== undefined ? 'Links open this season or episode when supported; other services open the show.' : 'Your connected services' }}</p>
             </div>
             <div
               class="px-3 py-1 bg-white/5 rounded-full text-sm text-gray-300"
@@ -542,6 +571,7 @@ interface InstanceService extends Service {
 }
 
 import { useRouter } from "vue-router";
+import { useRoute } from "vue-router";
 import { ArrowLeft, Star, Film, Tv, Film as MovieIcon } from "lucide-vue-next";
 import { useMoviesStore } from "@/stores/movies";
 import { useServicesStore } from "@/stores/services";
@@ -562,6 +592,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const router = useRouter();
+const route = useRoute();
 const parallaxBackdrop = ref<HTMLElement | null>(null);
 const overviewText = ref<HTMLElement | null>(null);
 const overviewHeight = ref(0);
@@ -601,7 +632,6 @@ const handleScroll = () => {
 };
 
 onMounted(async () => {
-  await loadDetails();
   window.addEventListener("scroll", handleScroll);
   await nextTick();
   checkOverviewHeight();
@@ -609,6 +639,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener("scroll", handleScroll);
+  moviesStore.cancelPendingDetails();
 });
 
 const backButtonStyle = {
@@ -623,10 +654,51 @@ const seerr = useSeerr();
 const errorMessage = ref<string | null>(null);
 const detailsLoading = ref(true);
 
-const overview = computed(() => moviesStore.currentDetails?.overview || "");
+const overview = computed(() => {
+  const scope = moviesStore.currentTvScope;
+  return scope ? scope.overview || "" : moviesStore.currentDetails?.overview || "";
+});
+
+const isTv = computed(() => props.mediaType === "tv");
+const seasonNumber = computed(() => {
+  const value = route.query.season;
+  if (value === undefined) return moviesStore.currentTvScope?.season_number ?? moviesStore.currentTvSeason?.season_number;
+  const stringValue = Array.isArray(value) ? value[0] : value;
+  return typeof stringValue === "string" && /^\d+$/.test(stringValue) ? Number(stringValue) : undefined;
+});
+const episodeNumber = computed(() => {
+  const value = route.query.episode;
+  if (value === undefined) {
+    const scope = moviesStore.currentTvScope;
+    return scope && "episode_number" in scope ? scope.episode_number : undefined;
+  }
+  const stringValue = Array.isArray(value) ? value[0] : value;
+  return typeof stringValue === "string" && /^\d+$/.test(stringValue) ? Number(stringValue) : undefined;
+});
+const seasonDetails = computed(() => {
+  const scope = moviesStore.currentTvSeason ?? moviesStore.currentTvScope;
+  return scope && "episodes" in scope ? scope : null;
+});
+const tvSeasons = computed(() => {
+  const details = moviesStore.currentDetails;
+  return details && "seasons" in details ? details.seasons : [];
+});
+const parentShowTitle = computed(() => {
+  const details = moviesStore.currentDetails;
+  return details && "name" in details ? details.name : "Show";
+});
+const displayTitle = computed(() => {
+  const scope = moviesStore.currentTvScope;
+  return scope && "episode_number" in scope
+    ? `S${String(scope.season_number).padStart(2, "0")}E${String(scope.episode_number).padStart(2, "0")} · ${scope.name}`
+    : scope?.name ?? formattedDetails.value?.title ?? "Untitled";
+});
 
 const poster = computed(() => {
-  const path = moviesStore.currentDetails?.poster_path;
+  const scope = moviesStore.currentTvScope;
+  const path = scope && "episode_number" in scope
+    ? scope.still_path
+    : scope?.poster_path ?? moviesStore.currentDetails?.poster_path;
   return path ? moviesStore.getImageUrl(path, "w500") : null;
 });
 
@@ -636,6 +708,11 @@ const backdrop = computed(() => {
 });
 
 const releaseYear = computed(() => {
+  const scope = moviesStore.currentTvScope;
+  if (scope) {
+    const scopedDate = scope.air_date;
+    return scopedDate ? new Date(scopedDate).getFullYear() : null;
+  }
   const details = moviesStore.currentDetails;
   if (!details) return null;
 
@@ -644,9 +721,21 @@ const releaseYear = computed(() => {
   return date ? new Date(date).getFullYear() : null;
 });
 
-const rating = computed(() => moviesStore.currentDetails?.vote_average || 0);
+const rating = computed(() => {
+  const scope = moviesStore.currentTvScope;
+  if (scope) return "vote_average" in scope ? scope.vote_average || 0 : 0;
+  return moviesStore.currentDetails?.vote_average || 0;
+});
 
 const runtime = computed(() => {
+  const scopedRuntime = moviesStore.currentTvScope && "runtime" in moviesStore.currentTvScope
+    ? moviesStore.currentTvScope.runtime
+    : undefined;
+  if (scopedRuntime) {
+    const hours = Math.floor(scopedRuntime / 60);
+    const minutes = scopedRuntime % 60;
+    return `${hours}h ${minutes}m`;
+  }
   const details = moviesStore.currentDetails;
   if (!details) return null;
 
@@ -658,6 +747,23 @@ const runtime = computed(() => {
 
   return null;
 });
+
+const navigateToScope = (season?: number, episode?: number) => {
+  const resolvedTmdbId = moviesStore.currentDetails?.id;
+  const tmdbId = resolvedTmdbId?.toString() || props.tmdbId || props.id;
+  const imdbId = props.imdbId;
+  const idType = tmdbId ? "tmdb" : "imdb";
+  const id = tmdbId || imdbId;
+  if (!id) return;
+  const query: Record<string, string> = { source: idType };
+  if (season !== undefined) query.season = String(season);
+  if (episode !== undefined) query.episode = String(episode);
+  void router.push({
+    name: `details-${idType}`,
+    params: { mediaType: "tv", [`${idType}Id`]: id },
+    query,
+  });
+};
 
 const genres = computed(() => moviesStore.currentDetails?.genres || []);
 
@@ -735,6 +841,7 @@ const scrollToService = (serviceId: string) => {
 };
 
 const formattedDetails = ref<FormattedDetails | null>(null);
+let enrichmentRequestId = 0;
 
 const fetchWikidataClaims = async (wikidataId: string) => {
   try {
@@ -749,8 +856,9 @@ const fetchWikidataClaims = async (wikidataId: string) => {
 };
 
 watch(
-  () => moviesStore.currentDetails,
-  async (newDetails) => {
+  () => [moviesStore.currentDetails, moviesStore.currentTvScope] as const,
+  async ([newDetails, scopedDetails]) => {
+    const requestId = ++enrichmentRequestId;
     if (!newDetails) {
       formattedDetails.value = null;
       return;
@@ -802,6 +910,11 @@ watch(
       instagramId: details.external_ids.instagram_id,
       twitterId: details.external_ids.twitter_id,
       type: props.mediaType,
+      seasonNumber: scopedDetails?.season_number,
+      episodeNumber: scopedDetails && "episode_number" in scopedDetails ? scopedDetails.episode_number : undefined,
+      seasonTmdbId: scopedDetails && "episodes" in scopedDetails ? String(scopedDetails.id) : undefined,
+      episodeTmdbId: scopedDetails && "episode_number" in scopedDetails ? String(scopedDetails.id) : undefined,
+      episodeImdbId: scopedDetails && "episode_number" in scopedDetails ? scopedDetails.external_ids?.imdb_id : undefined,
     };
 
     fetchSeerrStatuses(formattedDetails.value);
@@ -813,6 +926,7 @@ watch(
 
     // Fetch all external IDs from Wikidata in parallel
     const claims = await fetchWikidataClaims(wikidata_id);
+    if (requestId !== enrichmentRequestId) return;
     const claimValue = (property: string) => {
       const value = claims[property]?.[0]?.mainsnak?.datavalue?.value;
       return typeof value === "string" || typeof value === "number" ? String(value) : undefined;
@@ -839,14 +953,19 @@ watch(
       letterboxdId: claimValue("P6127"),
       mubiId: claimValue("P7299"),
     };
+    const enrichedDetails = formattedDetails.value;
+    if (!enrichedDetails) return;
 
     // Look up the Trakt slug from TMDB ID (async, parallel with TVDB fetch)
-    const traktSlug = getTraktSlug(formattedDetails.value);
+    const traktSlug = getTraktSlug(enrichedDetails);
 
     // Fetch TVDB data and enhance the formatted details
-    formattedDetails.value = await fetchTVDBData(formattedDetails.value);
+    const tvdbDetails = await fetchTVDBData(enrichedDetails);
+    if (requestId !== enrichmentRequestId) return;
+    formattedDetails.value = tvdbDetails;
 
     const slug = await traktSlug;
+    if (requestId !== enrichmentRequestId) return;
     if (slug) {
       formattedDetails.value = {
         ...formattedDetails.value,
@@ -928,26 +1047,52 @@ const handleSeerrRequest = async (service: Service) => {
 };
 
 const loadDetails = async () => {
+  const requestId = ++loadRequestId;
   try {
     errorMessage.value = null;
     detailsLoading.value = true;
+    moviesStore.cancelPendingDetails();
+    seerr.reset();
 
     // Clear any previously loaded media so navigating from another
     // detail page never shows stale content while this one loads
     moviesStore.currentDetails = null;
+    moviesStore.currentTvScope = null;
+    moviesStore.currentTvSeason = null;
     formattedDetails.value = null;
 
     // Prefer tmdbid, fallback to id for backward compatibility
     const tmdbId = props.tmdbId || props.id;
+    const readScopeNumber = (key: "season" | "episode", minimum: number) => {
+      const value = route.query[key];
+      if (value === undefined) return undefined;
+      const text = Array.isArray(value) ? value[0] : value;
+      if (typeof text !== "string" || !/^\d+$/.test(text) || Number(text) < minimum) {
+        throw new Error(key === "season" ? "Season must be a non-negative number" : "Episode must be a positive number");
+      }
+      return Number(text);
+    };
+    const scope = isTv.value ? {
+      seasonNumber: readScopeNumber("season", 0),
+      episodeNumber: readScopeNumber("episode", 1),
+    } : {};
+    if (scope.episodeNumber !== undefined && scope.seasonNumber === undefined) {
+      throw new Error("An episode requires a season number");
+    }
 
     if (tmdbId) {
-      await moviesStore.fetchDetails(parseInt(tmdbId), props.mediaType);
+      if (isTv.value) {
+        await moviesStore.fetchTvDetails(parseInt(tmdbId, 10), scope);
+      } else {
+        await moviesStore.fetchDetails(parseInt(tmdbId, 10), props.mediaType);
+      }
     } else if (props.imdbId) {
-      await moviesStore.fetchDetailsByImdbId(props.imdbId, props.mediaType);
+      await moviesStore.fetchDetailsByImdbId(props.imdbId, props.mediaType, scope);
     } else {
       throw new Error("No valid ID provided for fetching details");
     }
   } catch (error) {
+    if (requestId !== loadRequestId) return;
     console.error("Error loading media details:", error);
     errorMessage.value =
       typeof error === "string"
@@ -956,9 +1101,16 @@ const loadDetails = async () => {
         ? error.message
         : "An unknown error occurred while loading details";
   } finally {
-    detailsLoading.value = false;
+    if (requestId === loadRequestId) detailsLoading.value = false;
   }
 };
+
+let loadRequestId = 0;
+watch(
+  () => [props.mediaType, props.tmdbId, props.imdbId, props.id, route.query.season, route.query.episode],
+  () => { void loadDetails(); },
+  { immediate: true }
+);
 
 const retryLoading = async () => {
   await loadDetails();
