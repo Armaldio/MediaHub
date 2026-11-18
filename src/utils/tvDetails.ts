@@ -5,26 +5,40 @@ export interface TvScopeSelection {
   episodeNumber?: number;
 }
 
+export function fetchTvSeason(tmdb: TMDB, showId: number, seasonNumber: number, language: AvailableLanguage) {
+  return tmdb.tvSeasons.details(
+    { tvShowID: showId, seasonNumber },
+    ['external_ids'],
+    { language }
+  );
+}
+
 export async function fetchTvDetailsForScope(
   tmdb: TMDB,
   showId: number,
   scope: TvScopeSelection,
   language: AvailableLanguage
 ) {
-  const show = await tmdb.tvShows.details(showId, ['external_ids'], language);
-  if (scope.seasonNumber === undefined) return { show, season: null, scope: null };
+  const showRequest = tmdb.tvShows.details(showId, ['external_ids'], language);
+  if (scope.seasonNumber === undefined) {
+    return { show: await showRequest, season: null, scope: null };
+  }
 
-  const season = await tmdb.tvSeasons.details(
-    { tvShowID: showId, seasonNumber: scope.seasonNumber },
-    ['external_ids'],
-    { language }
-  );
-  if (scope.episodeNumber === undefined) return { show, season, scope: season };
+  if (scope.episodeNumber === undefined) {
+    const [show, season] = await Promise.all([
+      showRequest,
+      fetchTvSeason(tmdb, showId, scope.seasonNumber, language)
+    ]);
+    return { show, season, scope: season };
+  }
 
-  const episode = await tmdb.tvEpisode.details(
-    { tvShowID: showId, seasonNumber: scope.seasonNumber, episodeNumber: scope.episodeNumber },
-    ['external_ids'],
-    { language }
-  );
-  return { show, season, scope: episode };
+  const [show, episode] = await Promise.all([
+    showRequest,
+    tmdb.tvEpisode.details(
+      { tvShowID: showId, seasonNumber: scope.seasonNumber, episodeNumber: scope.episodeNumber },
+      ['external_ids'],
+      { language }
+    )
+  ]);
+  return { show, season: null, scope: episode };
 }

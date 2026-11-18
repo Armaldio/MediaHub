@@ -42,9 +42,12 @@ const mockedTmdb = {
 } as unknown as TMDB;
 
 const loaded = await fetchTvDetailsForScope(mockedTmdb, 100, { seasonNumber: 0, episodeNumber: 1 }, 'en-US');
-assert.deepEqual(calls, ['show:100', 'season:100:0', 'episode:100:0:1']);
+assert.deepEqual(calls, ['show:100', 'episode:100:0:1']);
 assert.equal(loaded.show.id, 100);
-assert.equal(loaded.season?.id, 300);
 assert.equal(loaded.scope?.id, 400);
+const season = await fetchTvDetailsForScope(mockedTmdb, 100, { seasonNumber: 0 }, 'en-US');
+assert.deepEqual(calls.slice(-2), ['show:100', 'season:100:0']);
+assert.equal(season.season?.id, 300);
+assert.equal(season.scope, season.season);
 
 console.log('TV deep-link routing and mocked details checks passed');

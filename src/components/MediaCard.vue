@@ -1,12 +1,13 @@
 <template>
   <button
+    v-if="media"
     type="button"
     class="media-card"
     :aria-label="`Open ${title}`"
     @click="$emit('click')"
   >
     <span class="media-poster">
-      <img v-if="posterUrl" :src="posterUrl" alt="" loading="lazy" />
+      <img v-if="posterUrl && !posterFailed" :src="posterUrl" alt="" width="342" height="513" loading="lazy" decoding="async" @error="posterFailed = true" />
       <span v-else class="poster-placeholder"
         ><Film :size="32" :stroke-width="1.5" aria-hidden="true"
       /></span>
@@ -24,16 +25,23 @@
       >
     </span>
   </button>
+  <div v-else class="media-card media-card--placeholder" aria-hidden="true">
+    <span class="media-poster ui-skeleton"></span>
+    <span class="media-caption">
+      <span class="media-title"><span class="ui-skeleton block h-3 w-3/4"></span></span>
+      <span class="media-meta"><span class="ui-skeleton block h-2.5 w-1/3"></span></span>
+    </span>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { Star, Film } from "lucide-vue-next";
 import { useMoviesStore } from "@/stores/movies";
 import { Movie, TV } from "tmdb-ts";
 
 interface Props {
-  media: (Movie | TV) & { media_type?: string };
+  media?: (Movie | TV) & { media_type?: string };
 }
 
 defineEmits<{
@@ -44,29 +52,33 @@ const props = defineProps<Props>();
 const moviesStore = useMoviesStore();
 
 const title = computed(() => {
-  return "title" in props.media ? props.media.title : props.media.name;
+  const media = props.media;
+  if (!media) return "";
+  return "title" in media ? media.title : media.name;
 });
 
 const posterUrl = computed(() => {
-  return props.media.poster_path
+  return props.media?.poster_path
     ? moviesStore.getImageUrl(props.media.poster_path, "w342")
     : null;
 });
 
-const rating = computed(() => props.media.vote_average || 0);
+const posterFailed = ref(false);
+watch(posterUrl, () => { posterFailed.value = false; });
+
+const rating = computed(() => props.media?.vote_average || 0);
 
 const year = computed(() => {
-  const date =
-    "release_date" in props.media
-      ? props.media.release_date
-      : props.media.first_air_date;
+  const media = props.media;
+  if (!media) return null;
+  const date = "release_date" in media ? media.release_date : media.first_air_date;
   return date ? new Date(date).getFullYear() : null;
 });
 
 const mediaTypeLabel = computed(() => {
-  if (props.media.media_type === "movie") return "Movie";
-  if (props.media.media_type === "tv") return "TV Show";
-  return "title" in props.media ? "Movie" : "TV Show";
+  if (props.media?.media_type === "movie") return "Movie";
+  if (props.media?.media_type === "tv") return "TV Show";
+  return props.media && "title" in props.media ? "Movie" : "TV Show";
 });
 </script>
 <style scoped>
@@ -86,6 +98,10 @@ const mediaTypeLabel = computed(() => {
 }
 .media-card:hover {
   border-color: var(--color-accent);
+}
+.media-card--placeholder {
+  cursor: default;
+  pointer-events: none;
 }
 .media-poster {
   position: relative;
@@ -131,6 +147,7 @@ const mediaTypeLabel = computed(() => {
   overflow: hidden;
   font-size: 13px;
   line-height: 1.5;
+  min-height: 3em;
   font-weight: 550;
 }
 .media-meta {
@@ -138,5 +155,10 @@ const mediaTypeLabel = computed(() => {
   margin-top: 4px;
   color: var(--color-muted);
   font-size: 11px;
+  min-height: 1.5em;
+}
+.media-card--placeholder .media-title > span,
+.media-card--placeholder .media-meta > span {
+  margin-top: 3px;
 }
 </style>

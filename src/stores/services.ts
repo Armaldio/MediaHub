@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { Capacitor } from '@capacitor/core'
-import { Device } from '@capacitor/device'
 import { v4 as uuidv4 } from 'uuid'
 import type { Service, CustomServiceInstance } from '@/types'
 import servicesData from '@/data/services'
+import { withRequestTimeout } from '@/utils/requestTimeout'
 
 // Extend Service type for instance services
 interface InstanceService extends Service {
@@ -39,7 +39,8 @@ export const useServicesStore = defineStore('services', () => {
 
   const selectedServiceIds = ref<string[]>([])
   const installedApps = ref<string[]>([])
-  const isNative = ref(false)
+  const isNative = Capacitor.getPlatform() !== 'web'
+  const installedAppsLoading = ref(isNative)
 
   const selectedServices = computed(() => {
     // Create a map for quick lookup
@@ -86,66 +87,35 @@ export const useServicesStore = defineStore('services', () => {
   }
 
   const scanInstalledApps = async () => {
-    try {
-      const { AppLauncher } = await import('@capacitor/app-launcher')
-      const deviceInfo = await Device.getInfo()
-      isNative.value = deviceInfo.platform !== 'web'
-      
-      // Clear the installed apps array
-      installedApps.value = []
-
-      if (!isNative.value) {
-        // In web environment, native detection is unavailable — mark all native apps as not installed
-        // Web-only services stay false (no app to install)
-        parentServices.value.forEach(service => {
-          service.isInstalled = false
-        })
-        return
+    const { AppLauncher } = await import('@capacitor/app-launcher')
+    const results = await Promise.all(parentServices.value.map(async (service) => {
+      if (!service.androidAppId) return null
+      try {
+        const { value } = await withRequestTimeout(AppLauncher.canOpenUrl({ url: service.androidAppId }), 5000)
+        return value ? service.id : null
+      } catch (error) {
+        console.warn(`Error checking if ${service.name} is installed:`, error)
+        return null
       }
-
-      // Create a new array to avoid modifying the original while iterating
-      const updatedServices = [...parentServices.value]
-      
-      // Check each service that has a package name
-      for (let i = 0; i < updatedServices.length; i++) {
-        const service = updatedServices[i]
-        try {
-          if (service.androidAppId) {
-            // For Android, we can try to open the package
-            const { value: canOpen } = await AppLauncher.canOpenUrl({ 
-              url: service.androidAppId 
-            })
-            service.isInstalled = canOpen
-            
-            if (canOpen) {
-              installedApps.value.push(service.id) // Store only the service ID
-            }
-          } else {
-            // Web-only service: no native app
-            service.isInstalled = false
-          }
-        } catch (error) {
-          console.warn(`Error checking if ${service.name} is installed:`, error)
-          service.isInstalled = false
-        }
-      }
-      
-      // Update the services array
-      parentServices.value = updatedServices
-    } catch (error) {
-      console.error('Error in checkInstalledApps:', error)
-      // Fallback: mark all as not installed (unknown state)
-      parentServices.value.forEach(service => {
-        service.isInstalled = false
-      })
+    }))
+    installedApps.value = results.filter(id => id !== null)
+    for (const service of parentServices.value) {
+      service.isInstalled = installedApps.value.includes(service.id)
     }
   }
 
   let installedAppsScan: Promise<void> | undefined
   const checkInstalledApps = () => {
-    installedAppsScan ??= scanInstalledApps().finally(() => {
-      installedAppsScan = undefined
-    })
+    if (!isNative) return Promise.resolve()
+    if (!installedAppsScan) {
+      installedAppsLoading.value = true
+      installedAppsScan = scanInstalledApps()
+        .catch(error => console.error('Error in checkInstalledApps:', error))
+        .finally(() => {
+          installedAppsLoading.value = false
+          installedAppsScan = undefined
+        })
+    }
     return installedAppsScan
   }
 
@@ -198,7 +168,11 @@ export const useServicesStore = defineStore('services', () => {
     } catch (error) {
       console.error('Error loading from localStorage:', error)
       // Discard malformed persisted state.
-      localStorage.removeItem('servicesState')
+      try {
+        localStorage.removeItem('servicesState')
+      } catch {
+        // Storage can be blocked by the browser.
+      }
     }
   }
 
@@ -371,6 +345,7 @@ export const useServicesStore = defineStore('services', () => {
     toggleService,
     reorderServices,
     checkInstalledApps,
+    installedAppsLoading,
     preselectInstalledApps,
     loadFromLocalStorage,
     hasSelectedServices,

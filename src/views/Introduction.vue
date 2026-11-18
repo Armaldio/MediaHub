@@ -45,7 +45,19 @@
           </button>
         </nav>
 
-        <div v-if="visibleGroups.length" class="service-groups">
+        <div v-if="showInstalledOnly && servicesStore.installedAppsLoading" role="status" aria-label="Checking installed apps">
+          <div class="ui-skeleton h-5 w-36 mb-3" aria-hidden="true"></div>
+          <div class="service-grid" aria-hidden="true">
+            <div v-for="i in 6" :key="i" class="picker-card">
+              <div class="ui-skeleton size-10 shrink-0"></div>
+              <div class="flex-1 space-y-2">
+                <div class="ui-skeleton h-4 w-2/3"></div>
+                <div class="ui-skeleton h-3 w-4/5"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-else-if="visibleGroups.length" class="service-groups">
           <section
             v-for="group in visibleGroups"
             :key="group.id"
@@ -88,14 +100,8 @@
                   <span class="service-description">
                     {{ service.description }}
                   </span>
-                  <span
-                    v-if="
-                      servicesStore.isNative &&
-                      servicesStore.isServiceInstalled(service)
-                    "
-                    class="installed-status"
-                  >
-                    Installed
+                  <span v-if="servicesStore.isNative && service.androidAppId" class="installed-status">
+                    <template v-if="servicesStore.isServiceInstalled(service)">Installed</template>
                   </span>
                 </span>
                 <span class="selection-check" aria-hidden="true">
@@ -475,6 +481,7 @@ onMounted(async () => {
   overflow: hidden;
 }
 .installed-status {
+  min-height: 1.5em;
   color: var(--color-success);
   font-size: 10px;
 }

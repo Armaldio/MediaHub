@@ -15,8 +15,9 @@ import {
   SeasonDetails,
   Episode
 } from 'tmdb-ts';
+import { withRequestTimeout } from '@/utils/requestTimeout';
 import { resolveTvFindResult } from '@/utils/tmdbFind';
-import { fetchTvDetailsForScope, type TvScopeSelection } from '@/utils/tvDetails';
+import { fetchTvDetailsForScope, fetchTvSeason, type TvScopeSelection } from '@/utils/tvDetails';
 
 type TvScopeDetails =
   | AppendToResponse<SeasonDetails, 'external_ids'[], 'tvSeason'>
@@ -27,10 +28,14 @@ const DEFAULT_LANGUAGE = 'en-US';
 
 export const useMoviesStore = defineStore('movies', () => {
   // Get user's preferred language from browser or use default
+  let savedLanguage: AvailableLanguage | null = null;
+  try {
+    savedLanguage = localStorage.getItem('userLanguage') as AvailableLanguage | null;
+  } catch {
+    // Use the browser language when storage is unavailable.
+  }
   const userLanguage = ref<AvailableLanguage>(
-    localStorage.getItem('userLanguage') as AvailableLanguage || 
-    navigator.language as AvailableLanguage || 
-    DEFAULT_LANGUAGE
+    savedLanguage || navigator.language as AvailableLanguage || DEFAULT_LANGUAGE
   );
 
   // Update language preference
@@ -48,10 +53,11 @@ export const useMoviesStore = defineStore('movies', () => {
   | AppendToResponse<MovieDetails, "external_ids"[], "movie"> | null>(null)
   const currentTvScope = ref<TvScopeDetails | null>(null)
   const currentTvSeason = ref<AppendToResponse<SeasonDetails, 'external_ids'[], 'tvSeason'> | null>(null)
-  const pendingCatalogRequests = ref(0)
   const searchLoading = ref(false)
   const detailsLoading = ref(false)
-  const loading = computed(() => pendingCatalogRequests.value > 0 || searchLoading.value || detailsLoading.value)
+  const tvSeasonLoading = ref(false)
+  const tvSeasonError = ref(false)
+  const searchError = ref<string | null>(null)
   const error = ref<string | null>(null)
   let detailsRequestId = 0
   let searchRequestId = 0
@@ -61,10 +67,9 @@ export const useMoviesStore = defineStore('movies', () => {
 
   const fetchPopularMovies = async () => {
     try {
-      pendingCatalogRequests.value += 1;
-      const response = await tmdb.movies.popular({
+      const response = await withRequestTimeout(tmdb.movies.popular({
         language: userLanguage.value
-      });
+      }));
 
       popularMovies.value = response.results
       return response.results
@@ -72,17 +77,14 @@ export const useMoviesStore = defineStore('movies', () => {
       error.value = 'Failed to fetch popular movies'
       console.error(err)
       return []
-    } finally {
-      pendingCatalogRequests.value -= 1
     }
   }
 
   const fetchPopularTVShows = async () => {
     try {
-      pendingCatalogRequests.value += 1;
-      const response = await tmdb.tvShows.popular({
+      const response = await withRequestTimeout(tmdb.tvShows.popular({
         language: userLanguage.value
-      });
+      }));
 
       popularTVShows.value = response.results
       return response.results
@@ -90,8 +92,6 @@ export const useMoviesStore = defineStore('movies', () => {
       error.value = 'Failed to fetch popular TV shows'
       console.error(err)
       return []
-    } finally {
-      pendingCatalogRequests.value -= 1
     }
   }
 
@@ -99,6 +99,7 @@ export const useMoviesStore = defineStore('movies', () => {
     searchRequestId += 1
     searchResults.value = []
     searchLoading.value = false
+    searchError.value = null
   }
 
   const searchMulti = async (query: string) => {
@@ -109,17 +110,19 @@ export const useMoviesStore = defineStore('movies', () => {
 
     const requestId = ++searchRequestId
     searchLoading.value = true
-    error.value = null
+    searchError.value = null
     try {
-      const response = await tmdb.search.multi({
+      const response = await withRequestTimeout(tmdb.search.multi({
         query,
         page: 1,
         language: userLanguage.value,
         include_adult: false
-      })
-      if (requestId === searchRequestId) searchResults.value = response.results
+      }))
+      if (requestId === searchRequestId) {
+        searchResults.value = response.results.filter(item => item.media_type === 'movie' || item.media_type === 'tv')
+      }
     } catch (err) {
-      if (requestId === searchRequestId) error.value = 'Search failed'
+      if (requestId === searchRequestId) searchError.value = 'Search failed'
       console.error(err)
     } finally {
       if (requestId === searchRequestId) searchLoading.value = false
@@ -135,10 +138,10 @@ export const useMoviesStore = defineStore('movies', () => {
       let detailsResponse: AppendToResponse<TvShowDetails, "external_ids"[], "tvShow"> | AppendToResponse<MovieDetails, "external_ids"[], "movie"> | null = null;
 
       if (mediaType === 'movie') {
-        const response = await tmdb.movies.details(id, ['external_ids'], userLanguage.value);
+        const response = await withRequestTimeout(tmdb.movies.details(id, ['external_ids'], userLanguage.value));
         detailsResponse = response;
       } else if (mediaType === 'tv') {
-        const response = await tmdb.tvShows.details(id, ['external_ids'], userLanguage.value);
+        const response = await withRequestTimeout(tmdb.tvShows.details(id, ['external_ids'], userLanguage.value));
         detailsResponse = response;
       // } else if (mediaType === 'tvEpisode') {
       //   detailsResponse = await tmdb.tvEpisode.details({
@@ -175,7 +178,23 @@ export const useMoviesStore = defineStore('movies', () => {
   const cancelPendingDetails = () => {
     detailsRequestId += 1
     detailsLoading.value = false
+    tvSeasonLoading.value = false
+    tvSeasonError.value = false
     error.value = null
+  }
+
+  const loadEpisodeSeason = async (showId: number, seasonNumber: number, requestId = detailsRequestId) => {
+    tvSeasonLoading.value = true
+    tvSeasonError.value = false
+    try {
+      const season = await withRequestTimeout(fetchTvSeason(tmdb, showId, seasonNumber, userLanguage.value))
+      if (requestId === detailsRequestId) currentTvSeason.value = season
+    } catch (error) {
+      if (requestId === detailsRequestId) tvSeasonError.value = true
+      console.error('Could not load the episode list:', error)
+    } finally {
+      if (requestId === detailsRequestId) tvSeasonLoading.value = false
+    }
   }
 
   const fetchTvDetails = async (
@@ -193,14 +212,16 @@ export const useMoviesStore = defineStore('movies', () => {
       if (scope.episodeNumber !== undefined && scope.seasonNumber === undefined) {
         throw new Error('An episode requires a season number')
       }
-      const { show, season, scope: scopedDetails } = await fetchTvDetailsForScope(
-        tmdb, showId, scope, userLanguage.value
-      )
+      const mainDetails = fetchTvDetailsForScope(tmdb, showId, scope, userLanguage.value)
+      if (scope.episodeNumber !== undefined && scope.seasonNumber !== undefined) {
+        void loadEpisodeSeason(showId, scope.seasonNumber, requestId)
+      }
+      const { show, season, scope: scopedDetails } = await withRequestTimeout(mainDetails)
 
       if (requestId === detailsRequestId) {
         currentDetails.value = show
         currentTvScope.value = scopedDetails
-        currentTvSeason.value = season
+        if (scope.episodeNumber === undefined) currentTvSeason.value = season
       }
       return { show, scope: scopedDetails }
     } catch (err) {
@@ -235,15 +256,13 @@ export const useMoviesStore = defineStore('movies', () => {
       }
       
       // First, search by IMDB ID to get the TMDB ID
-      const searchResponse = await tmdb.find.byExternalId(imdbId, { external_source: 'imdb_id' });
+      const searchResponse = await withRequestTimeout(tmdb.find.byExternalId(imdbId, { external_source: 'imdb_id' }));
       
       if (!searchResponse) {
         throw new Error('No response from TMDB API');
       }
       if (requestId !== detailsRequestId) return;
 
-      console.log('searchResponse', JSON.stringify(searchResponse))
-      
       // Determine which type of media to get details for
       if (mediaType === 'movie') {
         const movieResults = searchResponse.movie_results?.[0];
@@ -276,23 +295,23 @@ export const useMoviesStore = defineStore('movies', () => {
 
   const fetchTrending = async (mediaType: TrendingMediaType, timeWindow: 'day' | 'week' = 'week') => {
     try {
-      pendingCatalogRequests.value += 1;
-      const response = await tmdb.trending.trending(mediaType, timeWindow, { language: userLanguage.value });
+      const response = await withRequestTimeout(tmdb.trending.trending(mediaType, timeWindow, { language: userLanguage.value }));
       trending.value = response.results as TrendingResults<'all'>['results']
       return response.results
     } catch (err) {
       error.value = 'Failed to fetch trending content'
       console.error(err)
       return []
-    } finally {
-      pendingCatalogRequests.value -= 1
     }
   }
 
   return {
-    pendingCatalogRequests,
+    searchError,
     searchLoading,
     detailsLoading,
+    tvSeasonLoading,
+    tvSeasonError,
+    loadEpisodeSeason,
     popularMovies,
     popularTVShows,
     trending,
@@ -300,7 +319,6 @@ export const useMoviesStore = defineStore('movies', () => {
     currentDetails,
     currentTvScope,
     currentTvSeason,
-    loading,
     error,
     currentLanguage,
     setLanguage,

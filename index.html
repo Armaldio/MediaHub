@@ -13,10 +13,55 @@
     content="width=device-width, initial-scale=1, viewport-fit=cover"
   />
   <title>MediaHub</title>
+  <style>
+    html { background: #111114; color: #f4f3f7; font-family: system-ui, sans-serif; }
+    body { margin: 0; }
+    .startup { box-sizing: border-box; max-width: 1136px; padding-inline: 28px; margin-inline: auto; }
+    .startup-header {
+      box-sizing: border-box; display: flex; align-items: center; gap: 10px;
+      min-height: calc(68px + env(safe-area-inset-top, 0px));
+      padding-top: env(safe-area-inset-top, 0px);
+      border-bottom: 1px solid #29282f; font-size: 17px; font-weight: 650;
+    }
+    .startup-mark { width: 32px; height: 32px; border-radius: 10px; background: #2c243c; }
+    .startup-line { height: 16px; margin-block: 18px; background: #25222b; border-radius: 8px; }
+    @media (max-width: 580px) { .startup { padding-inline: 20px; } }
+  </style>
 </head>
 
 <body>
-  <div id="app"></div>
+  <div id="app">
+    <div class="startup">
+      <header class="startup-header">
+        <span class="startup-mark" aria-hidden="true"></span>
+        MediaHub
+      </header>
+      <main id="startup-content" role="status" aria-label="Loading MediaHub">
+        <div class="startup-line" style="width: min(70%, 320px); height: 36px; margin-top: 28px" aria-hidden="true"></div>
+        <div class="startup-line" style="width: min(90%, 400px)" aria-hidden="true"></div>
+        <div class="startup-line" style="width: min(100%, 620px); height: 46px; margin-top: 28px" aria-hidden="true"></div>
+      </main>
+      <main id="startup-error" hidden role="alert">
+        <p>MediaHub could not load.</p>
+        <button type="button" onclick="location.reload()">Reload MediaHub</button>
+      </main>
+      <noscript>Enable JavaScript to use MediaHub.</noscript>
+    </div>
+  </div>
+  <script>
+    function showStartupError() {
+      const loading = document.getElementById("startup-content");
+      const error = document.getElementById("startup-error");
+      if (loading && error) {
+        loading.hidden = true;
+        error.hidden = false;
+      }
+    }
+    window.addEventListener("mediahub:startup-error", showStartupError);
+    window.addEventListener("error", (event) => {
+      if (event.target instanceof HTMLScriptElement && event.target.type === "module") showStartupError();
+    }, true);
+  </script>
   <script
     type="module"
     src="/src/main.ts"

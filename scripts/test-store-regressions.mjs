@@ -119,32 +119,32 @@ try {
   const movies = useMoviesStore()
   const older = movies.searchMulti('old')
   const newer = movies.searchMulti('new')
-  await respond(1, [{ id: 2 }])
+  await respond(1, [{ id: 2, media_type: 'movie' }])
   await newer
-  await respond(0, [{ id: 1 }])
+  await respond(0, [{ id: 1, media_type: 'movie' }])
   await older
   assert.equal(movies.searchResults[0].id, 2)
   const pending = movies.searchMulti('pending')
   movies.clearSearch()
-  await respond(2, [{ id: 3 }])
+  await respond(2, [{ id: 3, media_type: 'movie' }])
   await pending
   assert.deepEqual(movies.searchResults, [])
-  assert.equal(movies.loading, false)
+  assert.equal(movies.searchLoading, false)
 
   const popular = movies.fetchPopularMovies()
   const tv = movies.fetchPopularTVShows()
   const search = movies.searchMulti('parallel')
   movies.cancelPendingDetails()
-  assert.equal(movies.loading, true)
+  assert.equal(movies.searchLoading, true)
   await respond(3, [])
   await popular
-  assert.equal(movies.loading, true)
+  assert.equal(movies.searchLoading, true)
   await respond(5, [])
   await search
-  assert.equal(movies.loading, true)
+  assert.equal(movies.searchLoading, false)
   await respond(4, [])
   await tv
-  assert.equal(movies.loading, false)
+  assert.equal(movies.searchLoading, false)
 
   const { loadRecentSearches } = await server.ssrLoadModule('/src/utils/recentSearches.ts')
   for (const raw of ['{broken', 'null', '{}', '42', '"text"']) {

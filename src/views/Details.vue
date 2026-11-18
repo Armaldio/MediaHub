@@ -24,14 +24,38 @@
           </div>
         </div>
       </div>
-      <div
-        v-else-if="detailsLoading"
-        class="ui-container py-8"
-        role="status"
-        aria-label="Loading details"
-      >
-        <div class="h-64 rounded-panel bg-surface animate-pulse"></div>
-        <p class="mt-4 text-muted">Finding your title and service links…</p>
+      <div v-else-if="detailsLoading" role="status" aria-label="Loading details">
+        <section class="detail-hero" aria-hidden="true">
+          <div class="ui-container detail-intro">
+            <div class="detail-poster ui-skeleton" :class="{ 'detail-poster--still': episodeNumber !== undefined }"></div>
+            <div class="min-w-0">
+              <p class="ui-skeleton h-3 w-16 mb-3"></p>
+              <div class="detail-title"><span class="ui-skeleton block h-[1em] w-4/5"></span></div>
+              <div class="detail-meta mt-3 mb-4"><span class="ui-skeleton block h-4 w-32 max-w-full"></span></div>
+              <div class="space-y-2 mb-5">
+                <div class="ui-skeleton h-3 w-full"></div>
+                <div class="ui-skeleton h-3 w-full"></div>
+                <div class="ui-skeleton h-3 w-2/3"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <div class="ui-container detail-sections" aria-hidden="true">
+          <div v-if="isTv" class="ui-skeleton h-9 w-1/2"></div>
+          <div>
+            <div class="ui-skeleton h-6 w-28 mb-4"></div>
+            <div class="ui-skeleton h-11 w-full max-w-[430px] mb-5"></div>
+            <div class="detail-service-grid">
+              <div v-for="i in serviceSkeletonCount" :key="i" class="ui-panel detail-service">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="ui-skeleton size-10"></div>
+                  <div class="ui-skeleton h-4 w-1/2"></div>
+                </div>
+                <div class="ui-skeleton h-10 w-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <template v-else-if="moviesStore.currentDetails">
         <section
@@ -47,7 +71,7 @@
         >
           <div class="ui-container detail-intro">
             <div class="detail-poster" :class="{ 'detail-poster--still': episodeNumber !== undefined }">
-              <img v-if="poster" :src="poster" :alt="displayTitle" />
+              <img v-if="poster && !posterFailed" :src="poster" alt="" decoding="async" @error="posterFailed = true" />
               <Film v-else :size="38" :stroke-width="1.3" aria-hidden="true" />
             </div>
             <div class="min-w-0">
@@ -89,15 +113,15 @@
                 {{ isOverviewExpanded ? "Show Less" : "Read More" }}
               </button>
               <nav
-                v-if="filteredServices.length"
-                class="flex flex-wrap gap-2 mt-5"
+                v-if="servicesStore.selectedServices.length"
+                class="detail-jump"
                 aria-label="Jump to a service"
               >
                 <button
                   v-for="service in filteredServices"
                   :key="service.id"
                   @click="scrollToService(service.id)"
-                  class="ui-chip border-line"
+                  class="ui-chip border-line shrink-0"
                 >
                   <img
                     :src="service.icon"
@@ -147,7 +171,17 @@
                 </button>
               </div>
             </div>
-            <div v-if="seasonDetails">
+            <div v-if="episodeNumber !== undefined && moviesStore.tvSeasonLoading" role="status" aria-label="Loading episodes">
+              <h2 class="ui-section-title mb-4">Episodes</h2>
+              <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
+                <div v-for="i in 3" :key="i" class="ui-panel episode-card">
+                  <div class="ui-skeleton h-[18px] w-16"></div>
+                  <div class="ui-skeleton h-[21px] w-2/3"></div>
+                  <div class="ui-skeleton h-[18px] w-24"></div>
+                </div>
+              </div>
+            </div>
+            <div v-else-if="seasonDetails">
               <div class="ui-section-heading">
                 <h2 class="ui-section-title">Episodes</h2>
                 <button
@@ -178,6 +212,11 @@
                 </li>
               </ol>
             </div>
+            <div v-else-if="moviesStore.tvSeasonError" class="ui-panel ui-panel-padding" role="status">
+              <h2 class="ui-section-title">Episodes</h2>
+              <p class="text-muted my-2">Couldn’t load the episode list.</p>
+              <button @click="retryEpisodeList" class="ui-button">Try again</button>
+            </div>
           </section>
 
           <section aria-labelledby="open-with-title">
@@ -193,7 +232,7 @@
                 </p>
               </div>
               <span class="ui-badge shrink-0">
-                {{ filteredServices.length }} services
+                {{ serviceLinksLoading && !filteredServices.length ? "Checking links" : `${filteredServices.length} services` }}
               </span>
             </div>
             <div class="detail-filters">
@@ -241,7 +280,7 @@
                     <h3 class="text-sm font-medium text-ink truncate">
                       {{ service.name }}
                     </h3>
-                    <p class="text-xs text-muted mt-1">
+                    <p class="text-xs text-muted mt-1 min-h-[3em] line-clamp-2">
                       {{
                         servicesStore.isNative &&
                         servicesStore.isServiceInstalled(service)
@@ -322,7 +361,16 @@
                 </div>
               </article>
             </div>
-            <div v-if="!filteredServices.length" class="ui-empty" role="status">
+            <div v-if="serviceLinksLoading && !filteredServices.length" class="detail-service-grid" role="status" aria-label="Checking service links">
+              <div v-for="i in serviceSkeletonCount" :key="i" class="ui-panel detail-service" aria-hidden="true">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="ui-skeleton size-10"></div>
+                  <div class="ui-skeleton h-4 w-1/2"></div>
+                </div>
+                <div class="ui-skeleton h-10 w-full"></div>
+              </div>
+            </div>
+            <div v-else-if="!filteredServices.length" class="ui-empty" role="status">
               <Layers :size="28" aria-hidden="true" />
               <h3>No matching services</h3>
               <p>
@@ -384,11 +432,12 @@ import { useMoviesStore } from "@/stores/movies";
 import { useServicesStore } from "@/stores/services";
 import { FormattedDetails } from "@/models/models";
 import { MediaType } from "tmdb-ts";
-import { fetchTVDBData } from "@/data/services";
+import { fetchTVDBSlug } from "@/data/services";
 import { floppyDetailUrl } from "@/data/services/floppy";
 import { extractWikidataProviderIds } from "@/utils/wikidataProviderIds";
 import { getTraktSlug } from "@/utils/traktLookup";
 import { useSeerr } from "@/composables/useSeerr";
+import { withRequestTimeout } from "@/utils/requestTimeout";
 
 interface Props {
   mediaType: MediaType;
@@ -412,13 +461,20 @@ const checkOverviewHeight = async () => {
   showReadMore.value = (overviewText.value?.scrollHeight ?? 0) > 96;
 };
 onMounted(checkOverviewHeight);
-onUnmounted(() => { moviesStore.cancelPendingDetails(); });
+onUnmounted(() => {
+  loadRequestId += 1;
+  enrichmentRequestId += 1;
+  moviesStore.cancelPendingDetails();
+});
 
 const moviesStore = useMoviesStore();
 const servicesStore = useServicesStore();
 const seerr = useSeerr();
 const errorMessage = ref<string | null>(null);
 const detailsLoading = ref(true);
+const providersLoading = ref(false);
+const serviceLinksLoading = computed(() => providersLoading.value || servicesStore.installedAppsLoading);
+const serviceSkeletonCount = computed(() => Math.max(1, Math.min(servicesStore.selectedServices.length, 3)));
 
 const overview = computed(() => {
   const scope = moviesStore.currentTvScope;
@@ -472,6 +528,9 @@ const poster = computed(() => {
     : scope?.poster_path ?? moviesStore.currentDetails?.poster_path;
   return path ? moviesStore.getImageUrl(path, "w500") : null;
 });
+
+const posterFailed = ref(false);
+watch(poster, () => { posterFailed.value = false; });
 
 const backdrop = computed(() => {
   const path = moviesStore.currentDetails?.backdrop_path;
@@ -534,6 +593,12 @@ const navigateToScope = (season?: number, episode?: number) => {
     params: { mediaType: "tv", [`${idType}Id`]: id },
     query,
   });
+};
+
+const retryEpisodeList = () => {
+  const show = moviesStore.currentDetails;
+  const season = seasonNumber.value;
+  if (show && season !== undefined) void moviesStore.loadEpisodeSeason(show.id, season);
 };
 
 const genres = computed(() => moviesStore.currentDetails?.genres || []);
@@ -617,8 +682,7 @@ let enrichmentRequestId = 0;
 const fetchWikidataClaims = async (wikidataId: string) => {
   try {
     const url = `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${wikidataId}&props=claims&format=json&origin=*`;
-    const response = await fetch(url);
-    const data = await response.json();
+    const data = await withRequestTimeout(fetch(url).then(response => response.json()), 8000);
     return data?.entities?.[wikidataId]?.claims ?? {};
   } catch (error) {
     console.error("Error fetching provider IDs from Wikidata:", error);
@@ -630,10 +694,7 @@ watch(
   () => [moviesStore.currentDetails, moviesStore.currentTvScope] as const,
   async ([newDetails, scopedDetails]) => {
     const requestId = ++enrichmentRequestId;
-    if (!newDetails) {
-      formattedDetails.value = null;
-      return;
-    }
+    if (!newDetails) return;
 
     const details = newDetails;
     const externalIds = details.external_ids;
@@ -690,7 +751,15 @@ watch(
 
     fetchSeerrStatuses(formattedDetails.value);
 
-    // Wikidata claims are optional; TVDB and Trakt also use TMDB identifiers.
+    // Optional lookups can update links while the title and ready links stay visible.
+    providersLoading.value = true;
+    if (servicesStore.selectedServices.some(service => service.id === "trakt")) {
+      void getTraktSlug(formattedDetails.value).then(slug => {
+        if (slug && requestId === enrichmentRequestId && formattedDetails.value) {
+          formattedDetails.value = { ...formattedDetails.value, traktSlug: slug };
+        }
+      });
+    }
     const claims = wikidata_id ? await fetchWikidataClaims(wikidata_id) : {};
     if (requestId !== enrichmentRequestId) return;
     const claimValue = (property: string) => {
@@ -719,28 +788,19 @@ watch(
       letterboxdId: claimValue("P6127"),
       mubiId: claimValue("P7299"),
     };
-    const enrichedDetails = formattedDetails.value;
-    if (!enrichedDetails) return;
-
-    // Look up the Trakt slug from TMDB ID (async, parallel with TVDB fetch)
-    const traktSlug = getTraktSlug(enrichedDetails);
-
-    // Fetch TVDB data and enhance the formatted details
-    const tvdbDetails = await fetchTVDBData(enrichedDetails);
-    if (requestId !== enrichmentRequestId) return;
-    formattedDetails.value = tvdbDetails;
-
-    const slug = await traktSlug;
-    if (requestId !== enrichmentRequestId) return;
-    if (slug) {
-      formattedDetails.value = {
-        ...formattedDetails.value,
-        traktSlug: slug,
-      };
+    try {
+      if (servicesStore.selectedServices.some(service => service.id === "tvdb")) {
+        const tvdbSlug = await withRequestTimeout(fetchTVDBSlug(formattedDetails.value), 8000);
+        if (requestId === enrichmentRequestId && formattedDetails.value) {
+          formattedDetails.value = { ...formattedDetails.value, tvdbSlug };
+        }
+      }
+    } catch (error) {
+      console.error("Error loading TVDB links:", error);
+    } finally {
+      if (requestId === enrichmentRequestId) providersLoading.value = false;
     }
-
-  },
-  { immediate: true }
+  }
 );
 
 const loadingLinks = ref<Record<string, boolean>>({});
@@ -860,6 +920,8 @@ const loadDetails = async () => {
     errorMessage.value = null;
     detailsLoading.value = true;
     moviesStore.cancelPendingDetails();
+    enrichmentRequestId += 1;
+    providersLoading.value = false;
     seerr.reset();
 
     // Clear any previously loaded media so navigating from another
@@ -955,6 +1017,15 @@ const retryLoading = async () => {
 }
 .detail-title {
   font-size: clamp(28px, 4vw, 40px);
+}
+.detail-jump {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 44px;
+  overflow-x: auto;
+  margin-top: 14px;
+  padding-inline: 2px;
 }
 .detail-overview {
   color: var(--color-muted);

@@ -52,68 +52,15 @@ import { filmarks } from "./services/filmarks";
 import { floppy } from "./services/floppy";
 import { yamtrack } from "./services/yamtrack";
 
-// Function to fetch TVDB data and enhance FormattedDetails
-export const fetchTVDBData = async (
-  formattedDetails: FormattedDetails
-): Promise<FormattedDetails> => {
-  if (!formattedDetails.tvdbId) {
-    console.log("No TVDB ID available, returning original details");
-    return formattedDetails;
-  }
-
-  console.log(
-    `Fetching TVDB data for ${formattedDetails.type} with ID: ${formattedDetails.tvdbId}`
-  );
+export async function fetchTVDBSlug({ tvdbId, type }: FormattedDetails) {
+  if (!tvdbId) return undefined;
 
   const tvdbStore = useTVDBStore();
-
-  try {
-    let details: any = null;
-    let artwork: { poster: string | null; backdrop: string | null; logo: string | null; banner?: string | null } | null = null;
-
-    if (formattedDetails.type === "tv") {
-      console.log("Fetching series details from TVDB");
-      details = await tvdbStore.getSeriesDetails(formattedDetails.tvdbId);
-      if (details) {
-        console.log("Fetching series artwork from TVDB");
-        artwork = await tvdbStore.getSeriesArtwork(formattedDetails.tvdbId);
-      }
-    } else if (formattedDetails.type === "movie") {
-      console.log("Fetching movie details from TVDB");
-      details = await tvdbStore.getMovieDetails(formattedDetails.tvdbId);
-      if (details) {
-        console.log("Fetching movie artwork from TVDB");
-        artwork = await tvdbStore.getMovieArtwork(formattedDetails.tvdbId);
-      }
-    }
-
-    // Enhance the formatted details with TVDB data
-    const enhancedDetails = { ...formattedDetails };
-
-    if (details?.slug) {
-      enhancedDetails.tvdbSlug = details.slug;
-      console.log("Added TVDB slug to enhanced details");
-    }
-
-    if (artwork) {
-      enhancedDetails.tvdbPoster = artwork.poster ?? undefined;
-      enhancedDetails.tvdbBackdrop = artwork.backdrop ?? undefined;
-      enhancedDetails.tvdbLogo = artwork.logo ?? undefined;
-      if ('banner' in artwork) {
-        enhancedDetails.tvdbBanner = artwork.banner ?? undefined;
-      }
-      console.log("Added TVDB artwork to enhanced details");
-    }
-
-    console.log("Returning enhanced details with TVDB data");
-    return enhancedDetails;
-  } catch (error) {
-    console.error("Error fetching TVDB data:", error);
-  }
-
-  console.log("Returning original details due to error or no data");
-  return formattedDetails;
-};
+  const details = type === "tv"
+    ? await tvdbStore.getSeriesDetails(tvdbId)
+    : await tvdbStore.getMovieDetails(tvdbId);
+  return details?.slug;
+}
 
 export default [
   netflix,

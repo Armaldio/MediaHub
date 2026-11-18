@@ -48,7 +48,7 @@
           </button>
         </label>
         <nav
-          v-if="moviesStore.searchResults.length"
+          v-if="isSearching"
           class="ui-tabs mt-3"
           aria-label="Search result types"
         >
@@ -89,29 +89,34 @@
         </div>
       </div>
 
-      <div
-        v-if="moviesStore.loading"
-        class="media-grid"
-        role="status"
-        aria-label="Loading titles"
-      >
-        <div
-          v-for="i in 12"
-          :key="i"
-          class="aspect-[2/3] bg-surface rounded-panel animate-pulse"
-        ></div>
-      </div>
-      <section
-        v-else-if="moviesStore.searchResults.length"
-        aria-label="Search results"
-      >
+      <section v-if="isSearching" aria-label="Search results">
         <div class="ui-section-heading">
           <h2 class="ui-section-title">Search results</h2>
-          <span class="text-xs text-subtle">
+          <span v-if="!searchPending && !moviesStore.searchError" class="text-xs text-subtle">
             {{ filteredResults.length }} results
           </span>
         </div>
-        <div v-if="!filteredResults.length" class="ui-empty">
+        <div v-if="searchPending" class="search-results" role="status" aria-label="Searching titles">
+          <div v-for="i in 6" :key="i" class="search-result" aria-hidden="true">
+            <span class="result-poster ui-skeleton"></span>
+            <span class="flex-1 space-y-2">
+              <span class="ui-skeleton block h-4 w-2/3"></span>
+              <span class="ui-skeleton block h-3 w-1/3"></span>
+            </span>
+          </div>
+        </div>
+        <div v-else-if="moviesStore.searchError" class="ui-empty" role="status">
+          <h3>Couldn’t search for titles</h3>
+          <p>Check your connection and try again.</p>
+          <button @click="handleSearch" class="ui-button">Try again</button>
+        </div>
+        <div v-else-if="!moviesStore.searchResults.length" class="ui-empty" role="status">
+          <Search :size="28" aria-hidden="true" />
+          <h3>No titles found</h3>
+          <p>Try another title or a different spelling.</p>
+          <button @click="clearSearch" class="ui-button">Clear search</button>
+        </div>
+        <div v-else-if="!filteredResults.length" class="ui-empty">
           <h3>No titles in this category</h3>
           <p>Try a different filter.</p>
           <button @click="filterType = 'all'" class="ui-button">
@@ -121,7 +126,7 @@
         <div v-else class="search-results">
           <button
             v-for="item in filteredResults"
-            :key="`search-${item.id}`"
+            :key="`${item.media_type}-${item.id}`"
             @click="goToDetails(item)"
             class="search-result"
           >
@@ -129,7 +134,11 @@
               v-if="getResultPoster(item)"
               :src="getResultPoster(item)"
               alt=""
-              class="result-poster"
+              class="result-poster bg-raised"
+              width="44"
+              height="66"
+              loading="lazy"
+              decoding="async"
             />
             <span v-else class="result-poster result-placeholder">
               <Film :size="22" aria-hidden="true" />
@@ -160,23 +169,16 @@
           </button>
         </div>
       </section>
-      <div
-        v-else-if="searchQuery.trim().length >= 2"
-        class="ui-empty"
-        role="status"
-      >
-        <Search :size="28" aria-hidden="true" />
-        <h2>No titles found</h2>
-        <p>Try another title or a different spelling.</p>
-        <button @click="clearSearch" class="ui-button">Clear search</button>
-      </div>
       <div v-else class="home-shelves">
         <section v-for="shelf in shelves" :key="shelf.title">
           <div class="ui-section-heading">
             <h2 class="ui-section-title">{{ shelf.title }}</h2>
             <span class="text-xs text-subtle">{{ shelf.caption }}</span>
           </div>
-          <div v-if="shelf.items.length" class="media-grid">
+          <div v-if="shelf.pending && !shelf.items.length" class="media-grid" role="status" :aria-label="`Loading ${shelf.title.toLowerCase()}`">
+            <MediaCard v-for="i in shelf.limit" :key="i" />
+          </div>
+          <div v-else-if="shelf.items.length" class="media-grid">
             <MediaCard
               v-for="item in shelf.items"
               :key="`${item.media_type}-${item.id}`"
@@ -188,7 +190,7 @@
             <Film :size="26" aria-hidden="true" />
             <h3>No titles available</h3>
             <p>Check your connection and try again.</p>
-            <button @click="fetchInitialData" class="ui-button">
+            <button @click="loadShelf(shelf.id)" class="ui-button">
               Try again
             </button>
           </div>
@@ -211,8 +213,19 @@ import { MultiSearchResult, Movie, TV } from "tmdb-ts";
 const router = useRouter();
 const route = useRoute();
 const moviesStore = useMoviesStore();
+const shelfRequests = {
+  movies: moviesStore.fetchPopularMovies,
+  tv: moviesStore.fetchPopularTVShows,
+  trending: () => moviesStore.fetchTrending("all", "week"),
+};
+type ShelfId = keyof typeof shelfRequests;
+const pendingShelves = ref<Record<ShelfId, boolean>>({ movies: true, tv: true, trending: true });
+
 const shelves = computed(() => [
   {
+    id: "movies" as const,
+    pending: pendingShelves.value.movies,
+    limit: 12,
     title: "Popular movies",
     caption: "Worth a watch",
     items: moviesStore.popularMovies
@@ -220,6 +233,9 @@ const shelves = computed(() => [
       .map((movie) => ({ ...movie, media_type: "movie" })),
   },
   {
+    id: "tv" as const,
+    pending: pendingShelves.value.tv,
+    limit: 12,
     title: "Popular TV shows",
     caption: "Your next obsession",
     items: moviesStore.popularTVShows
@@ -227,6 +243,9 @@ const shelves = computed(() => [
       .map((show) => ({ ...show, media_type: "tv" })),
   },
   {
+    id: "trending" as const,
+    pending: pendingShelves.value.trending,
+    limit: 6,
     title: "Trending this week",
     caption: "In the conversation",
     items: moviesStore.trending
@@ -235,6 +254,9 @@ const shelves = computed(() => [
   },
 ]);
 const searchQuery = ref("");
+const debouncing = ref(false);
+const isSearching = computed(() => searchQuery.value.trim().length >= 2);
+const searchPending = computed(() => debouncing.value || moviesStore.searchLoading);
 const filterType = ref<"all" | "movie" | "tv">("all");
 const recentSearches = ref<string[]>(loadRecentSearches());
 let searchTimeout: ReturnType<typeof setTimeout>;
@@ -249,21 +271,31 @@ const saveRecent = (q: string) => {
     ),
   ].slice(0, 10);
   recentSearches.value = next;
-  localStorage.setItem("recentSearches", JSON.stringify(next));
+  try {
+    localStorage.setItem("recentSearches", JSON.stringify(next));
+  } catch {
+    // Keep search usable if browser storage is unavailable.
+  }
 };
 
 const handleSearch = () => {
   clearTimeout(searchTimeout);
+  moviesStore.clearSearch();
+  debouncing.value = isSearching.value;
+  if (!debouncing.value) return;
+
   searchTimeout = setTimeout(() => {
     const q = searchQuery.value.trim();
-    if (q) saveRecent(q);
-    moviesStore.searchMulti(q);
+    saveRecent(q);
+    void moviesStore.searchMulti(q);
+    debouncing.value = false;
   }, 300);
 };
 
 const clearSearch = () => {
   clearTimeout(searchTimeout);
   searchQuery.value = "";
+  debouncing.value = false;
   moviesStore.clearSearch();
 };
 
@@ -296,21 +328,23 @@ const getResultRating = (item: MultiSearchResult) => {
 const selectRecent = (q: string) => {
   clearTimeout(searchTimeout);
   searchQuery.value = q;
-  moviesStore.searchMulti(q);
+  debouncing.value = false;
+  if (isSearching.value) void moviesStore.searchMulti(q.trim());
 };
 
 const clearRecent = () => {
   recentSearches.value = [];
-  localStorage.removeItem("recentSearches");
+  try {
+    localStorage.removeItem("recentSearches");
+  } catch {
+    // The in-memory history is already cleared.
+  }
 };
 
 watch(
   () => route.query.q,
   (q) => {
-    if (typeof q === "string" && q) {
-      searchQuery.value = q;
-      moviesStore.searchMulti(q);
-    }
+    if (typeof q === "string" && q.trim().length >= 2) selectRecent(q);
   },
   { immediate: true }
 );
@@ -335,21 +369,20 @@ const goToIntroduction = () => {
   });
 };
 
-// Fetch initial data
-const fetchInitialData = async () => {
+async function loadShelf(id: ShelfId) {
+  pendingShelves.value[id] = true;
   try {
-    await Promise.all([
-      moviesStore.fetchPopularMovies(),
-      moviesStore.fetchPopularTVShows(),
-      moviesStore.fetchTrending("all", "week"),
-    ]);
-  } catch (error) {
-    console.error("Error fetching initial data:", error);
+    await shelfRequests[id]();
+  } finally {
+    pendingShelves.value[id] = false;
   }
-};
+}
 
-// Fetch data when component mounts
-onMounted(fetchInitialData);
+onMounted(() => {
+  void loadShelf("movies");
+  void loadShelf("tv");
+  void loadShelf("trending");
+});
 onUnmounted(() => {
   clearTimeout(searchTimeout);
   moviesStore.clearSearch();

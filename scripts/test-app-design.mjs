@@ -21,7 +21,7 @@ try {
       localStorage.setItem(
         "servicesState",
         JSON.stringify({
-          selectedServiceIds: ["imdb", "the_movie_database", "sonarr-library"],
+          selectedServiceIds: ["imdb", "the_movie_database", "sonarr-library", "netflix"],
           customInstances: {
             sonarr: [
               {
@@ -51,7 +51,7 @@ try {
     overview: "An unexpected journey brings a group of old friends together.",
     genres: [{ id: 1, name: "Adventure" }],
     runtime: 108,
-    external_ids: { imdb_id: "tt100", wikidata_id: null, tvdb_id: null },
+    external_ids: { imdb_id: "tt100", wikidata_id: "Q100", tvdb_id: null },
   };
   const episode = {
     id: 701,
@@ -78,17 +78,52 @@ try {
     number_of_seasons: 1,
     number_of_episodes: 1,
   };
-  await page.route("https://api.themoviedb.org/**", (route) => {
+  let releaseEntry;
+  let releaseStyles;
+  let markStylesRequested;
+  const stylesRequested = new Promise(resolve => { markStylesRequested = resolve; });
+  const stylesReady = new Promise(resolve => { releaseStyles = resolve; });
+  await page.route(/\/(src\/style\.css|assets\/style-[^/]+\.css)(\?.*)?$/, async (route) => {
+    markStylesRequested();
+    await stylesReady;
+    await route.continue();
+  });
+
+  const entryReady = new Promise(resolve => { releaseEntry = resolve; });
+  await page.route(/\/(src\/main\.ts|assets\/index-[^/]+\.js)(\?.*)?$/, async (route) => {
+    await entryReady;
+    await route.continue();
+  });
+
+  let releaseMovies;
+  let releaseTv;
+  let releaseDetails;
+  let releaseProvider;
+  let releaseSeason;
+  let holdSeason = false;
+  const moviesReady = new Promise(resolve => { releaseMovies = resolve; });
+  const tvReady = new Promise(resolve => { releaseTv = resolve; });
+  const detailsReady = new Promise(resolve => { releaseDetails = resolve; });
+  const providerReady = new Promise(resolve => { releaseProvider = resolve; });
+  const seasonReady = new Promise(resolve => { releaseSeason = resolve; });
+  const popularMovies = [movie, ...Array.from({ length: 11 }, (_, i) => ({
+    ...movie, id: 300 + i, title: `Another adventure ${i + 1}`,
+  }))];
+
+  await page.route("https://api.themoviedb.org/**", async (route) => {
     const { pathname, searchParams } = new URL(route.request().url());
-    if (pathname.endsWith("/search/multi"))
+    if (pathname.endsWith("/search/multi")) {
+      if (searchParams.get("query") === "offline") return route.fulfill({ status: 500, json: {} });
       return route.fulfill({
         json: {
           results: searchParams.get("query") === "nothing" ? [] : [movie, show],
         },
       });
+    }
     if (pathname.endsWith("/tv/200/season/1/episode/1"))
       return route.fulfill({ json: episode });
-    if (pathname.endsWith("/tv/200/season/1"))
+    if (pathname.endsWith("/tv/200/season/1")) {
+      if (holdSeason) await seasonReady;
       return route.fulfill({
         json: {
           id: 700,
@@ -99,14 +134,26 @@ try {
           external_ids: {},
         },
       });
-    if (pathname.endsWith("/movie/100")) return route.fulfill({ json: movie });
+    }
+    if (pathname.endsWith("/movie/100")) {
+      await detailsReady;
+      return route.fulfill({ json: movie });
+    }
     if (pathname.endsWith("/tv/200")) return route.fulfill({ json: show });
+    if (pathname.endsWith("/tv/popular")) await tvReady;
+    if (pathname.endsWith("/movie/popular")) await moviesReady;
     const results = pathname.includes("/tv/popular")
       ? [show]
       : pathname.includes("/trending/")
       ? [movie, show]
-      : [movie];
+      : popularMovies;
     return route.fulfill({ json: { results } });
+  });
+  await page.route("https://www.wikidata.org/w/api.php?**", async (route) => {
+    await providerReady;
+    await route.fulfill({ json: {
+      entities: { Q100: { claims: { P1874: [{ mainsnak: { datavalue: { value: "123456" } } }] } } },
+    } });
   });
   await page.route("https://library.example.test/**", (route) =>
     route.fulfill({ json: { version: "4.0" } })
@@ -130,11 +177,25 @@ try {
       });
   }
 
-  await page.goto(`${baseUrl}/home`);
+  await page.goto(`${baseUrl}/home`, { waitUntil: "commit" });
+  await page.getByRole("status", { name: "Loading MediaHub" }).waitFor();
+  releaseEntry();
+  await stylesRequested;
+  await page.getByRole("status", { name: "Loading MediaHub" }).waitFor();
+  releaseStyles();
+  await page.getByRole("searchbox", { name: "Search movies and TV shows" }).waitFor();
+  await page.getByRole("status", { name: "Loading popular movies" }).waitFor();
+  const tvHeading = page.getByRole("heading", { name: "Popular TV shows" });
+  const tvBefore = await tvHeading.boundingBox();
+  releaseMovies();
   await page
     .getByRole("button", { name: "Open A quiet adventure", exact: true })
     .first()
     .waitFor();
+  await page.getByRole("status", { name: "Loading popular TV shows" }).waitFor();
+  const tvAfter = await tvHeading.boundingBox();
+  assert.ok(Math.abs(tvAfter.y - tvBefore.y) <= 1, "A full movie shelf keeps the next section in place");
+  releaseTv();
   await fitsViewport("Desktop home");
   await capture("home-desktop");
   await page
@@ -142,8 +203,19 @@ try {
     .first()
     .focus();
   await page.keyboard.press("Enter");
+  await page.getByRole("status", { name: "Loading details" }).waitFor();
+  await page.getByRole("button", { name: "Go back" }).waitFor();
+  releaseDetails();
   await page.getByRole("heading", { name: movie.title, exact: true }).waitFor();
   await page.getByRole("heading", { name: "IMDb", exact: true }).waitFor();
+  const openWith = page.getByRole("heading", { name: "Open with", exact: true });
+  const openWithBefore = await openWith.boundingBox();
+  const netflix = page.getByRole("heading", { name: "Netflix", exact: true });
+  assert.equal(await netflix.count(), 0, "Ready links appear while provider data is pending");
+  releaseProvider();
+  await netflix.waitFor();
+  const openWithAfter = await openWith.boundingBox();
+  assert.ok(Math.abs(openWithAfter.y - openWithBefore.y) <= 1, "Late provider links keep the title layout in place");
   await fitsViewport("Desktop movie details");
   await capture("details-desktop");
   await page
@@ -160,11 +232,12 @@ try {
     name: "Search movies and TV shows",
   });
   await search.fill("adventure");
-  await page
-    .getByRole("heading", { name: "Search results", exact: true })
-    .waitFor();
+  await page.getByRole("status", { name: "Searching titles" }).waitFor();
+  await page.getByRole("button", { name: /A quiet adventure/ }).waitFor();
   await page.getByRole("button", { name: "TV", exact: true }).click();
   assert.equal(await page.locator(".search-result").count(), 1);
+  await search.fill("offline");
+  await page.getByRole("heading", { name: "Couldn’t search for titles" }).waitFor();
   await search.fill("nothing");
   await page
     .getByRole("heading", { name: "No titles found", exact: true })
@@ -178,15 +251,19 @@ try {
   await page
     .getByRole("button", { name: "Open season 1: Season 1", exact: true })
     .click();
-  await page
-    .getByRole("button", {
-      name: "Open season 1 episode 1: The beginning",
-      exact: true,
-    })
-    .click();
+  const episodeCard = page.getByRole("button", {
+    name: "Open season 1 episode 1: The beginning",
+    exact: true,
+  });
+  await episodeCard.waitFor();
+  holdSeason = true;
+  await episodeCard.click();
   await page
     .getByRole("heading", { name: "S01E01 · The beginning", exact: true })
     .waitFor();
+  await page.getByRole("status", { name: "Loading episodes" }).waitFor();
+  releaseSeason();
+  await episodeCard.waitFor();
   await capture("episode-desktop");
 
   for (const width of [390, 320]) {
@@ -308,8 +385,14 @@ try {
   await fresh.close();
 
   assert.deepEqual(errors, []);
+  const broken = await browser.newPage();
+  await broken.route(/\/(src\/main\.ts|assets\/index-[^/]+\.js)(\?.*)?$/, (route) => route.abort());
+  await broken.goto(`${baseUrl}/home`);
+  await broken.getByRole("button", { name: "Reload MediaHub" }).waitFor();
+  await broken.close();
+
   console.log(
-    "Cross-app design: search, keyboard cards, movie/TV navigation, first-use deep links, responsive layouts, modal focus, connection CRUD and health checks passed"
+    "Cross-app design: loading states, layout stability, search, keyboard cards, movie/TV navigation, first-use deep links, responsive layouts, modal focus, connection CRUD and health checks passed"
   );
 } finally {
   await browser.close();

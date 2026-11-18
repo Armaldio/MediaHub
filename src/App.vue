@@ -19,15 +19,14 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useServicesStore } from '@/stores/services'
-import { setupDeepLinkHandler } from '@/utils/deepLinkHandler'
+import { Capacitor } from '@capacitor/core'
 
-const servicesStore = useServicesStore()
 const router = useRouter()
 
 onMounted(() => {
-  servicesStore.loadFromLocalStorage()
-  // Initialize deep link handler
-  setupDeepLinkHandler(router)
+  if (Capacitor.isNativePlatform()) {
+    void import('@/utils/deepLinkHandler').then(({ setupDeepLinkHandler }) => setupDeepLinkHandler(router))
+      .catch(error => console.error('Unable to load app link handling:', error))
+  }
 })
 </script>

@@ -32,7 +32,11 @@
 
         <template v-if="nativePurchases">
           <!-- Subscription Status -->
-          <div class="mb-4">
+          <div v-if="loadingSubscription" class="subscription-status mb-4 space-y-2" role="status" aria-label="Checking subscription">
+            <div class="ui-skeleton h-6 w-40" aria-hidden="true"></div>
+            <div class="ui-skeleton h-4 w-4/5" aria-hidden="true"></div>
+          </div>
+          <div v-else class="subscription-status mb-4">
             <div class="flex items-center mb-2">
               <div
                 class="w-3 h-3 rounded-full mr-2"
@@ -79,36 +83,11 @@
             </div>
           </div>
 
-          <!-- Loading State -->
-          <div
-            v-else-if="loadingOfferings"
-            class="bg-raised rounded-lg p-4 mb-4"
-          >
-            <div class="flex items-center justify-center">
-              <svg
-                class="animate-spin h-6 w-6 text-muted"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  class="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  stroke-width="4"
-                ></circle>
-                <path
-                  class="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              <span class="ml-2 text-muted">
-                Loading subscription details...
-              </span>
-            </div>
+          <div v-else-if="loadingOfferings" class="bg-raised rounded-lg p-4 mb-4 space-y-3"
+            role="status" aria-label="Loading subscription details">
+            <div class="ui-skeleton h-6 w-48" aria-hidden="true"></div>
+            <div class="ui-skeleton h-4 w-4/5" aria-hidden="true"></div>
+            <div class="ui-skeleton h-6 w-20" aria-hidden="true"></div>
           </div>
 
           <!-- Error Message -->
@@ -122,9 +101,9 @@
           <!-- Action Buttons -->
           <div class="flex flex-wrap gap-3">
             <button
-              v-if="!isPro"
+              v-if="loadingSubscription || !isPro"
               @click="handlePurchase"
-              :disabled="loadingOfferings || purchaseLoading || restoreLoading || !currentOffering"
+              :disabled="loadingSubscription || loadingOfferings || purchaseLoading || restoreLoading || !currentOffering"
               class="ui-button ui-button--primary flex-1"
             >
               <span
@@ -459,10 +438,7 @@ import { hasPro } from "@/composables/products";
 import { Device } from "@capacitor/device";
 import { Capacitor } from "@capacitor/core";
 import { getPurchases } from "@/utils/purchases";
-import {
-  RevenueCatUI,
-  PAYWALL_RESULT,
-} from "@revenuecat/purchases-capacitor-ui";
+import { withRequestTimeout } from "@/utils/requestTimeout";
 
 const nativePurchases = Capacitor.getPlatform() !== "web";
 const servicesStore = useServicesStore();
@@ -485,10 +461,9 @@ const testingIds = ref(new Set<string>());
 const testingAll = ref(false);
 
 const isPro = ref(false);
-const customerId = ref<string | null>(null);
-const activeEntitlements = ref<string[]>([]);
+const loadingSubscription = ref(nativePurchases);
 const currentOffering = ref<any>(null);
-const loadingOfferings = ref(false);
+const loadingOfferings = ref(nativePurchases);
 const offeringsError = ref<string | null>(null);
 const purchaseLoading = ref(false);
 const restoreLoading = ref(false);
@@ -560,7 +535,7 @@ const fetchOfferings = async () => {
   loadingOfferings.value = true;
   offeringsError.value = null;
   try {
-    const offerings = await (await getPurchases()).getOfferings();
+    const offerings = await withRequestTimeout(getPurchases().then(purchases => purchases.getOfferings()));
     currentOffering.value = offerings.current;
 
     if (currentOffering.value?.availablePackages?.length) {
@@ -587,20 +562,14 @@ const fetchOfferings = async () => {
 };
 
 onMounted(async () => {
-  isPro.value = await hasPro();
-  if (!nativePurchases) return;
-
-  // Fetch customer ID and entitlements for display
+  if (nativePurchases) void fetchOfferings();
   try {
-    const { customerInfo } = await (await getPurchases()).getCustomerInfo();
-    customerId.value = customerInfo.originalAppUserId;
-    activeEntitlements.value = Object.keys(customerInfo.entitlements.active);
-  } catch (e) {
-    console.error("Failed to fetch customer info:", e);
+    isPro.value = await withRequestTimeout(hasPro());
+  } catch (error) {
+    console.error("Unable to check subscription:", error);
+  } finally {
+    loadingSubscription.value = false;
   }
-
-  // Fetch offerings for subscription details
-  await fetchOfferings();
 });
 
 function addNewInstance(service: Service) {
@@ -774,7 +743,7 @@ const handlePurchase = async () => {
   offeringsError.value = null;
   try {
     await getPurchases();
-    // Present paywall for current offering:
+    const { RevenueCatUI, PAYWALL_RESULT } = await import("@revenuecat/purchases-capacitor-ui");
     const { result } = await RevenueCatUI.presentPaywall();
 
     // Handle result if needed.

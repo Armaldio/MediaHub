@@ -100,6 +100,15 @@ textarea {
 }
 
 @layer components {
+  .ui-skeleton {
+    border-radius: var(--radius-control);
+    background: var(--color-raised);
+    animation: skeleton-pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes skeleton-pulse {
+    50% { opacity: 0.55; }
+  }
+
   /* Shared layout and type. Page-specific CSS handles composition only. */
   .ui-page {
     min-height: 100vh;
@@ -408,6 +417,14 @@ textarea {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-subtle);
+}
+@media (max-width: 580px), (hover: none) and (pointer: coarse) {
+  * {
+    scrollbar-width: none;
+  }
+  ::-webkit-scrollbar {
+    display: none;
+  }
 }
 @media (max-width: 580px) {
   :root {
