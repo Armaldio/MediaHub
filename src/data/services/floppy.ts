@@ -10,7 +10,7 @@ const slugify = (value: string): string =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-const detailUrl = (data: FormattedDetails, instance?: CustomServiceInstance): string => {
+export const floppyDetailUrl = (data: FormattedDetails, instance?: CustomServiceInstance): string => {
   if (!instance) return "https://github.com/dannyvfilms/Floppy";
   const baseUrl = instance.baseUrl.replace(/\/$/, "");
   const type = data.type === "movie" ? "movie" : "tv";
@@ -35,15 +35,15 @@ export const floppy: Service = {
       name: "Web",
       mediaType: "movie",
       enabled: (data) => data.type === "movie",
-      url: (data, instance) => detailUrl(data, instance),
-      customUrlBuilder: (data, instance) => detailUrl(data, instance),
+      url: floppyDetailUrl,
+      customUrlBuilder: floppyDetailUrl,
     },
     {
       name: "Web",
       mediaType: "tv",
       enabled: (data) => data.type === "tv",
-      url: (data, instance) => detailUrl(data, instance),
-      customUrlBuilder: (data, instance) => detailUrl(data, instance),
+      url: floppyDetailUrl,
+      customUrlBuilder: floppyDetailUrl,
     },
   ],
 };

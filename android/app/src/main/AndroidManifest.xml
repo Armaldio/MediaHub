@@ -42,6 +42,12 @@
     </application>
 
     <queries>
+        <!-- Discover WebAPKs for user-configured instance URLs. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" android:host="*" />
+        </intent>
         <!-- Explicit apps you know in advance about: -->
         <package android:name="de.ava" />
         <package android:name="com.netflix.mediaclient" />
