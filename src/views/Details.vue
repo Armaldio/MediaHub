@@ -1,553 +1,359 @@
 <template>
-  <div class="min-h-screen bg-gray-900">
-    <!-- Safe Area Top -->
-    <div class="h-safe-top"></div>
-
-    <!-- Error State -->
-    <div
-      v-if="errorMessage && !detailsLoading"
-      class="flex flex-col items-center justify-center min-h-screen-safe p-8 text-center"
-    >
-      <div
-        class="bg-red-900/30 border border-red-800 rounded-xl p-6 max-w-2xl w-full"
+  <div class="ui-page">
+    <AppHeader back @back="goBack">
+      <RouterLink
+        :to="{ name: 'introduction', query: { force: '1' } }"
+        class="ui-button ui-button--ghost ui-icon-button"
+        aria-label="Manage services"
+        title="Manage services"
       >
-        <div class="text-red-400 text-5xl mb-4">⚠️</div>
-        <h2 class="text-2xl font-bold text-white mb-2">Something went wrong</h2>
-        <p class="text-gray-300 mb-6">{{ errorMessage }}</p>
-        <div class="flex flex-col sm:flex-row gap-3 justify-center">
-          <button
-            @click="retryLoading"
-            class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-          >
-            Try Again
-          </button>
-          <button
-            @click="goBack"
-            class="px-6 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-          >
-            Go Back
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Content -->
-    <div v-if="moviesStore.currentDetails || detailsLoading" class="relative">
-      <!-- Back Button -->
-      <button
-        @click="goBack"
-        class="fixed z-50 p-3 glass-effect rounded-full text-white hover:bg-white/20 transition-all"
-        :style="backButtonStyle"
-      >
-        <ArrowLeft class="h-6 w-6" />
-      </button>
-
-      <!-- Hero Section with Parallax -->
-      <div class="relative backdrop overflow-hidden">
-        <!-- Parallax Backdrop -->
-        <div
-          v-if="backdrop"
-          ref="parallaxBackdrop"
-          class="absolute inset-0 bg-cover bg-center bg-no-repeat transform scale-110 w-screen"
-          :style="{
-            backgroundImage: `url(${backdrop})`,
-          }"
-        >
-          <div class="absolute inset-0 bg-gray-900/90"></div>
-        </div>
-
-        <!-- Content -->
-        <div class="relative h-full flex items-top">
-          <div class="max-w-7xl mx-auto px-4 w-full">
-            <div class="flex flex-col lg:flex-row items-start gap-8 py-8">
-              <!-- Poster -->
-              <div class="flex-shrink-0 mt-12 lg:mt-0 lg:pt-12">
-                <div class="relative group">
-                  <img
-                    v-if="poster"
-                    :src="poster"
-                    :alt="displayTitle"
-                    class="h-48 object-cover rounded-xl shadow-2xl transform transition-transform duration-300 group-hover:scale-102"
-                  />
-                  <div
-                    v-else
-                    class="h-48 bg-gray-800 rounded-xl flex items-center justify-center"
-                  >
-                    <Film class="h-16 w-16 text-gray-600" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Info -->
-            <div class="flex-1 text-white">
-              <div>
-                <h1 class="text-4xl md:text-6xl font-bold mb-4">
-                  {{ displayTitle }}
-                </h1>
-
-                <!-- Meta Info -->
-                <div
-                  class="flex flex-wrap items-center gap-4 mb-6 text-gray-300"
-                >
-                  <span v-if="releaseYear" class="text-lg">{{
-                    releaseYear
-                  }}</span>
-                  <span v-if="rating" class="flex items-center gap-1">
-                    <Star class="h-5 w-5 text-yellow-500 fill-current" />
-                    {{ rating.toFixed(1) }}
-                  </span>
-                  <span v-if="runtime" class="text-lg">{{ runtime }}</span>
-                </div>
-
-                <!-- Genres -->
-                <div v-if="genres.length > 0" class="flex flex-wrap gap-2 mb-6">
-                  <span
-                    v-for="genre in genres"
-                    :key="genre.id"
-                    class="px-3 py-1 bg-white/20 rounded-full text-sm"
-                  >
-                    {{ genre.name }}
-                  </span>
-                </div>
-
-                <!-- Overview and Quick Access Container -->
-                <div class="space-y-4">
-                  <!-- Overview -->
-                  <div class="relative">
-                    <div
-                      ref="overviewText"
-                      class="text-gray-300 leading-relaxed transition-all duration-500 ease-in-out overflow-hidden"
-                      :style="{
-                        maxHeight: isOverviewExpanded
-                          ? `${overviewHeight}px`
-                          : '6rem',
-                        willChange: 'max-height, opacity',
-                        opacity: isOverviewExpanded ? 1 : 0.98,
-                      }"
-                      @transitionend="onTransitionEnd"
-                    >
-                      <p v-if="overview || moviesStore.currentTvScope" class="mb-8">
-                        {{ overview || "No description available." }}
-                      </p>
-                    </div>
-
-                    <!-- Read More Button -->
-                    <div
-                      v-if="showReadMore"
-                      class="relative z-10 mt-2 flex justify-start"
-                    >
-                      <button
-                        @click="toggleOverview"
-                        class="text-sm font-medium text-blue-400 hover:text-blue-300 transition-all duration-200 flex items-top gap-1 group bg-gray-900/80 px-3 py-1.5 rounded-lg"
-                      >
-                        {{ isOverviewExpanded ? "Show Less" : "Read More" }}
-                        <svg
-                          class="w-4 h-4 transition-transform duration-300"
-                          :class="{
-                            'transform rotate-180': isOverviewExpanded,
-                          }"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M19 9l-7 7-7-7"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-
-                  <!-- Quick Access Icons - After Description -->
-                  <div class="pt-2 pb-24">
-                    <div class="flex flex-wrap gap-2">
-                      <button
-                        v-for="service in filteredServices"
-                        :key="`quick-${service.id}`"
-                        @click="scrollToService(service.id)"
-                        class="p-2.5 bg-gray-800/60 hover:bg-gray-700/80 rounded-xl transition-all duration-200 hover:scale-105 hover:shadow-md hover:shadow-black/20 flex items-center gap-2 group"
-                        :title="service.name"
-                      >
-                        <div
-                          class="relative w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden"
-                        >
-                          <div
-                            class="absolute inset-0 bg-gray-800/80 group-hover:bg-gray-700/80 transition-colors"
-                          ></div>
-                          <img
-                            v-if="service.icon"
-                            :src="service.icon"
-                            :alt="service.name"
-                            class="relative z-10 w-5 h-5 object-contain"
-                          />
-                          <span
-                            v-else
-                            class="relative z-10 text-xs text-white font-medium"
-                            >{{ service.name.charAt(0) }}</span
-                          >
-                        </div>
-                        <span class="text-sm text-gray-200 pr-1">{{
-                          service.name
-                        }}</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Gradient transition -->
-          <div
-            class="relative z-10 h-24 -mt-24 bg-gray-900 pointer-events-none"
-          ></div>
-
-      <section v-if="isTv" class="max-w-7xl mx-auto px-4 pt-6" aria-label="TV show navigation">
-        <nav class="flex flex-wrap items-center gap-2 text-sm text-indigo-300 mb-4" aria-label="Show hierarchy">
-          <button v-if="seasonNumber !== undefined" @click="navigateToScope()" class="hover:text-white">{{ parentShowTitle }}</button>
-          <span v-if="seasonNumber !== undefined" aria-hidden="true">›</span>
-          <button v-if="seasonNumber !== undefined" @click="navigateToScope(seasonNumber)" class="hover:text-white">Season {{ seasonNumber }}</button>
-          <template v-if="episodeNumber !== undefined"><span aria-hidden="true">›</span><span class="text-gray-300">Episode {{ episodeNumber }}</span></template>
-        </nav>
-        <div v-if="seasonNumber === undefined && tvSeasons.length" class="mb-8">
-          <h2 class="text-xl font-semibold text-white mb-3">Seasons</h2>
-          <div class="flex flex-wrap gap-2">
-            <button v-for="season in tvSeasons" :key="season.id" @click="navigateToScope(season.season_number)" class="rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-left text-white hover:border-indigo-400" :aria-label="`Open season ${season.season_number}: ${season.name}`">
-              Season {{ season.season_number }} · {{ season.name }}
+        <SlidersHorizontal :size="19" aria-hidden="true" />
+      </RouterLink>
+    </AppHeader>
+    <main>
+      <div v-if="errorMessage && !detailsLoading" class="ui-container py-10">
+        <div class="ui-empty" role="alert">
+          <CircleAlert :size="30" class="text-danger" aria-hidden="true" />
+          <h1 class="ui-title">Something went wrong</h1>
+          <p>{{ errorMessage }}</p>
+          <div class="flex flex-wrap justify-center gap-3">
+            <button @click="retryLoading" class="ui-button ui-button--primary">
+              Try Again
             </button>
+            <button @click="goBack" class="ui-button">Go Back</button>
           </div>
-        </div>
-        <div v-if="seasonDetails" class="mb-8">
-          <div class="flex items-center justify-between mb-3">
-            <h2 class="text-xl font-semibold text-white">Episodes</h2>
-            <button v-if="episodeNumber !== undefined" @click="navigateToScope(seasonNumber)" class="text-sm text-indigo-300 hover:text-white">All episodes</button>
-          </div>
-          <ol class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <li v-for="episode in seasonDetails.episodes" :key="episode.id">
-              <button @click="navigateToScope(seasonNumber, episode.episode_number)" class="w-full rounded-lg border border-gray-700 bg-gray-800 p-4 text-left text-white hover:border-indigo-400" :aria-label="`Open season ${seasonNumber} episode ${episode.episode_number}: ${episode.name}`">
-                <span class="block text-xs text-gray-400">Episode {{ episode.episode_number }}</span>
-                <span class="block font-medium">{{ episode.name }}</span>
-                <span v-if="episode.air_date" class="block text-xs text-gray-400 mt-1">{{ episode.air_date }}</span>
-              </button>
-            </li>
-          </ol>
-        </div>
-      </section>
-
-      <!-- Services Section -->
-      <div class="relative z-20 bg-gray-900">
-        <div class="max-w-7xl mx-auto px-4 py-12">
-          <div class="flex items-center justify-between mb-8">
-            <div>
-              <h2 class="text-2xl font-bold text-white mb-1">Open with</h2>
-              <p class="text-gray-400 text-sm">{{ seasonNumber !== undefined ? 'Links open this season or episode when supported; other services open the show.' : 'Your connected services' }}</p>
-            </div>
-            <div
-              class="px-3 py-1 bg-white/5 rounded-full text-sm text-gray-300"
-            >
-              {{ servicesStore.selectedServices.length }} services
-            </div>
-          </div>
-
-          <!-- Search + Type Filter -->
-          <div class="flex flex-col sm:flex-row gap-4 mb-6">
-            <div class="relative flex-1">
-              <div
-                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
-              >
-                <svg
-                  class="h-5 w-5 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
-              <input
-                v-model="searchQuery"
-                type="text"
-                class="block w-full pl-10 pr-3 py-2.5 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                placeholder="Search services..."
-              />
-            </div>
-            <div class="inline-flex self-start rounded-full bg-gray-800 p-1 border border-gray-700">
-              <button
-                v-for="opt in (['all','mobile','web'] as const)"
-                :key="opt"
-                @click="typeFilter = opt"
-                class="px-4 py-1.5 text-sm rounded-full transition-colors"
-                :class="typeFilter === opt ? 'bg-indigo-600 text-white shadow' : 'text-gray-400 hover:text-white'"
-              >
-                {{ opt === 'mobile' ? 'Apps' : opt === 'all' ? 'All' : 'Web' }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Services Grid -->
-          <div
-            ref="servicesGrid"
-            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-          >
-            <div
-              v-for="service in filteredServices"
-              :key="service.id"
-              class="group relative transition-all duration-300"
-              :data-service-id="service.id"
-            >
-              <div
-                class="h-full flex flex-col bg-gray-800/50 rounded-xl overflow-hidden border border-gray-700/50 hover:border-gray-600/50 transition-all duration-300 hover:shadow-lg hover:shadow-black/20"
-              >
-                <!-- Service Header -->
-                <div class="p-4 pb-2">
-                  <div class="flex items-center gap-3">
-                    <!-- Service Icon -->
-                    <div class="relative">
-                      <div
-                        class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 overflow-hidden"
-                      >
-                        <img
-                          v-if="service.icon"
-                          :src="service.icon"
-                          :alt="service.name"
-                          class="w-full h-full object-contain"
-                        />
-                        <span
-                          v-else
-                          class="text-sm font-medium text-gray-400"
-                          >{{ service.name.charAt(0) }}</span
-                        >
-                      </div>
-                      <!-- App Status Badge -->
-                      <div
-                        class="absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-gray-900"
-                        :class="{
-                          'bg-green-500':
-                            !!service.androidAppId && servicesStore.isServiceInstalled(service),
-                          'bg-blue-500':
-                            !service.androidAppId || !servicesStore.isServiceInstalled(service),
-                        }"
-                        :title="
-                          service.androidAppId && servicesStore.isServiceInstalled(service)
-                            ? 'Native app installed'
-                            : 'Web version available'
-                        "
-                      ></div>
-                    </div>
-
-                    <!-- Service Name -->
-                    <div class="flex-1 min-w-0">
-                      <h3 class="text-white font-semibold truncate text-base">
-                        {{ service.name }}
-                      </h3>
-                      <p class="text-xs text-gray-400 truncate">
-                        {{
-                          service.androidAppId && servicesStore.isServiceInstalled(service)
-                            ? "App installed"
-                            : "Web access"
-                        }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                    <!-- Deep Links -->
-                    <div v-if="service.deepLinks?.length > 0 || isSeerrService(service)" class="px-4 pb-4">
-                      <!-- Seerr: API-powered request button -->
-                      <div v-if="isSeerrService(service)">
-                        <button
-                          @click="handleSeerrRequest(service)"
-                          class="w-full text-left px-3 py-2 text-sm rounded-lg transition-all duration-200 flex items-center justify-between gap-2 group/link relative overflow-hidden bg-white/5 hover:bg-white/10 text-white border border-white/5 active:scale-[0.98] disabled:cursor-wait"
-                          :disabled="seerr.isSubmitLoading(service.id) || seerr.isStatusLoading(service.id)"
-                        >
-                          <span class="flex items-center gap-2">
-                            <div
-                              v-if="seerr.isStatusLoading(service.id) || seerr.isSubmitLoading(service.id)"
-                              class="w-6 h-6 rounded-full bg-gray-900/90 border border-gray-700 flex items-center justify-center"
-                            >
-                              <div class="animate-spin rounded-full h-3 w-3 border-b-2 border-current"></div>
-                            </div>
-                            <div
-                              v-else-if="seerr.getStatus(service.id) !== 'unknown'"
-                              class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
-                              :style="{ borderColor: seerr.getStatusColor(service.id), backgroundColor: seerr.getStatusColor(service.id) + '20' }"
-                            >
-                              <svg
-                                v-if="seerr.getStatus(service.id) === 'available'"
-                                xmlns="http://www.w3.org/2000/svg"
-                                class="h-3 w-3"
-                                :style="{ color: seerr.getStatusColor(service.id) }"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
-                              >
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                              </svg>
-                              <div
-                                v-else-if="seerr.getStatus(service.id) === 'pending'"
-                                class="w-3 h-3 rounded-full"
-                                :style="{ backgroundColor: seerr.getStatusColor(service.id) }"
-                              ></div>
-                            </div>
-                            <div
-                              v-else
-                              class="w-6 h-6 rounded-full bg-gray-900/90 border border-gray-700 flex items-center justify-center"
-                            >
-                              <MovieIcon class="w-3 h-3 text-gray-300" />
-                            </div>
-                            <span class="text-gray-200 group-hover/link:text-white">
-                              {{ seerr.getStatus(service.id) !== 'unknown' ? seerr.getStatusLabel(service.id) : 'Request' }}
-                            </span>
-                          </span>
-                          <span
-                            v-if="seerr.getStatus(service.id) === 'unknown' && !seerr.isSubmitLoading(service.id)"
-                            class="text-gray-400 group-hover/link:text-white"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                          </span>
-                        </button>
-                      </div>
-
-                      <!-- Generic deep links -->
-                      <div v-else class="space-y-2">
-                        <template
-                      v-for="(link, index) in service.deepLinks"
-                      :key="index"
-                    >
-                      <button
-                        v-if="isLinkVisible(service, link)"
-                        @click.stop="openDeepLink(service, link)"
-                        class="w-full text-left px-3 py-2 text-sm rounded-lg transition-all duration-200 flex items-center justify-between gap-2 group/link relative overflow-hidden"
-                        :class="{
-                          'bg-white/5 hover:bg-white/10 text-white': true,
-                          'border border-white/5': true,
-                          'active:scale-[0.98]': true,
-                          'cursor-wait':
-                            loadingLinks[getLoadingKey(service, link)],
-                        }"
-                        :title="link.name"
-                        :disabled="loadingLinks[getLoadingKey(service, link)]"
-                      >
-                        <span
-                          v-if="link.mediaType"
-                          class="flex items-center justify-center space-x-0.5"
-                        >
-                          <div
-                            v-if="link.mediaType === 'all'"
-                            class="flex items-center justify-center space-x-0.5"
-                          >
-                            <div
-                              class="w-6 h-6 rounded-full bg-gray-900/90 border border-gray-700 flex items-center justify-center"
-                            >
-                              <MovieIcon class="w-3 h-3 text-gray-300" />
-                            </div>
-                            <div
-                              class="w-6 h-6 rounded-full bg-gray-900/90 border border-gray-700 flex items-center justify-center"
-                            >
-                              <Tv class="w-3 h-3 text-gray-300" />
-                            </div>
-                          </div>
-                          <div
-                            v-else
-                            class="w-6 h-6 rounded-full bg-gray-900/90 border border-gray-700 flex items-center justify-center"
-                          >
-                            <component
-                              :is="link.mediaType === 'tv' ? Tv : MovieIcon"
-                              class="w-3 h-3 text-gray-300"
-                            />
-                          </div>
-                        </span>
-                        <span
-                          class="truncate flex-1 text-left text-gray-200 group-hover/link:text-white transition-colors"
-                          :class="{
-                            'opacity-0':
-                              loadingLinks[getLoadingKey(service, link)],
-                          }"
-                        >
-                          {{ link.name }}
-                        </span>
-                        <div
-                          v-if="loadingLinks[getLoadingKey(service, link)]"
-                          class="absolute inset-0 flex items-center justify-center"
-                        >
-                          <div
-                            class="animate-spin rounded-full h-4 w-4 border-b-2 border-white"
-                          ></div>
-                        </div>
-                        <span
-                          class="text-gray-400 group-hover/link:text-white transition-colors"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            class="h-3.5 w-3.5"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                            />
-                          </svg>
-                        </span>
-                      </button>
-                    </template>
-                  </div>
-                </div>
-
-                <!-- Accent Border Bottom -->
-                <div
-                  class="h-0.5 w-full"
-                  :style="{ backgroundColor: service.color }"
-                ></div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- No services message -->
-        <div
-          v-if="servicesStore.selectedServices.length === 0"
-          class="text-center py-12"
-        >
-          <div class="w-16 h-16 mb-4 mx-auto">
-            <img
-              alt="No services selected"
-              class="w-full h-full object-contain opacity-80"
-            />
-          </div>
-          <h3 class="text-xl font-semibold text-white mb-2">
-            No services selected
-          </h3>
-          <p class="text-gray-400 mb-6">
-            Go back to the introduction to select your movie apps and services.
-          </p>
-          <button
-            @click="goToIntroduction"
-            class="px-6 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
-          >
-            Select Services
-          </button>
         </div>
       </div>
-    </div>
+      <div
+        v-else-if="detailsLoading"
+        class="ui-container py-8"
+        role="status"
+        aria-label="Loading details"
+      >
+        <div class="h-64 rounded-panel bg-surface animate-pulse"></div>
+        <p class="mt-4 text-muted">Finding your title and service links…</p>
+      </div>
+      <template v-else-if="moviesStore.currentDetails">
+        <section
+          class="detail-hero"
+          :style="
+            backdrop
+              ? {
+                  backgroundImage: `linear-gradient(90deg, var(--color-canvas), var(--color-scrim)), url(${backdrop})`,
+                }
+              : undefined
+          "
+          aria-label="Title information"
+        >
+          <div class="ui-container detail-intro">
+            <div class="detail-poster" :class="{ 'detail-poster--still': episodeNumber !== undefined }">
+              <img v-if="poster" :src="poster" :alt="displayTitle" />
+              <Film v-else :size="38" :stroke-width="1.3" aria-hidden="true" />
+            </div>
+            <div class="min-w-0">
+              <p class="text-xs text-accent mb-3">
+                {{ isTv ? "TV show" : "Movie" }}
+                <template v-if="seasonNumber !== undefined">
+                  · {{ parentShowTitle }}
+                </template>
+              </p>
+              <h1 class="ui-title detail-title">{{ displayTitle }}</h1>
+              <div
+                class="detail-meta flex flex-wrap items-center gap-3 text-sm text-muted mb-4"
+              >
+                <span v-if="releaseYear">{{ releaseYear }}</span>
+                <span v-if="rating" class="inline-flex items-center gap-1">
+                  <Star :size="14" class="text-warning" aria-hidden="true" />
+                  {{ rating.toFixed(1) }}
+                </span>
+                <span v-if="runtime">{{ runtime }}</span>
+              </div>
+              <div v-if="genres.length" class="flex flex-wrap gap-2 mb-5">
+                <span v-for="genre in genres" :key="genre.id" class="ui-badge">
+                  {{ genre.name }}
+                </span>
+              </div>
+              <div
+                ref="overviewText"
+                class="detail-overview"
+                :class="{ 'line-clamp-4': !isOverviewExpanded }"
+              >
+                <p>{{ overview || "No description available." }}</p>
+              </div>
+              <button
+                v-if="showReadMore"
+                @click="isOverviewExpanded = !isOverviewExpanded"
+                class="ui-link text-xs mt-3"
+                :aria-expanded="isOverviewExpanded"
+              >
+                {{ isOverviewExpanded ? "Show Less" : "Read More" }}
+              </button>
+              <nav
+                v-if="filteredServices.length"
+                class="flex flex-wrap gap-2 mt-5"
+                aria-label="Jump to a service"
+              >
+                <button
+                  v-for="service in filteredServices"
+                  :key="service.id"
+                  @click="scrollToService(service.id)"
+                  class="ui-chip border-line"
+                >
+                  <img
+                    :src="service.icon"
+                    alt=""
+                    class="w-5 h-5 rounded object-contain"
+                  />
+                  {{ service.name }}
+                </button>
+              </nav>
+            </div>
+          </div>
+        </section>
 
-    <!-- Safe Area Bottom -->
-    <div class="h-safe-bottom"></div>
+        <div class="ui-container detail-sections">
+          <section v-if="isTv" aria-label="TV show navigation">
+            <nav
+              v-if="seasonNumber !== undefined"
+              class="flex flex-wrap items-center gap-2 text-sm mb-5"
+              aria-label="Show hierarchy"
+            >
+              <button @click="navigateToScope()" class="ui-link">
+                {{ parentShowTitle }}
+              </button>
+              <span class="text-subtle" aria-hidden="true">/</span>
+              <button @click="navigateToScope(seasonNumber)" class="ui-link">
+                Season {{ seasonNumber }}
+              </button>
+              <template v-if="episodeNumber !== undefined">
+                <span class="text-subtle" aria-hidden="true">/</span>
+                <span class="text-muted">Episode {{ episodeNumber }}</span>
+              </template>
+            </nav>
+            <div v-if="seasonNumber === undefined && tvSeasons.length">
+              <div class="ui-section-heading">
+                <h2 class="ui-section-title">Seasons</h2>
+                <span class="ui-badge">{{ tvSeasons.length }}</span>
+              </div>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="season in tvSeasons"
+                  :key="season.id"
+                  @click="navigateToScope(season.season_number)"
+                  class="ui-button"
+                  :aria-label="`Open season ${season.season_number}: ${season.name}`"
+                >
+                  Season {{ season.season_number }} · {{ season.name }}
+                </button>
+              </div>
+            </div>
+            <div v-if="seasonDetails">
+              <div class="ui-section-heading">
+                <h2 class="ui-section-title">Episodes</h2>
+                <button
+                  v-if="episodeNumber !== undefined"
+                  @click="navigateToScope(seasonNumber)"
+                  class="ui-link text-xs"
+                >
+                  All episodes
+                </button>
+              </div>
+              <ol class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <li v-for="episode in seasonDetails.episodes" :key="episode.id">
+                  <button
+                    @click="
+                      navigateToScope(seasonNumber, episode.episode_number)
+                    "
+                    class="episode-card ui-panel"
+                    :aria-label="`Open season ${seasonNumber} episode ${episode.episode_number}: ${episode.name}`"
+                  >
+                    <span class="text-xs text-subtle">
+                      Episode {{ episode.episode_number }}
+                    </span>
+                    <span class="font-medium text-ink">{{ episode.name }}</span>
+                    <span v-if="episode.air_date" class="text-xs text-muted">
+                      {{ episode.air_date }}
+                    </span>
+                  </button>
+                </li>
+              </ol>
+            </div>
+          </section>
+
+          <section aria-labelledby="open-with-title">
+            <div class="ui-section-heading">
+              <div>
+                <h2 id="open-with-title" class="ui-section-title">Open with</h2>
+                <p class="text-muted text-xs mt-2">
+                  {{
+                    seasonNumber !== undefined
+                      ? "Links open this season or episode when supported; other services open the show."
+                      : "Your services. The way you like to watch."
+                  }}
+                </p>
+              </div>
+              <span class="ui-badge shrink-0">
+                {{ filteredServices.length }} services
+              </span>
+            </div>
+            <div class="detail-filters">
+              <label class="ui-search">
+                <Search :size="17" aria-hidden="true" />
+                <input
+                  v-model="searchQuery"
+                  type="search"
+                  aria-label="Search connected services"
+                  placeholder="Find a service…"
+                />
+              </label>
+              <nav class="ui-tabs" aria-label="Service types">
+                <button
+                  v-for="opt in (['all','mobile','web'] as const)"
+                  :key="opt"
+                  @click="typeFilter = opt"
+                  class="ui-chip"
+                  :aria-pressed="typeFilter === opt"
+                >
+                  {{
+                    opt === "mobile"
+                      ? "Apps & web"
+                      : opt === "all"
+                      ? "All services"
+                      : "Web only"
+                  }}
+                </button>
+              </nav>
+            </div>
+            <div ref="servicesGrid" class="detail-service-grid">
+              <article
+                v-for="service in filteredServices"
+                :key="service.id"
+                :data-service-id="service.id"
+                class="ui-panel detail-service"
+              >
+                <div class="flex items-center gap-3 mb-4">
+                  <img
+                    :src="service.icon"
+                    alt=""
+                    class="w-10 h-10 rounded-control object-contain bg-raised"
+                  />
+                  <div class="min-w-0">
+                    <h3 class="text-sm font-medium text-ink truncate">
+                      {{ service.name }}
+                    </h3>
+                    <p class="text-xs text-muted mt-1">
+                      {{
+                        servicesStore.isNative &&
+                        servicesStore.isServiceInstalled(service)
+                          ? "App installed"
+                          : service.description
+                      }}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  v-if="isSeerrService(service)"
+                  @click="handleSeerrRequest(service)"
+                  class="ui-button service-link"
+                  :disabled="
+                    seerr.isSubmitLoading(service.id) ||
+                    seerr.isStatusLoading(service.id)
+                  "
+                >
+                  <LoaderCircle
+                    v-if="
+                      seerr.isSubmitLoading(service.id) ||
+                      seerr.isStatusLoading(service.id)
+                    "
+                    :size="16"
+                    class="animate-spin"
+                    aria-hidden="true"
+                  />
+                  <CircleCheck
+                    v-else-if="seerr.getStatus(service.id) === 'available'"
+                    :size="16"
+                    class="text-success"
+                    aria-hidden="true"
+                  />
+                  <Clock
+                    v-else-if="seerr.getStatus(service.id) === 'pending'"
+                    :size="16"
+                    class="text-warning"
+                    aria-hidden="true"
+                  />
+                  <Plus v-else :size="16" aria-hidden="true" />
+                  <span class="flex-1">
+                    {{
+                      seerr.getStatus(service.id) !== "unknown"
+                        ? seerr.getStatusLabel(service.id)
+                        : "Request"
+                    }}
+                  </span>
+                  <ArrowUpRight :size="15" aria-hidden="true" />
+                </button>
+                <div v-else class="space-y-2">
+                  <template
+                    v-for="(link, index) in service.deepLinks"
+                    :key="index"
+                  >
+                    <button
+                      v-if="isLinkVisible(service, link)"
+                      @click.stop="openDeepLink(service, link)"
+                      class="ui-button service-link"
+                      :disabled="loadingLinks[getLoadingKey(service, link)]"
+                      :title="link.name"
+                    >
+                      <LoaderCircle
+                        v-if="loadingLinks[getLoadingKey(service, link)]"
+                        :size="16"
+                        class="animate-spin"
+                        aria-hidden="true"
+                      />
+                      <AppWindow
+                        v-else-if="link.requiresApp"
+                        :size="16"
+                        aria-hidden="true"
+                      />
+                      <ExternalLink v-else :size="16" aria-hidden="true" />
+                      <span class="flex-1 truncate">{{ link.name }}</span>
+                      <ArrowUpRight :size="15" aria-hidden="true" />
+                    </button>
+                  </template>
+                </div>
+              </article>
+            </div>
+            <div v-if="!filteredServices.length" class="ui-empty" role="status">
+              <Layers :size="28" aria-hidden="true" />
+              <h3>No matching services</h3>
+              <p>
+                {{
+                  searchQuery || typeFilter !== "all"
+                    ? "Try another name or clear your filters."
+                    : "Choose a service with a link available for this title."
+                }}
+              </p>
+              <button
+                v-if="searchQuery || typeFilter !== 'all'"
+                @click="
+                  searchQuery = '';
+                  typeFilter = 'all';
+                "
+                class="ui-button"
+              >
+                Clear filters
+              </button>
+              <button
+                v-else
+                @click="goToIntroduction"
+                class="ui-button ui-button--primary"
+              >
+                Select Services
+              </button>
+            </div>
+          </section>
+        </div>
+      </template>
+    </main>
   </div>
 </template>
 
@@ -557,7 +363,6 @@ import {
   onMounted,
   onUnmounted,
   ref,
-  CSSProperties,
   nextTick,
   watch,
 } from "vue";
@@ -572,7 +377,8 @@ interface InstanceService extends Service {
 
 import { useRouter } from "vue-router";
 import { useRoute } from "vue-router";
-import { ArrowLeft, Star, Film, Tv, Film as MovieIcon } from "lucide-vue-next";
+import { Star, Film, Search, Layers, ExternalLink, AppWindow, ArrowUpRight, LoaderCircle, CircleCheck, CircleAlert, Clock, Plus, SlidersHorizontal } from "lucide-vue-next";
+import AppHeader from "@/components/AppHeader.vue";
 import { useMoviesStore } from "@/stores/movies";
 import { useServicesStore } from "@/stores/services";
 import { FormattedDetails } from "@/models/models";
@@ -593,60 +399,18 @@ const props = defineProps<Props>();
 
 const router = useRouter();
 const route = useRoute();
-const parallaxBackdrop = ref<HTMLElement | null>(null);
 const overviewText = ref<HTMLElement | null>(null);
-const overviewHeight = ref(0);
 const isOverviewExpanded = ref(false);
 const showReadMore = ref(false);
-const isAnimating = ref(false);
-
-// Check if overview text needs a "Read More" button
-const checkOverviewHeight = async () => {
-  await nextTick();
-  if (overviewText.value) {
-    // Store the full height for smooth animation
-    overviewHeight.value = overviewText.value.scrollHeight;
-    showReadMore.value = overviewText.value.scrollHeight > 96; // 6rem = 96px (4 lines of text)
-  }
-};
-
-const toggleOverview = () => {
-  if (isAnimating.value) return;
-  isOverviewExpanded.value = !isOverviewExpanded.value;
-  isAnimating.value = true;
-};
-
-const onTransitionEnd = () => {
-  isAnimating.value = false;
-};
 const servicesGrid = ref<HTMLElement | null>(null);
 const searchQuery = ref("");
 const typeFilter = ref<'all' | 'web' | 'mobile'>('all');
-const parallaxOffset = ref(0);
-
-// Handle parallax effect on scroll
-const handleScroll = () => {
-  if (!parallaxBackdrop.value) return;
-  const scrollPosition = window.scrollY || window.pageYOffset;
-  parallaxOffset.value = scrollPosition * 0.8; // Adjust the multiplier to control the parallax intensity
-};
-
-onMounted(async () => {
-  window.addEventListener("scroll", handleScroll);
+const checkOverviewHeight = async () => {
   await nextTick();
-  checkOverviewHeight();
-});
-
-onUnmounted(() => {
-  window.removeEventListener("scroll", handleScroll);
-  moviesStore.cancelPendingDetails();
-});
-
-const backButtonStyle = {
-  "--top-offset": "calc(env(safe-area-inset-top, 0px) + 1rem)",
-  top: "var(--top-offset)",
-  left: "1rem",
-} as CSSProperties;
+  showReadMore.value = (overviewText.value?.scrollHeight ?? 0) > 96;
+};
+onMounted(checkOverviewHeight);
+onUnmounted(() => { moviesStore.cancelPendingDetails(); });
 
 const moviesStore = useMoviesStore();
 const servicesStore = useServicesStore();
@@ -658,6 +422,11 @@ const overview = computed(() => {
   const scope = moviesStore.currentTvScope;
   return scope ? scope.overview || "" : moviesStore.currentDetails?.overview || "";
 });
+
+watch(overview, () => {
+  isOverviewExpanded.value = false;
+  void checkOverviewHeight();
+}, { flush: 'post' });
 
 const isTv = computed(() => props.mediaType === "tv");
 const seasonNumber = computed(() => {
@@ -828,7 +597,7 @@ const scrollToService = (serviceId: string) => {
   );
   if (serviceElement) {
     serviceElement.scrollIntoView({
-      behavior: "smooth",
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
       block: "center",
     });
 
@@ -1111,50 +880,137 @@ const retryLoading = async () => {
   await loadDetails();
 };
 </script>
-
 <style scoped>
-@keyframes highlight {
-  0% {
-    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
-  }
+.detail-hero {
+  background-position: center;
+  background-size: cover;
+  border-bottom: 1px solid var(--color-line-soft);
 }
-
+.detail-intro {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr);
+  align-items: start;
+  gap: 32px;
+  padding-block: 32px;
+}
+.detail-poster {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+  color: var(--color-subtle);
+}
+.detail-poster--still { aspect-ratio: 16 / 9; }
+.detail-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.detail-title {
+  font-size: clamp(28px, 4vw, 40px);
+}
+.detail-overview {
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 24px;
+  max-width: 720px;
+}
+.detail-sections {
+  display: grid;
+  gap: 32px;
+  padding-block: 28px;
+}
+.detail-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.detail-filters .ui-search {
+  width: 100%;
+  max-width: 430px;
+}
+.detail-service-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.detail-service {
+  padding: 18px;
+  scroll-margin-top: 20px;
+}
+.service-link {
+  width: 100%;
+  text-align: left;
+  color: var(--color-muted);
+  background: var(--color-raised);
+  border-color: transparent;
+}
+.service-link:hover:not(:disabled) {
+  color: var(--color-accent);
+  border-color: var(--color-accent-line);
+}
+.episode-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 16px;
+  text-align: left;
+  cursor: pointer;
+}
+.episode-card:hover {
+  border-color: var(--color-accent);
+}
 .highlight-service {
-  animation: highlight 1.5s ease-out;
-  border-color: #6366f1 !important;
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
 }
-
-.backdrop {
-  position: relative;
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
-  z-index: 5;
+@media (max-width: 900px) {
+  .detail-service-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
-
-/* Smooth transition effect */
-.backdrop::after {
-  content: "";
-  position: absolute;
-  bottom: -20px;
-  left: 0;
-  right: 0;
-  height: 40px;
-  background: rgba(17, 24, 39, 0.8);
-  pointer-events: none;
-  z-index: 10;
-}
-
-.transition-gradient {
-  position: relative;
-  z-index: 10;
-  height: 80px;
-  margin-top: -40px;
-  background: rgba(17, 24, 39, 1);
-  pointer-events: none;
+@media (max-width: 580px) {
+  .detail-intro {
+    grid-template-columns: 90px minmax(0, 1fr);
+    gap: 18px;
+    padding-block: 24px;
+  }
+  .detail-intro > div:last-child {
+    display: contents;
+  }
+  .detail-intro > div:last-child > p,
+  .detail-intro h1 {
+    grid-column: 2;
+  }
+  .detail-poster {
+    grid-row: 1 / 4;
+  }
+  .detail-intro > div:last-child > div,
+  .detail-intro nav,
+  .detail-intro > div:last-child > button {
+    grid-column: 1 / -1;
+  }
+  .detail-intro > div:last-child > .detail-meta {
+    grid-column: 2;
+  }
+  .detail-intro {
+    row-gap: 12px;
+  }
+  .detail-service-grid {
+    grid-template-columns: 1fr;
+  }
+  .detail-title {
+    font-size: 28px;
+    overflow-wrap: anywhere;
+  }
+  .detail-overview {
+    font-size: 13px;
+  }
 }
 </style>

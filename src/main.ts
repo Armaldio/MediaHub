@@ -30,7 +30,7 @@ const configure = async () => {
       await EdgeToEdge.disable();
       await EdgeToEdge.setBackgroundColor({ color: "#00000000" });
       await StatusBar.setStyle({ style: Style.Dark });
-      await StatusBar.setBackgroundColor({ color: "#0f0f0f" });
+      await StatusBar.setBackgroundColor({ color: getComputedStyle(document.documentElement).getPropertyValue("--color-canvas").trim() });
       await StatusBar.setOverlaysWebView({ overlay: true });
     } catch (e) {
       console.error("Edge-to-edge setup failed:", e);

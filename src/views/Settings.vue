@@ -1,31 +1,15 @@
 <template>
-  <div class="min-h-screen bg-gray-900 text-white p-4">
-    <div class="h-safe-top"></div>
-    <div class="max-w-4xl mx-auto">
-      <div class="flex items-center mb-6">
-        <button
-          @click="$router.back()"
-          class="mr-4 p-2 rounded-full hover:bg-gray-800 transition-colors"
-          aria-label="Go back"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M10 19l-7-7m0 0l7-7m-7 7h18"
-            />
-          </svg>
-        </button>
-        <h1 class="text-2xl font-bold">Settings</h1>
+  <div class="ui-page">
+    <AppHeader back @back="$router.back()">
+      <span class="hidden sm:inline text-xs text-subtle">Make it yours</span>
+    </AppHeader>
+    <main class="ui-container settings-content">
+      <div class="ui-page-intro">
+        <h1 class="ui-title">Settings</h1>
+        <p class="ui-description">
+          Your connections, your preferences, your MediaHub.
+        </p>
       </div>
-
       <InstanceCockpit
         :instances="cockpitInstances"
         :services="servicesWithCustomInstances"
@@ -43,104 +27,66 @@
       />
 
       <!-- Subscription Section -->
-      <div class="bg-gray-800 rounded-lg p-6 mb-6">
-        <h2 class="text-xl font-semibold mb-4">Subscription</h2>
+      <div class="ui-panel ui-panel-padding mb-6">
+        <h2 class="ui-section-title mb-4">Subscription</h2>
 
-        <!-- Subscription Status -->
-        <div class="mb-4">
-          <div class="flex items-center mb-2">
-            <div
-              class="w-3 h-3 rounded-full mr-2"
-              :class="isPro ? 'bg-green-500' : 'bg-red-500'"
-            ></div>
-            <span class="text-lg font-medium">
-              {{ isPro ? "You're subscribed" : "Not subscribed" }}
-            </span>
-          </div>
-          <p v-if="isPro" class="text-gray-400">
-            Your subscription is active and you have access to all features.
-          </p>
-          <p v-else class="text-gray-400">
-            Subscribe to unlock unlimited services and custom instances.
-          </p>
-        </div>
-
-        <!-- Product Details -->
-        <div
-          v-if="currentOffering && currentOffering.availablePackages.length > 0"
-          class="bg-gray-700 rounded-lg p-4 mb-4"
-        >
-          <h3 class="text-lg font-medium mb-2">
-            {{ currentOffering.serverDescription }}
-          </h3>
-          <ul v-if="features.length" class="text-sm text-gray-400 mb-3 space-y-1">
-            <li v-for="feature in features" :key="feature">• {{ feature }}</li>
-          </ul>
-          <div v-for="p in currentOffering.availablePackages" :key="p.id">
-            <p class="text-gray-300 mb-2">
-              {{ p.product.description }}
+        <template v-if="nativePurchases">
+          <!-- Subscription Status -->
+          <div class="mb-4">
+            <div class="flex items-center mb-2">
+              <div
+                class="w-3 h-3 rounded-full mr-2"
+                :class="isPro ? 'bg-success' : 'bg-danger'"
+              ></div>
+              <span class="text-lg font-medium">
+                {{ isPro ? "You're subscribed" : "Not subscribed" }}
+              </span>
+            </div>
+            <p v-if="isPro" class="text-muted">
+              Your subscription is active and you have access to all features.
             </p>
-
-            <p class="text-xl font-bold text-white">
-              {{ p.product.priceString }}
+            <p v-else class="text-muted">
+              Subscribe to unlock unlimited services and custom instances.
             </p>
           </div>
-        </div>
 
-        <!-- Loading State -->
-        <div
-          v-else-if="loadingOfferings"
-          class="bg-gray-700 rounded-lg p-4 mb-4"
-        >
-          <div class="flex items-center justify-center">
-            <svg
-              class="animate-spin h-6 w-6 text-gray-400"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"
-              ></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-            <span class="ml-2 text-gray-400"
-              >Loading subscription details...</span
-            >
-          </div>
-        </div>
-
-        <!-- Error Message -->
-        <div
-          v-if="offeringsError"
-          class="mb-4 p-3 bg-red-900/50 border border-red-700 rounded-lg"
-        >
-          <p class="text-red-400 text-sm">{{ offeringsError }}</p>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="flex space-x-3">
-          <button
-            v-if="!isPro"
-            @click="handlePurchase"
-            :disabled="loadingOfferings || !currentOffering"
-            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          <!-- Product Details -->
+          <div
+            v-if="
+              currentOffering && currentOffering.availablePackages.length > 0
+            "
+            class="bg-raised rounded-lg p-4 mb-4"
           >
-            <span
-              v-if="purchaseLoading"
-              class="flex items-center justify-center"
+            <h3 class="text-lg font-medium mb-2">
+              {{ currentOffering.serverDescription }}
+            </h3>
+            <ul
+              v-if="features.length"
+              class="text-sm text-muted mb-3 space-y-1"
             >
+              <li v-for="feature in features" :key="feature">
+                • {{ feature }}
+              </li>
+            </ul>
+            <div v-for="p in currentOffering.availablePackages" :key="p.id">
+              <p class="text-muted mb-2">
+                {{ p.product.description }}
+              </p>
+
+              <p class="text-xl font-bold text-ink">
+                {{ p.product.priceString }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Loading State -->
+          <div
+            v-else-if="loadingOfferings"
+            class="bg-raised rounded-lg p-4 mb-4"
+          >
+            <div class="flex items-center justify-center">
               <svg
-                class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                class="animate-spin h-6 w-6 text-muted"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -159,190 +105,34 @@
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Processing...
-            </span>
-            <span v-else>Purchase Subscription</span>
-          </button>
-
-          <button
-            @click="handleRestorePurchases"
-            :disabled="restoreLoading"
-            class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <span
-              v-if="restoreLoading"
-              class="flex items-center justify-center"
-            >
-              <svg
-                class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  class="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  stroke-width="4"
-                ></circle>
-                <path
-                  class="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
-              </svg>
-              Restoring...
-            </span>
-            <span v-else>Restore Purchases</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Contact Support Section -->
-      <div class="bg-gray-800 rounded-lg p-6 mb-6">
-        <h2 class="text-xl font-semibold mb-2">Contact Support</h2>
-        <p class="text-gray-400 mb-4">
-          Need help? Send us an email and we'll get back to you.
-        </p>
-        <button
-          @click="contactSupport"
-          class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-        >
-          Contact Support
-        </button>
-      </div>
-    </div>
-
-    <!-- Add/Edit Instance Modal -->
-    <div
-      v-if="showInstanceModal"
-      class="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50"
-      role="dialog"
-      aria-modal="true"
-      :aria-labelledby="`${editingInstance ? 'edit' : 'add'}-instance-title`"
-    >
-      <div class="bg-gray-800 rounded-lg w-full max-w-md p-6" role="document">
-        <div class="flex items-center mb-4">
-          <img
-            v-if="currentService"
-            :src="currentService.icon"
-            class="w-8 h-8 rounded mr-3 object-contain"
-            :alt="`${currentService.name} icon`"
-          />
-          <h3
-            :id="`${editingInstance ? 'edit' : 'add'}-instance-title`"
-            class="text-xl font-semibold"
-          >
-            {{ editingInstance ? "Edit" : "Add" }}
-            {{ currentService?.name }} Instance
-          </h3>
-        </div>
-
-        <form @submit.prevent="saveInstance" :aria-busy="isSaving">
-          <div class="space-y-4">
-            <div>
-              <label
-                for="instanceName"
-                class="block text-sm font-medium text-gray-300 mb-1"
-              >
-                Instance Name
-              </label>
-              <input
-                id="instanceName"
-                v-model="instanceForm.name"
-                type="text"
-                required
-                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., My Jellyfin Server"
-                :aria-invalid="!!nameError"
-                @input="validateName"
-              />
-              <p v-if="nameError" class="mt-1 text-xs text-red-400">
-                {{ nameError }}
-              </p>
-            </div>
-
-            <div>
-              <label
-                for="baseUrl"
-                class="block text-sm font-medium text-gray-300 mb-1"
-              >
-                Base URL
-              </label>
-              <input
-                id="baseUrl"
-                v-model="instanceForm.baseUrl"
-                :type="currentService?.id === 'kodi' ? 'text' : 'url'"
-                required
-                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                :placeholder="getUrlPlaceholder(currentService?.id)"
-                :aria-invalid="!!urlError"
-                @input="validateUrl"
-              />
-              <p class="mt-1 text-xs text-gray-400">
-                {{ getUrlHelpText(currentService?.id) }}
-              </p>
-              <p v-if="urlError" class="mt-1 text-xs text-red-400">
-                {{ urlError }}
-              </p>
-            </div>
-
-            <div
-              v-if="
-                currentService?.id === 'jellyfin' ||
-                currentService?.id === 'plex' ||
-                currentService?.id === 'seerr' ||
-                currentService?.id === 'sonarr' ||
-                currentService?.id === 'radarr'
-              "
-            >
-              <label
-                for="apiKey"
-                class="block text-sm font-medium text-gray-300 mb-1"
-              >
-                API Key (Optional)
-              </label>
-              <input
-                id="apiKey"
-                v-model="instanceForm.apiKey"
-                type="password"
-                class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Leave empty if not needed"
-              />
-            </div>
-
-            <div class="flex items-center">
-              <input
-                id="isDefault"
-                v-model="instanceForm.isDefault"
-                type="checkbox"
-                class="h-4 w-4 text-blue-500 rounded border-gray-600 bg-gray-700 focus:ring-blue-500"
-                @change="handleDefaultChange"
-              />
-              <label for="isDefault" class="ml-2 block text-sm text-gray-300">
-                Set as default instance
-              </label>
+              <span class="ml-2 text-muted">
+                Loading subscription details...
+              </span>
             </div>
           </div>
 
-          <div class="mt-6 flex justify-end space-x-3">
+          <!-- Error Message -->
+          <div
+            v-if="offeringsError"
+            class="mb-4 p-3 bg-danger-soft/50 border border-danger rounded-lg"
+          >
+            <p class="text-danger text-sm">{{ offeringsError }}</p>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-wrap gap-3">
             <button
-              type="button"
-              @click="showInstanceModal = false"
-              class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
+              v-if="!isPro"
+              @click="handlePurchase"
+              :disabled="loadingOfferings || !currentOffering"
+              class="ui-button ui-button--primary flex-1"
             >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-              :disabled="!!nameError || !!urlError || isSaving"
-            >
-              <span v-if="isSaving" class="flex items-center">
+              <span
+                v-if="purchaseLoading"
+                class="flex items-center justify-center"
+              >
                 <svg
-                  class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                  class="animate-spin -ml-1 mr-3 h-5 w-5 text-current"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -361,49 +151,189 @@
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   ></path>
                 </svg>
-                Saving...
+                Processing...
               </span>
-              <span v-else>
-                {{ editingInstance ? "Update" : "Add" }} Instance
+              <span v-else>Purchase Subscription</span>
+            </button>
+
+            <button
+              @click="handleRestorePurchases"
+              :disabled="restoreLoading"
+              class="ui-button"
+            >
+              <span
+                v-if="restoreLoading"
+                class="flex items-center justify-center"
+              >
+                <svg
+                  class="animate-spin -ml-1 mr-3 h-5 w-5 text-current"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Restoring...
               </span>
+              <span v-else>Restore Purchases</span>
             </button>
           </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div
-      v-if="showDeleteModal"
-      class="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="delete-instance-title"
-    >
-      <div class="bg-gray-800 rounded-lg w-full max-w-md p-6" role="document">
-        <h3 id="delete-instance-title" class="text-xl font-semibold mb-4">
-          Delete Instance
-        </h3>
-        <p class="text-gray-300 mb-6">
-          Are you sure you want to delete the instance "{{
-            instanceToDelete?.instance.name
-          }}"?
+        </template>
+        <p v-else class="ui-description">
+          Subscriptions and purchase restoration are available in the MediaHub
+          mobile app.
         </p>
-        <div class="flex justify-end space-x-3">
+      </div>
+
+      <!-- Contact Support Section -->
+      <div class="ui-panel ui-panel-padding mb-6">
+        <h2 class="ui-section-title mb-2">Contact Support</h2>
+        <p class="text-muted mb-4">
+          Need help? Send us an email and we'll get back to you.
+        </p>
+        <button @click="contactSupport" class="ui-button ui-button--primary">
+          Contact Support
+        </button>
+      </div>
+    </main>
+
+    <!-- Add/Edit Instance Modal -->
+    <AppDialog
+      v-if="showInstanceModal"
+      :labelled-by="`${editingInstance ? 'edit' : 'add'}-instance-title`"
+      @close="showInstanceModal = false"
+    >
+      <div class="flex items-center mb-4">
+        <img
+          v-if="currentService"
+          :src="currentService.icon"
+          class="w-8 h-8 rounded mr-3 object-contain"
+          :alt="`${currentService.name} icon`"
+        />
+        <h3
+          :id="`${editingInstance ? 'edit' : 'add'}-instance-title`"
+          class="ui-section-title"
+        >
+          {{ editingInstance ? "Edit" : "Add" }}
+          {{ currentService?.name }} Instance
+        </h3>
+      </div>
+
+      <form @submit.prevent="saveInstance" :aria-busy="isSaving">
+        <div class="space-y-4">
+          <div>
+            <label
+              for="instanceName"
+              class="block text-sm font-medium text-muted mb-1"
+            >
+              Instance Name
+            </label>
+            <input
+              id="instanceName"
+              v-model="instanceForm.name"
+              type="text"
+              required
+              class="ui-input"
+              placeholder="e.g., My Jellyfin Server"
+              :aria-invalid="!!nameError"
+              @input="validateName"
+            />
+            <p v-if="nameError" class="mt-1 text-xs text-danger">
+              {{ nameError }}
+            </p>
+          </div>
+
+          <div>
+            <label
+              for="baseUrl"
+              class="block text-sm font-medium text-muted mb-1"
+            >
+              Base URL
+            </label>
+            <input
+              id="baseUrl"
+              v-model="instanceForm.baseUrl"
+              :type="currentService?.id === 'kodi' ? 'text' : 'url'"
+              required
+              class="ui-input"
+              :placeholder="getUrlPlaceholder(currentService?.id)"
+              :aria-invalid="!!urlError"
+              @input="validateUrl"
+            />
+            <p class="mt-1 text-xs text-muted">
+              {{ getUrlHelpText(currentService?.id) }}
+            </p>
+            <p v-if="urlError" class="mt-1 text-xs text-danger">
+              {{ urlError }}
+            </p>
+          </div>
+
+          <div
+            v-if="
+              currentService?.id === 'jellyfin' ||
+              currentService?.id === 'plex' ||
+              currentService?.id === 'seerr' ||
+              currentService?.id === 'sonarr' ||
+              currentService?.id === 'radarr'
+            "
+          >
+            <label
+              for="apiKey"
+              class="block text-sm font-medium text-muted mb-1"
+            >
+              API Key (Optional)
+            </label>
+            <input
+              id="apiKey"
+              v-model="instanceForm.apiKey"
+              type="password"
+              class="ui-input"
+              placeholder="Leave empty if not needed"
+            />
+          </div>
+
+          <div class="flex items-center">
+            <input
+              id="isDefault"
+              v-model="instanceForm.isDefault"
+              type="checkbox"
+              class="h-4 w-4 text-accent rounded border-line bg-raised focus:ring-accent"
+              @change="handleDefaultChange"
+            />
+            <label for="isDefault" class="ml-2 block text-sm text-muted">
+              Set as default instance
+            </label>
+          </div>
+        </div>
+
+        <div class="mt-6 flex flex-wrap justify-end gap-3">
           <button
-            @click="showDeleteModal = false"
-            class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
+            type="button"
+            @click="showInstanceModal = false"
+            class="ui-button ui-button--ghost"
           >
             Cancel
           </button>
           <button
-            @click="deleteInstance"
-            class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-            :disabled="isDeleting"
+            type="submit"
+            class="ui-button ui-button--primary"
+            :disabled="!!nameError || !!urlError || isSaving"
           >
-            <span v-if="isDeleting" class="flex items-center">
+            <span v-if="isSaving" class="flex items-center">
               <svg
-                class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                class="animate-spin -ml-1 mr-3 h-5 w-5 text-current"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -422,63 +352,119 @@
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 ></path>
               </svg>
-              Deleting...
+              Saving...
             </span>
-            <span v-else> Delete </span>
+            <span v-else>
+              {{ editingInstance ? "Update" : "Add" }} Instance
+            </span>
           </button>
         </div>
+      </form>
+    </AppDialog>
+
+    <!-- Delete Confirmation Modal -->
+    <AppDialog
+      v-if="showDeleteModal"
+      labelled-by="delete-instance-title"
+      @close="showDeleteModal = false"
+    >
+      <h3 id="delete-instance-title" class="ui-section-title mb-4">
+        Delete Instance
+      </h3>
+      <p class="text-muted mb-6">
+        Are you sure you want to delete the instance "{{
+          instanceToDelete?.instance.name
+        }}"?
+      </p>
+      <div class="flex justify-end space-x-3">
+        <button
+          @click="showDeleteModal = false"
+          class="ui-button ui-button--ghost"
+        >
+          Cancel
+        </button>
+        <button
+          @click="deleteInstance"
+          class="ui-button ui-button--danger"
+          :disabled="isDeleting"
+        >
+          <span v-if="isDeleting" class="flex items-center">
+            <svg
+              class="animate-spin -ml-1 mr-3 h-5 w-5 text-current"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            Deleting...
+          </span>
+          <span v-else>Delete</span>
+        </button>
       </div>
-    </div>
+    </AppDialog>
 
     <!-- Default Instance Confirmation Modal -->
-    <div
+    <AppDialog
       v-if="showDefaultConfirmModal"
-      class="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="default-instance-title"
+      labelled-by="default-instance-title"
+      @close="showDefaultConfirmModal = false"
     >
-      <div class="bg-gray-800 rounded-lg w-full max-w-md p-6" role="document">
-        <h3 id="default-instance-title" class="text-xl font-semibold mb-4">
-          Change Default Instance
-        </h3>
-        <p class="text-gray-300 mb-6">
-          Are you sure you want to set "{{ instanceForm.name }}" as the default
-          instance? This will replace the current default instance.
-        </p>
-        <div class="flex justify-end space-x-3">
-          <button
-            @click="showDefaultConfirmModal = false"
-            class="px-4 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            @click="confirmDefaultChange"
-            class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-          >
-            Confirm
-          </button>
-        </div>
+      <h3 id="default-instance-title" class="ui-section-title mb-4">
+        Change Default Instance
+      </h3>
+      <p class="text-muted mb-6">
+        Are you sure you want to set "{{ instanceForm.name }}" as the default
+        instance? This will replace the current default instance.
+      </p>
+      <div class="flex justify-end space-x-3">
+        <button
+          @click="showDefaultConfirmModal = false"
+          class="ui-button ui-button--ghost"
+        >
+          Cancel
+        </button>
+        <button
+          @click="confirmDefaultChange"
+          class="ui-button ui-button--primary"
+        >
+          Confirm
+        </button>
       </div>
-    </div>
+    </AppDialog>
     <div class="h-safe-bottom"></div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
+import AppDialog from "@/components/AppDialog.vue";
+import AppHeader from "@/components/AppHeader.vue";
 import InstanceCockpit from "@/components/InstanceCockpit.vue";
 import { useServicesStore } from "@/stores/services";
 import type { Service, CustomServiceInstance, InstanceCheckResult } from "@/types";
 import { useProducts } from "@/composables/products";
 import { Device } from "@capacitor/device";
+import { Capacitor } from "@capacitor/core";
 import { Purchases } from "@revenuecat/purchases-capacitor";
 import {
   RevenueCatUI,
   PAYWALL_RESULT,
 } from "@revenuecat/purchases-capacitor-ui";
 
+const nativePurchases = Capacitor.getPlatform() !== "web";
 const servicesStore = useServicesStore();
 const { hasPro } = useProducts();
 
@@ -604,6 +590,7 @@ const fetchOfferings = async () => {
 
 onMounted(async () => {
   isPro.value = await hasPro();
+  if (!nativePurchases) return;
 
   // Fetch customer ID and entitlements for display
   try {
@@ -845,5 +832,7 @@ const contactSupport = async () => {
 </script>
 
 <style scoped>
-/* Add any custom styles here */
+.settings-content {
+  padding-bottom: 16px;
+}
 </style>

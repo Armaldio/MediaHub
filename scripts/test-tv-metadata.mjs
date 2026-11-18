@@ -22,7 +22,9 @@ try {
   })));
 
   const page = await context.newPage();
-  page.setDefaultTimeout(15000);
+  const timeout = Number(process.env.BROWSER_TEST_TIMEOUT_MS || 15000);
+  page.setDefaultTimeout(timeout);
+  page.setDefaultNavigationTimeout(timeout);
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
 

@@ -1,242 +1,196 @@
 <template>
-  <div class="min-h-screen flex flex-col">
-    <!-- Header (fixed below the status bar; never scrolls under it) -->
-    <header class="flex-shrink-0 z-50 bg-gray-900 border-b border-gray-800" style="padding-top: env(safe-area-inset-top, 0px)">
-      <div class="max-w-7xl mx-auto px-4 py-4">
-        <div class="flex items-center justify-between">
-          <h1 class="text-2xl font-bold text-white">MediaHub</h1>
-          <div class="flex space-x-2"> 
-          <button
-            @click="goToIntroduction"
-            class="px-4 py-2 text-gray-300 hover:text-white transition-colors bg-gray-800 rounded-lg hover:bg-gray-700"
-          >
-            Manage Services
-          </button>
-          <button
-            @click="goToSettings"
-            class="px-4 py-2 text-gray-300 hover:text-white transition-colors bg-gray-800 rounded-lg hover:bg-gray-700"
-          >
-            <Cog class="h-6 w-6 text-gray-400 hover:text-white transition-colors" />
-            
-          </button>
-        </div>
-        </div>
-        
-        <!-- Search Bar -->
-        <div class="mt-4 relative">
+  <div class="ui-page">
+    <AppHeader>
+      <button
+        type="button"
+        @click="goToIntroduction"
+        class="ui-button ui-button--ghost manage-services"
+        aria-label="Manage services"
+        title="Manage services"
+      >
+        <span class="hidden sm:inline">Manage services</span>
+        <SlidersHorizontal :size="19" class="sm:hidden" aria-hidden="true" />
+      </button>
+      <button
+        type="button"
+        @click="goToSettings"
+        class="ui-button ui-button--ghost ui-icon-button"
+        aria-label="Settings"
+      >
+        <Cog :size="19" aria-hidden="true" />
+      </button>
+    </AppHeader>
+    <main class="ui-container home-content">
+      <div class="ui-page-intro">
+        <h1 class="ui-title">Find your next favorite.</h1>
+        <p class="ui-description">
+          Discover something good. Open it with the services you love.
+        </p>
+      </div>
+      <div class="home-search">
+        <label class="ui-search">
+          <Search :size="18" aria-hidden="true" />
           <input
             v-model="searchQuery"
             @input="handleSearch"
-            type="text"
-            placeholder="Search movies and TV shows..."
-            class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200"
-          >
-          <Search class="absolute right-3 top-3 h-6 w-6 text-gray-400" />
-          
-          <!-- Clear Search -->
+            type="search"
+            aria-label="Search movies and TV shows"
+            placeholder="Search movies and TV shows…"
+          />
           <button
             v-if="searchQuery"
+            type="button"
             @click="clearSearch"
-            class="absolute right-12 top-3 h-6 w-6 text-gray-400 hover:text-white transition-colors"
+            class="ui-button ui-button--ghost ui-icon-button"
+            aria-label="Clear search"
           >
-            <X class="h-4 w-4" />
+            <X :size="17" aria-hidden="true" />
           </button>
-        </div>
-
-        <!-- Filter Chips -->
-        <div v-if="moviesStore.searchResults.length > 0" class="mt-3 flex gap-2">
+        </label>
+        <nav
+          v-if="moviesStore.searchResults.length"
+          class="ui-tabs mt-3"
+          aria-label="Search result types"
+        >
           <button
             v-for="f in (['all','movie','tv'] as const)"
             :key="f"
             @click="filterType = f"
-            class="px-3 py-1 rounded-full text-sm border transition-colors"
-            :class="filterType === f ? 'bg-white text-gray-900 border-white' : 'bg-gray-800 text-gray-300 border-gray-700 hover:border-gray-600'"
+            class="ui-chip"
+            :aria-pressed="filterType === f"
           >
-            {{ f === 'all' ? 'All' : f === 'movie' ? 'Movies' : 'TV' }}
+            {{ f === "all" ? "All" : f === "movie" ? "Movies" : "TV" }}
           </button>
-        </div>
-
-        <!-- Recent Searches -->
-        <div v-if="!searchQuery && recentSearches.length > 0 && moviesStore.searchResults.length === 0" class="mt-3">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs text-gray-500 uppercase tracking-wide">Recent</span>
-            <button @click="clearRecent" class="text-xs text-gray-500 hover:text-gray-300">Clear</button>
+        </nav>
+        <div
+          v-if="
+            !searchQuery &&
+            recentSearches.length &&
+            !moviesStore.searchResults.length
+          "
+          class="mt-4"
+        >
+          <div
+            class="flex items-center justify-between mb-2 text-xs text-subtle"
+          >
+            <span>Recently searched</span>
+            <button @click="clearRecent" class="ui-link">Clear</button>
           </div>
-          <div class="flex flex-wrap gap-2">
+          <div class="ui-tabs">
             <button
               v-for="r in recentSearches"
               :key="r"
               @click="selectRecent(r)"
-              class="px-3 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-full text-sm border border-gray-700"
+              class="ui-chip border-line"
             >
               {{ r }}
             </button>
           </div>
         </div>
       </div>
-    </header>
 
-    <!-- Main Content -->
-    <main class="flex-1 overflow-y-auto w-full max-w-7xl mx-auto px-4 py-8">
-      <!-- Loading State -->
-      <div v-if="moviesStore.loading" class="py-12">
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7 gap-4">
-          <div v-for="i in 14" :key="`skeleton-${i}`" class="aspect-[2/3] bg-gray-800 rounded-xl animate-pulse"></div>
-        </div>
+      <div
+        v-if="moviesStore.loading"
+        class="media-grid"
+        role="status"
+        aria-label="Loading titles"
+      >
+        <div
+          v-for="i in 12"
+          :key="i"
+          class="aspect-[2/3] bg-surface rounded-panel animate-pulse"
+        ></div>
       </div>
-
-      <!-- Search Results -->
-      <section v-else-if="moviesStore.searchResults.length > 0" class="mb-12">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-2xl font-bold text-white">Search Results</h2>
-          <span class="text-gray-400">{{ filteredResults.length }} results</span>
+      <section
+        v-else-if="moviesStore.searchResults.length"
+        aria-label="Search results"
+      >
+        <div class="ui-section-heading">
+          <h2 class="ui-section-title">Search results</h2>
+          <span class="text-xs text-subtle">
+            {{ filteredResults.length }} results
+          </span>
         </div>
-        <div class="space-y-2">
-          <div
+        <div v-if="!filteredResults.length" class="ui-empty">
+          <h3>No titles in this category</h3>
+          <p>Try a different filter.</p>
+          <button @click="filterType = 'all'" class="ui-button">
+            Show all results
+          </button>
+        </div>
+        <div v-else class="search-results">
+          <button
             v-for="item in filteredResults"
             :key="`search-${item.id}`"
             @click="goToDetails(item)"
-            class="flex items-center gap-4 p-2 rounded-lg hover:bg-gray-800 cursor-pointer transition-colors"
+            class="search-result"
           >
             <img
               v-if="getResultPoster(item)"
               :src="getResultPoster(item)"
-              :alt="getResultTitle(item)"
-              class="w-12 h-18 object-cover rounded-md bg-gray-800 flex-shrink-0"
+              alt=""
+              class="result-poster"
             />
-            <div v-else class="w-12 h-18 bg-gray-800 rounded-md flex items-center justify-center flex-shrink-0">
-              <Film class="h-6 w-6 text-gray-500" />
-            </div>
-            <div class="flex-1 min-w-0">
-              <h3 class="text-white font-medium truncate">
+            <span v-else class="result-poster result-placeholder">
+              <Film :size="22" aria-hidden="true" />
+            </span>
+            <span class="flex-1 min-w-0 text-left">
+              <span class="block text-ink font-medium truncate">
                 {{ getResultTitle(item) }}
-              </h3>
-              <div class="flex items-center gap-2 text-sm text-gray-400 mt-0.5">
+              </span>
+              <span
+                class="flex flex-wrap items-center gap-2 text-xs text-muted mt-1"
+              >
                 <span v-if="getResultYear(item)">
                   {{ getResultYear(item) }}
                 </span>
-                <span v-if="(item as any).media_type" class="px-1.5 py-0.5 bg-gray-700 rounded text-xs">
-                  {{ (item as any).media_type === 'movie' ? 'Movie' : 'TV' }}
+                <span class="ui-badge">
+                  {{ item.media_type === "movie" ? "Movie" : "TV" }}
                 </span>
-                <span v-if="getResultRating(item)" class="flex items-center gap-1">
-                  <Star class="h-3 w-3 text-yellow-500 fill-current" />
+                <span
+                  v-if="getResultRating(item)"
+                  class="inline-flex items-center gap-1"
+                >
+                  <Star :size="12" class="text-warning" />
                   {{ getResultRating(item).toFixed(1) }}
                 </span>
-              </div>
-            </div>
-            <ChevronRight class="h-5 w-5 text-gray-500 flex-shrink-0" />
-          </div>
+              </span>
+            </span>
+            <ChevronRight :size="18" class="text-subtle" aria-hidden="true" />
+          </button>
         </div>
       </section>
-
-      <!-- Popular Content -->
-      <div v-else class="space-y-12">
-        <!-- Popular Movies -->
-        <section>
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-white">Popular Movies</h2>
-            <!-- <router-link 
-              to="/movies" 
-              class="text-gray-400 hover:text-white transition-colors text-sm font-medium flex items-center"
-            >
-              View All <ChevronRight class="h-4 w-4 ml-1" />
-            </router-link> -->
+      <div
+        v-else-if="searchQuery.trim().length >= 2"
+        class="ui-empty"
+        role="status"
+      >
+        <Search :size="28" aria-hidden="true" />
+        <h2>No titles found</h2>
+        <p>Try another title or a different spelling.</p>
+        <button @click="clearSearch" class="ui-button">Clear search</button>
+      </div>
+      <div v-else class="home-shelves">
+        <section v-for="shelf in shelves" :key="shelf.title">
+          <div class="ui-section-heading">
+            <h2 class="ui-section-title">{{ shelf.title }}</h2>
+            <span class="text-xs text-subtle">{{ shelf.caption }}</span>
           </div>
-          <div class="relative">
-            <div class="flex space-x-4 py-4 overflow-x-auto scrollbar-hide">
-              <MediaCard
-                v-for="movie in moviesStore.popularMovies.slice(0, 14)"
-                :key="`movie-${movie.id}`"
-                :media="{ ...movie, media_type: 'movie' }"
-                @click="goToDetails({ ...movie, media_type: 'movie' })"
-                class="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 transition-transform duration-200"
-              />
-            </div>
+          <div v-if="shelf.items.length" class="media-grid">
+            <MediaCard
+              v-for="item in shelf.items"
+              :key="`${item.media_type}-${item.id}`"
+              :media="item as (Movie | TV) & { media_type: string }"
+              @click="goToDetails(item)"
+            />
           </div>
-        </section>
-
-        <!-- Popular TV Shows -->
-        <section>
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-white">Popular TV Shows</h2>
-            <!-- <router-link 
-              to="/tv" 
-              class="text-gray-400 hover:text-white transition-colors text-sm font-medium flex items-center"
-            >
-              View All <ChevronRight class="h-4 w-4 ml-1" />
-            </router-link> -->
-          </div>
-          <div class="relative">
-            <div class="flex space-x-4 py-4 overflow-x-auto scrollbar-hide">
-              <MediaCard
-                v-for="show in moviesStore.popularTVShows.slice(0, 14)"
-                :key="`show-${show.id}`"
-                :media="{ ...show, media_type: 'tv' } as (Movie | TV) & { media_type?: string }"
-                @click="goToDetails({ ...show, media_type: 'tv' })"
-                class="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 transition-transform duration-200"
-              />
-            </div>
-          </div>
-        </section>
-
-        <!-- Trending This Week -->
-        <section v-if="moviesStore.trending.length > 0">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-white">Trending This Week</h2>
-            <!-- <router-link 
-              to="/trending" 
-              class="text-gray-400 hover:text-white transition-colors text-sm font-medium flex items-center"
-            >
-              View All <ChevronRight class="h-4 w-4 ml-1" />
-            </router-link> -->
-          </div>
-          <div class="relative">
-            <div class="flex space-x-4 py-4 overflow-x-auto scrollbar-hide">
-              <template v-for="item in moviesStore.trending.slice(0, 7)" :key="`trending-${item.id}-${item.media_type}`">
-                <MediaCard
-                  v-if="item.media_type === 'movie'"
-                  :media="{
-                    id: item.id,
-                    title: item.title || '',
-                    overview: item.overview || '',
-                    poster_path: item.poster_path || '',
-                    backdrop_path: item.backdrop_path || '',
-                    release_date: item.release_date || '',
-                    vote_average: item.vote_average || 0,
-                    genre_ids: item.genre_ids || [],
-                    original_title: item.original_title || '',
-                    original_language: item.original_language || 'en',
-                    adult: item.adult || false,
-                    video: item.video || false,
-                    vote_count: item.vote_count || 0,
-                    popularity: item.popularity || 0
-                  }"
-                  @click="goToDetails({ media_type: 'movie', id: item.id })"
-                  class="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 transition-transform duration-200"
-                />
-                <MediaCard
-                  v-else-if="item.media_type === 'tv'"
-                  :media="{
-                    id: item.id,
-                    name: item.name || '',
-                    overview: item.overview || '',
-                    poster_path: item.poster_path || '',
-                    backdrop_path: item.backdrop_path || '',
-                    first_air_date: item.first_air_date || '',
-                    vote_average: item.vote_average || 0,
-                    genre_ids: item.genre_ids || [],
-                    origin_country: item.origin_country || [],
-                    original_language: item.original_language || 'en',
-                    original_name: item.original_name || '',
-                    adult: item.adult || false,
-                    popularity: item.popularity || 0,
-                    vote_count: item.vote_count || 0
-                  }"
-                  @click="goToDetails({ media_type: 'tv', id: item.id })"
-                  class="flex-shrink-0 w-48 sm:w-56 md:w-64 lg:w-72 xl:w-80 transition-transform duration-200"
-                />
-              </template>
-            </div>
+          <div v-else class="ui-empty">
+            <Film :size="26" aria-hidden="true" />
+            <h3>No titles available</h3>
+            <p>Check your connection and try again.</p>
+            <button @click="fetchInitialData" class="ui-button">
+              Try again
+            </button>
           </div>
         </section>
       </div>
@@ -245,106 +199,141 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { Search, X, Cog, Film, Star, ChevronRight } from 'lucide-vue-next'
-import { useMoviesStore } from '@/stores/movies'
-import MediaCard from '@/components/MediaCard.vue'
-import { loadRecentSearches } from '@/utils/recentSearches'
-import { MultiSearchResult, Movie, TV } from 'tmdb-ts'
+import { ref, onMounted, onUnmounted, computed, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { Search, X, Cog, Film, Star, ChevronRight, SlidersHorizontal } from "lucide-vue-next";
+import { useMoviesStore } from "@/stores/movies";
+import MediaCard from "@/components/MediaCard.vue";
+import AppHeader from "@/components/AppHeader.vue";
+import { loadRecentSearches } from "@/utils/recentSearches";
+import { MultiSearchResult, Movie, TV } from "tmdb-ts";
 
-const router = useRouter()
-const route = useRoute()
-const moviesStore = useMoviesStore()
-const searchQuery = ref('')
-const filterType = ref<'all' | 'movie' | 'tv'>('all')
-const recentSearches = ref<string[]>(loadRecentSearches())
-let searchTimeout: ReturnType<typeof setTimeout>
+const router = useRouter();
+const route = useRoute();
+const moviesStore = useMoviesStore();
+const shelves = computed(() => [
+  {
+    title: "Popular movies",
+    caption: "Worth a watch",
+    items: moviesStore.popularMovies
+      .slice(0, 12)
+      .map((movie) => ({ ...movie, media_type: "movie" })),
+  },
+  {
+    title: "Popular TV shows",
+    caption: "Your next obsession",
+    items: moviesStore.popularTVShows
+      .slice(0, 12)
+      .map((show) => ({ ...show, media_type: "tv" })),
+  },
+  {
+    title: "Trending this week",
+    caption: "In the conversation",
+    items: moviesStore.trending
+      .filter((item) => item.media_type === "movie" || item.media_type === "tv")
+      .slice(0, 6),
+  },
+]);
+const searchQuery = ref("");
+const filterType = ref<"all" | "movie" | "tv">("all");
+const recentSearches = ref<string[]>(loadRecentSearches());
+let searchTimeout: ReturnType<typeof setTimeout>;
 
 const saveRecent = (q: string) => {
-  const normalized = q.trim()
-  if (!normalized || normalized.length < 2) return
-  const next = [normalized, ...recentSearches.value.filter(s => s.toLowerCase() !== normalized.toLowerCase())].slice(0, 10)
-  recentSearches.value = next
-  localStorage.setItem('recentSearches', JSON.stringify(next))
-}
+  const normalized = q.trim();
+  if (!normalized || normalized.length < 2) return;
+  const next = [
+    normalized,
+    ...recentSearches.value.filter(
+      (s) => s.toLowerCase() !== normalized.toLowerCase()
+    ),
+  ].slice(0, 10);
+  recentSearches.value = next;
+  localStorage.setItem("recentSearches", JSON.stringify(next));
+};
 
 const handleSearch = () => {
-  clearTimeout(searchTimeout)
+  clearTimeout(searchTimeout);
   searchTimeout = setTimeout(() => {
-    const q = searchQuery.value.trim()
-    if (q) saveRecent(q)
-    moviesStore.searchMulti(q)
-  }, 300)
-}
+    const q = searchQuery.value.trim();
+    if (q) saveRecent(q);
+    moviesStore.searchMulti(q);
+  }, 300);
+};
 
 const clearSearch = () => {
-  clearTimeout(searchTimeout)
-  searchQuery.value = ''
-  moviesStore.clearSearch()
-}
+  clearTimeout(searchTimeout);
+  searchQuery.value = "";
+  moviesStore.clearSearch();
+};
 
 const filteredResults = computed(() => {
-  if (filterType.value === 'all') return moviesStore.searchResults
-  return moviesStore.searchResults.filter(r => r.media_type === filterType.value)
-})
+  if (filterType.value === "all") return moviesStore.searchResults;
+  return moviesStore.searchResults.filter(
+    (r) => r.media_type === filterType.value
+  );
+});
 
 const getResultPoster = (item: MultiSearchResult) => {
-  const path = (item as any).poster_path as string | null | undefined
-  if (!path) return undefined
-  return moviesStore.getImageUrl(path, 'w92') as string | undefined
-}
+  const path = (item as any).poster_path as string | null | undefined;
+  if (!path) return undefined;
+  return moviesStore.getImageUrl(path, "w92") as string | undefined;
+};
 
 const getResultTitle = (item: MultiSearchResult) => {
-  return (item as any).title || (item as any).name || ''
-}
+  return (item as any).title || (item as any).name || "";
+};
 
 const getResultYear = (item: MultiSearchResult) => {
-  const date = (item as any).release_date || (item as any).first_air_date || ''
-  return date ? new Date(date).getFullYear() : null
-}
+  const date = (item as any).release_date || (item as any).first_air_date || "";
+  return date ? new Date(date).getFullYear() : null;
+};
 
 const getResultRating = (item: MultiSearchResult) => {
-  return (item as any).vote_average || 0
-}
+  return (item as any).vote_average || 0;
+};
 
 const selectRecent = (q: string) => {
-  clearTimeout(searchTimeout)
-  searchQuery.value = q
-  moviesStore.searchMulti(q)
-}
+  clearTimeout(searchTimeout);
+  searchQuery.value = q;
+  moviesStore.searchMulti(q);
+};
 
 const clearRecent = () => {
-  recentSearches.value = []
-  localStorage.removeItem('recentSearches')
-}
+  recentSearches.value = [];
+  localStorage.removeItem("recentSearches");
+};
 
-watch(() => route.query.q, (q) => {
-  if (typeof q === 'string' && q) {
-    searchQuery.value = q
-    moviesStore.searchMulti(q)
-  }
-}, { immediate: true })
+watch(
+  () => route.query.q,
+  (q) => {
+    if (typeof q === "string" && q) {
+      searchQuery.value = q;
+      moviesStore.searchMulti(q);
+    }
+  },
+  { immediate: true }
+);
 
 const goToDetails = (item: { id: number; media_type: string }) => {
-  const mediaType = item.media_type
-  router.push({name: 'details-tmdb', params: { mediaType, tmdbId: item.id }})
-}
+  const mediaType = item.media_type;
+  router.push({ name: "details-tmdb", params: { mediaType, tmdbId: item.id } });
+};
 
 const goToSettings = () => {
   router.push({
-    name: 'settings'
-  })
-}
+    name: "settings",
+  });
+};
 
 const goToIntroduction = () => {
   router.push({
-    name: 'introduction',
+    name: "introduction",
     query: {
-      force: '1'
-    }
-  })
-}
+      force: "1",
+    },
+  });
+};
 
 // Fetch initial data
 const fetchInitialData = async () => {
@@ -352,20 +341,84 @@ const fetchInitialData = async () => {
     await Promise.all([
       moviesStore.fetchPopularMovies(),
       moviesStore.fetchPopularTVShows(),
-      moviesStore.fetchTrending('all', 'week')
-    ])
+      moviesStore.fetchTrending("all", "week"),
+    ]);
   } catch (error) {
-    console.error('Error fetching initial data:', error)
+    console.error("Error fetching initial data:", error);
   }
-}
-
-// Functions for loading more content can be implemented here when needed
-// Currently using View All links for better UX
+};
 
 // Fetch data when component mounts
-onMounted(fetchInitialData)
+onMounted(fetchInitialData);
 onUnmounted(() => {
-  clearTimeout(searchTimeout)
-  moviesStore.clearSearch()
-})
+  clearTimeout(searchTimeout);
+  moviesStore.clearSearch();
+});
 </script>
+
+<style scoped>
+.home-search {
+  max-width: 680px;
+  margin-bottom: 32px;
+}
+.home-shelves {
+  display: grid;
+  gap: 36px;
+}
+.media-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 16px;
+}
+.search-results {
+  display: grid;
+  gap: 8px;
+  max-width: 800px;
+}
+.search-result {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line-soft);
+  border-radius: var(--radius-panel);
+  cursor: pointer;
+}
+.search-result:hover {
+  border-color: var(--color-accent-line);
+  background: var(--color-hover);
+}
+.result-poster {
+  width: 44px;
+  height: 66px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.result-placeholder {
+  display: grid;
+  place-items: center;
+  background: var(--color-raised);
+  color: var(--color-subtle);
+}
+@media (max-width: 900px) {
+  .media-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 580px) {
+  .media-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .ui-section-heading > span {
+    display: none;
+  }
+  .manage-services {
+    padding-inline: 8px;
+    font-size: 12px;
+  }
+}
+</style>

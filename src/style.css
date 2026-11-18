@@ -1,140 +1,432 @@
 @import "tailwindcss";
 
-@theme {
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-secondary-500: #8b5cf6;
-  --color-secondary-600: #7c3aed;
+/* MediaHub: shared palette, shape and rhythm, taken from the service picker. */
+@theme static {
+  --color-canvas: #111114;
+  --color-surface: #1a191f;
+  --color-raised: #25222b;
+  --color-hover: #211e27;
+  --color-line: #38343f;
+  --color-line-soft: #29282f;
+  --color-ink: #f4f3f7;
+  --color-muted: #aba3b6;
+  --color-subtle: #97919f;
+  --color-accent: #ccb2fc;
+  --color-accent-hover: #ddcaff;
+  --color-accent-soft: #2c243c;
+  --color-accent-line: #4c3d65;
+  --color-on-accent: #241632;
+  --color-success: #a8cdb4;
+  --color-success-soft: #20332b;
+  --color-danger: #f0a6b2;
+  --color-danger-soft: #38212a;
+  --color-warning: #e2c28f;
+  --color-warning-soft: #342d22;
+  --color-scrim: #111114df;
+  --color-overlay: #000a;
+  --shadow-dialog: 0 24px 80px #0006;
+  --radius-control: 8px;
+  --radius-panel: 12px;
+  --font-sans: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
 }
 
 :root {
-  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, sans-serif;
+  font-family: var(--font-sans);
+  font-size: 16px;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #0f0f0f;
+  color: var(--color-ink);
+  background: var(--color-canvas);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: #0f0f0f;
-  overscroll-behavior-y: contain;
-}
-
-html, body, #app {
-  padding: 0;
-  margin: 0;
-}
-
-html {
-  overscroll-behavior: none;
-}
-
-#app {
-  overscroll-behavior-y: contain;
+  --space-page: 28px;
+  --content-width: 1080px;
+  --duration-ui: 150ms;
 }
 
 * {
   box-sizing: border-box;
 }
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+html {
+  overscroll-behavior: none;
+}
+body {
+  font-size: 14px;
+  min-width: 320px;
+  background: var(--color-canvas);
+  overscroll-behavior-y: contain;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+button,
+a,
+input,
+select,
+textarea {
+  accent-color: var(--color-accent);
+}
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+::selection {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
 
-/* Safe Area Utilities */
+@layer components {
+  /* Shared layout and type. Page-specific CSS handles composition only. */
+  .ui-page {
+    min-height: 100vh;
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  }
+  .ui-container {
+    width: 100%;
+    max-width: calc(var(--content-width) + 2 * var(--space-page));
+    padding-inline: var(--space-page);
+    margin-inline: auto;
+  }
+  .ui-page-intro {
+    padding-block: 28px 24px;
+  }
+  .ui-title {
+    margin: 0 0 10px;
+    font-size: clamp(28px, 4vw, 34px);
+    line-height: 1.2;
+    letter-spacing: -1.3px;
+    font-weight: 600;
+  }
+  .ui-description {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .ui-section-title {
+    margin: 0;
+    font-size: 18px;
+    line-height: 1.4;
+    letter-spacing: -0.35px;
+    font-weight: 550;
+  }
+  .ui-section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .ui-panel {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line-soft);
+    border-radius: var(--radius-panel);
+  }
+  .ui-panel-padding {
+    padding: 24px;
+  }
+  .ui-empty {
+    padding: 48px 20px;
+    border: 1px dashed var(--color-line);
+    border-radius: var(--radius-panel);
+    text-align: center;
+    color: var(--color-muted);
+  }
+  .ui-empty > svg {
+    margin: 0 auto 16px;
+    color: var(--color-subtle);
+  }
+  .ui-empty h2,
+  .ui-empty h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 550;
+    color: var(--color-ink);
+  }
+  .ui-empty p {
+    margin: 0 0 20px;
+  }
+
+  /* Controls share shape, focus, disabled treatment and motion. */
+  .ui-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 16px;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-control);
+    background: var(--color-raised);
+    color: var(--color-ink);
+    font-size: 13px;
+    font-weight: 550;
+    line-height: 1.4;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background var(--duration-ui), border-color var(--duration-ui);
+  }
+  .ui-button:hover:not(:disabled) {
+    background: var(--color-hover);
+    border-color: var(--color-subtle);
+  }
+  .ui-button--primary {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-on-accent);
+    font-weight: 650;
+  }
+  .ui-button--primary:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+    border-color: var(--color-accent-hover);
+  }
+  .ui-button--ghost {
+    background: transparent;
+    border-color: transparent;
+    color: var(--color-muted);
+  }
+  .ui-button--ghost:hover:not(:disabled) {
+    color: var(--color-ink);
+    border-color: transparent;
+    background: var(--color-raised);
+  }
+  .ui-button--danger {
+    color: var(--color-danger);
+    background: var(--color-danger-soft);
+    border-color: var(--color-danger);
+  }
+  .ui-button--danger:hover:not(:disabled) {
+    background: var(--color-danger-soft);
+    border-color: var(--color-ink);
+  }
+  .ui-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .ui-icon-button {
+    width: 40px;
+    min-height: 40px;
+    padding: 8px;
+    flex-shrink: 0;
+  }
+  .ui-link {
+    color: var(--color-accent);
+    text-underline-offset: 4px;
+    cursor: pointer;
+  }
+  .ui-link:hover {
+    text-decoration: underline;
+  }
+  .ui-input {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 11px 14px;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-size: 13px;
+    transition: border-color var(--duration-ui);
+  }
+  .ui-input::placeholder {
+    color: var(--color-subtle);
+  }
+  .ui-input:focus {
+    border-color: var(--color-accent);
+  }
+  .ui-input[aria-invalid="true"] {
+    border-color: var(--color-danger);
+  }
+  .ui-search {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    border: 1px solid var(--color-line);
+    border-radius: 10px;
+    background: var(--color-surface);
+    padding: 0 14px;
+    color: var(--color-subtle);
+  }
+  .ui-search:focus-within {
+    border-color: var(--color-accent);
+    outline: 2px solid color-mix(in srgb, var(--color-accent) 15%, transparent);
+  }
+  .ui-search > svg {
+    flex-shrink: 0;
+  }
+  .ui-search input {
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 12px 0;
+    color: var(--color-ink);
+    font-size: 13px;
+    background: transparent;
+    border: 0;
+    outline: none;
+  }
+  .ui-search input::placeholder {
+    color: var(--color-subtle);
+  }
+  .ui-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .ui-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 7px 12px;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--color-muted);
+    font-size: 12px;
+    line-height: 1.4;
+    cursor: pointer;
+  }
+  .ui-chip:hover {
+    background: var(--color-raised);
+    color: var(--color-ink);
+  }
+  .ui-chip[aria-pressed="true"] {
+    background: var(--color-accent-soft);
+    border-color: var(--color-accent-line);
+    color: var(--color-accent);
+  }
+  .ui-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid var(--color-line);
+    border-radius: 5px;
+    padding: 2px 7px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-muted);
+  }
+  .ui-badge--accent {
+    color: var(--color-accent);
+    background: var(--color-accent-soft);
+    border-color: var(--color-accent-line);
+  }
+  .ui-badge--success {
+    color: var(--color-success);
+    background: var(--color-success-soft);
+  }
+  .ui-badge--danger {
+    color: var(--color-danger);
+    background: var(--color-danger-soft);
+  }
+  .ui-badge--warning {
+    color: var(--color-warning);
+    background: var(--color-warning-soft);
+  }
+  .ui-dialog {
+    width: calc(100% - 40px);
+    max-width: 460px;
+    max-height: calc(
+      100dvh - 40px - env(safe-area-inset-top, 0px) -
+        env(safe-area-inset-bottom, 0px)
+    );
+    margin: auto;
+    overflow-y: auto;
+    color: var(--color-ink);
+    padding: 24px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: 16px;
+    box-shadow: var(--shadow-dialog);
+  }
+
+  .ui-dialog::backdrop {
+    background: var(--color-overlay);
+    backdrop-filter: blur(6px);
+  }
+}
+
 .h-safe-top {
   height: env(safe-area-inset-top, 0px);
   width: 100%;
-  position: relative;
 }
-
 .h-safe-bottom {
   height: env(safe-area-inset-bottom, 0px);
   width: 100%;
-  position: relative;
 }
-
 .min-h-screen-safe {
   min-height: calc(
     100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)
   );
 }
-
-/* Safe-area aware padding helpers (used where a flex-centered layout
-   makes spacer divs awkward, e.g. Introduction.vue) */
-.safe-pt {
-  padding-top: calc(env(safe-area-inset-top, 0px) + 1rem);
-}
-.safe-pb {
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1rem);
-}
-
-/* Glass Effect */
-.glass-effect {
-  background: rgba(31, 41, 55, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-
-
-/* Scrollbar Utilities */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
-
 .scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none;
 }
-
-.card-hover {
-  transition: all 0.3s ease;
-}
-
-.card-hover:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-}
-
-.service-card {
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-}
-
-.service-card.selected {
-  border-color: #3b82f6;
-  background: rgba(59, 130, 246, 0.1);
-}
-
-.service-card:hover {
-  transform: scale(1.02);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
-
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-canvas);
 }
-
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--color-line);
   border-radius: 4px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: var(--color-subtle);
+}
+@media (max-width: 580px) {
+  :root {
+    --space-page: 20px;
+  }
+  .ui-panel-padding,
+  .ui-dialog {
+    padding: 20px;
+  }
+  .ui-description {
+    font-size: 13px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }
