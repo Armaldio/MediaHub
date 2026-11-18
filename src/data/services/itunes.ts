@@ -1,4 +1,4 @@
-import itunesIcon from "../../assets/apps/images/itunes/assets/logo.svg";
+import itunesIcon from "../../assets/apps/images/itunes/assets/brand.jpg";
 import { Service } from "../../types/index";
 import { withAffiliate } from "../../utils/affiliate";
 

@@ -1,4 +1,4 @@
-import maxIcon from "../../assets/apps/images/max/assets/play_store.png";
+import maxIcon from "../../assets/apps/images/max/assets/play_store.webp";
 import { Service } from "../../types/index";
 
 export const max: Service = {

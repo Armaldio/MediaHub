@@ -1,4 +1,4 @@
-import tvmazeIcon from "../../assets/apps/images/tvmaze/assets/logo.svg";
+import tvmazeIcon from "../../assets/apps/images/tvmaze/assets/brand.png";
 import { Service } from "../../types/index";
 
 async function lookupTVMazeShow(

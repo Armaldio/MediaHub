@@ -1,4 +1,4 @@
-import disneyPlusIcon from "../../assets/apps/images/disney_plus/assets/play_store.png";
+import disneyPlusIcon from "../../assets/apps/images/disney_plus/assets/play_store.webp";
 import { Service } from "../../types/index";
 
 export const disneyPlus: Service = {

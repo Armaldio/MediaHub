@@ -1,4 +1,4 @@
-import huluIcon from "../../assets/apps/images/hulu/assets/logo.svg";
+import huluIcon from "../../assets/apps/images/hulu/assets/play_store.webp";
 import { Service } from "../../types/index";
 import { withAffiliate } from "../../utils/affiliate";
 

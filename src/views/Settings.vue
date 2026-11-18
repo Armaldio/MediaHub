@@ -228,7 +228,7 @@
           <img
             v-if="currentService"
             :src="currentService.icon"
-            class="w-8 h-8 rounded mr-3"
+            class="w-8 h-8 rounded mr-3 object-contain"
             :alt="`${currentService.name} icon`"
           />
           <h3

@@ -1,4 +1,4 @@
-import imdbIcon from "../../assets/apps/images/imdb/assets/play_store.png";
+import imdbIcon from "../../assets/apps/images/imdb/assets/play_store.webp";
 import { Service } from "../../types/index";
 import { imdbTvId, imdbTvUrl } from "./providerUrls";
 

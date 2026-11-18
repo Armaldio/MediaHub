@@ -1,4 +1,4 @@
-import csfdIcon from "../../assets/apps/images/csfd/assets/logo.svg";
+import csfdIcon from "../../assets/apps/images/csfd/assets/brand.png";
 import { Service } from "../../types/index";
 
 export const csfd: Service = {

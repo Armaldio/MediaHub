@@ -1,4 +1,4 @@
-import crunchyrollIcon from "../../assets/apps/images/crunchyroll/assets/logo.svg";
+import crunchyrollIcon from "../../assets/apps/images/crunchyroll/assets/play_store.webp";
 import { Service } from "../../types/index";
 import { withAffiliate } from "../../utils/affiliate";
 

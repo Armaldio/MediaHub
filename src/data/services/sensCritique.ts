@@ -1,4 +1,4 @@
-import sensCritiqueIcon from "../../assets/apps/images/senscritique/assets/logo.svg";
+import sensCritiqueIcon from "../../assets/apps/images/senscritique/assets/brand.png";
 import { Service } from "../../types/index";
 
 export const sensCritique: Service = {

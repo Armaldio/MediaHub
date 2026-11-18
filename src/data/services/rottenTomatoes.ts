@@ -1,4 +1,4 @@
-import rottenTomatoesIcon from "../../assets/apps/images/rotten_tomatoes/assets/logo.svg";
+import rottenTomatoesIcon from "../../assets/apps/images/rotten_tomatoes/assets/favicon.png";
 import { Service } from "../../types/index";
 
 export const rottenTomatoes: Service = {

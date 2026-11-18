@@ -1,4 +1,4 @@
-import appleTvPlusIcon from "../../assets/apps/images/apple_tv_plus/assets/play_store.png";
+import appleTvPlusIcon from "../../assets/apps/images/apple_tv_plus/assets/play_store.webp";
 import { Service } from "../../types/index";
 
 export const appleTvPlus: Service = {

@@ -1,4 +1,4 @@
-import nzb360Icon from "../../assets/apps/images/nzb360/assets/play_store.png";
+import nzb360Icon from "../../assets/apps/images/nzb360/assets/play_store.webp";
 import { Service } from "../../types/index";
 
 export const nzb360: Service = {

@@ -1,4 +1,4 @@
-import betaseriesIcon from "../../assets/apps/images/betaseries/assets/play_store.png";
+import betaseriesIcon from "../../assets/apps/images/betaseries/assets/play_store.webp";
 import { Service } from "../../types/index";
 
 export const betaseries: Service = {

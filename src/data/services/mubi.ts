@@ -1,4 +1,4 @@
-import mubiIcon from "../../assets/apps/images/mubi/assets/play_store.png";
+import mubiIcon from "../../assets/apps/images/mubi/assets/play_store.webp";
 import { Service } from "../../types/index";
 
 export const mubi: Service = {

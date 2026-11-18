@@ -1,4 +1,4 @@
-import boxOfficeMojoIcon from "../../assets/apps/images/boxofficemojo/assets/logo.svg";
+import boxOfficeMojoIcon from "../../assets/apps/images/boxofficemojo/assets/brand.png";
 import { Service } from "../../types/index";
 
 export const boxOfficeMojo: Service = {

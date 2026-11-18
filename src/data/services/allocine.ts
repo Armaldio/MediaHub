@@ -1,4 +1,4 @@
-import allocineIcon from "../../assets/apps/images/allocine/assets/play_store.png";
+import allocineIcon from "../../assets/apps/images/allocine/assets/play_store.webp";
 import { Service } from "../../types/index";
 import { allocineUrl, hasAllocineMovieId } from "../../utils/knownProviderLinks";
 

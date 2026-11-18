@@ -60,7 +60,7 @@
       >
         <div class="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div class="flex min-w-0 gap-3">
-            <img :src="entry.service.icon" :alt="`${entry.service.name} icon`" width="36" height="36" class="h-9 w-9 shrink-0 rounded" />
+            <img :src="entry.service.icon" :alt="`${entry.service.name} icon`" width="36" height="36" class="h-9 w-9 shrink-0 rounded object-contain" />
             <div class="min-w-0">
               <div class="flex flex-wrap items-center gap-2">
                 <h3 class="truncate font-medium text-white">{{ entry.instance.name }}</h3>
@@ -150,7 +150,7 @@
             class="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left hover:bg-gray-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
             role="listitem"
           >
-            <img :src="service.icon" :alt="`${service.name} icon`" width="28" height="28" class="h-7 w-7 rounded" />
+            <img :src="service.icon" :alt="`${service.name} icon`" width="28" height="28" class="h-7 w-7 rounded object-contain" />
             <span class="font-medium">{{ service.name }}</span>
             <span class="ml-auto text-sm text-gray-400">Add</span>
           </button>

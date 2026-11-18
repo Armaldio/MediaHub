@@ -15,6 +15,21 @@ try {
   const baseUrl = process.env.BASE_URL || 'http://127.0.0.1:5173'
   await page.goto(`${baseUrl}/?force=1`)
   await page.getByRole('heading', { name: 'Your services. One place.' }).waitFor()
+  // Decode every icon, including those below the fold that are lazy loaded.
+  const icons = await page.locator('.picker-card').evaluateAll(async cards => Promise.all(cards.map(async card => {
+    const name = card.querySelector('.service-name').textContent
+    const image = new Image()
+    image.src = card.querySelector('img')?.src || ''
+    try {
+      await image.decode()
+      return { name, src: image.src, loaded: image.naturalWidth > 0 }
+    } catch {
+      return { name, src: image.src, loaded: false }
+    }
+  })))
+  assert.ok(icons.length > 0, 'The service catalog is populated')
+  assert.deepEqual(icons.filter(icon => !icon.loaded), [], 'Every service has a working icon')
+  assert.equal(new Set(icons.map(icon => icon.src)).size, icons.length, 'Services use their own icons')
   const next = page.getByRole('button', { name: 'Continue', exact: true })
   assert.equal(await next.isDisabled(), true)
   const choices = page.getByRole('checkbox')
@@ -57,7 +72,7 @@ try {
   await next.click()
   await page.waitForURL('**/home')
   assert.deepEqual(errors, [])
-  console.log('Service picker: keyboard selection, reorder, persistence, filters, mobile layout, and continuation passed')
+  console.log('Service picker: all service icons, keyboard selection, reorder, persistence, filters, mobile layout, and continuation passed')
 } finally {
   await browser.close()
 }

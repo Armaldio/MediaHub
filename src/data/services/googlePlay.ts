@@ -1,4 +1,4 @@
-import googlePlayIcon from "../../assets/apps/images/googleplay/assets/logo.svg";
+import googlePlayIcon from "../../assets/apps/images/googleplay/assets/play_store.webp";
 import { Service } from "../../types/index";
 
 export const googlePlay: Service = {

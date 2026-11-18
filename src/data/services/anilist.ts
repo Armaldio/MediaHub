@@ -1,4 +1,4 @@
-import anilistIcon from "../../assets/apps/images/anilist/assets/logo.svg";
+import anilistIcon from "../../assets/apps/images/anilist/assets/brand.png";
 import { Service } from "../../types/index";
 
 // AniList is anime/manga only; the Wikidata P8729 (AniList anime ID) claim

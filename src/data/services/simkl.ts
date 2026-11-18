@@ -1,4 +1,4 @@
-import simklIcon from "../../assets/apps/images/simkl/assets/play_store.png";
+import simklIcon from "../../assets/apps/images/simkl/assets/play_store.webp";
 import { Service } from "../../types/index";
 
 export const simkl: Service = {

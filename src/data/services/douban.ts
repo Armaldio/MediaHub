@@ -1,4 +1,4 @@
-import doubanIcon from "../../assets/apps/images/douban/assets/logo.svg";
+import doubanIcon from "../../assets/apps/images/douban/assets/brand.png";
 import { Service } from "../../types/index";
 
 export const douban: Service = {

@@ -1,4 +1,4 @@
-import filmAffinityIcon from "../../assets/apps/images/filmaffinity/assets/logo.svg";
+import filmAffinityIcon from "../../assets/apps/images/filmaffinity/assets/brand.png";
 import { Service } from "../../types/index";
 
 export const filmAffinity: Service = {

@@ -1,4 +1,4 @@
-import jellyfinIcon from "../../assets/apps/images/jellyfin/assets/play_store.png";
+import jellyfinIcon from "../../assets/apps/images/jellyfin/assets/play_store.webp";
 import { Service, CustomServiceInstance } from "../../types/index";
 import { FormattedDetails } from "../../models/models";
 import { checkHttpInstance } from "../../utils/instanceHealth";

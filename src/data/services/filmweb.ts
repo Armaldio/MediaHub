@@ -1,4 +1,4 @@
-import filmwebIcon from "../../assets/apps/images/filmweb/assets/logo.svg";
+import filmwebIcon from "../../assets/apps/images/filmweb/assets/favicon.png";
 import { Service } from "../../types/index";
 import { filmwebUrl } from "../../utils/knownProviderLinks";
 

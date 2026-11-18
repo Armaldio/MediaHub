@@ -1,4 +1,4 @@
-import sonarrIcon from "../../assets/apps/images/jellyfin/assets/play_store.png"; // ponytail: add src/assets/apps/images/sonarr/assets/logo.svg when sourced
+import sonarrIcon from "../../assets/apps/images/sonarr/assets/brand.png";
 import { Service, CustomServiceInstance } from "../../types/index";
 import { FormattedDetails } from "../../models/models";
 import { arrHeaders, arrItemUrl, arrSearchUrl } from "./arrShared";

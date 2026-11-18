@@ -1,4 +1,4 @@
-import peacockIcon from "../../assets/apps/images/peacock/assets/logo.svg";
+import peacockIcon from "../../assets/apps/images/peacock/assets/brand.png";
 import { Service } from "../../types/index";
 import { withAffiliate } from "../../utils/affiliate";
 

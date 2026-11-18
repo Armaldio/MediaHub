@@ -1,4 +1,4 @@
-import kodiIcon from "../../assets/apps/images/kodi/assets/play_store.png";
+import kodiIcon from "../../assets/apps/images/kodi/assets/play_store.webp";
 import { Service } from "../../types/index";
 import { checkHttpInstance } from "../../utils/instanceHealth";
 

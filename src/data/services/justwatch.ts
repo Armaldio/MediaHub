@@ -1,4 +1,4 @@
-import justWatchIcon from "../../assets/apps/images/justwatch/assets/play_store.png";
+import justWatchIcon from "../../assets/apps/images/justwatch/assets/play_store.webp";
 import { Service } from "../../types/index";
 
 export const justwatch: Service = {

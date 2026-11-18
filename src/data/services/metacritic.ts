@@ -1,4 +1,4 @@
-import metacriticIcon from "../../assets/apps/images/metacritic/assets/logo.svg";
+import metacriticIcon from "../../assets/apps/images/metacritic/assets/favicon.svg";
 import { Service } from "../../types/index";
 import { metacriticUrl } from "../../utils/knownProviderLinks";
 

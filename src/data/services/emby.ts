@@ -1,4 +1,4 @@
-import embyIcon from "../../assets/apps/images/emby/assets/logo.svg";
+import embyIcon from "../../assets/apps/images/emby/assets/favicon.png";
 import { Service, CustomServiceInstance } from "../../types/index";
 import { FormattedDetails } from "../../models/models";
 import { checkHttpInstance } from "../../utils/instanceHealth";

@@ -1,4 +1,4 @@
-import paramountPlusIcon from "../../assets/apps/images/paramount_plus/assets/play_store.png";
+import paramountPlusIcon from "../../assets/apps/images/paramount_plus/assets/play_store.webp";
 import { Service } from "../../types/index";
 
 export const paramountPlus: Service = {

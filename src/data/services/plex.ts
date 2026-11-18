@@ -1,4 +1,4 @@
-import plexIcon from "../../assets/apps/images/plex/assets/play_store.png";
+import plexIcon from "../../assets/apps/images/plex/assets/play_store.webp";
 import { Service } from "../../types/index";
 import { checkHttpInstance } from "../../utils/instanceHealth";
 

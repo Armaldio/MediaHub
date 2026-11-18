@@ -1,4 +1,4 @@
-import allMovieIcon from "../../assets/apps/images/allmovie/assets/logo.svg";
+import allMovieIcon from "../../assets/apps/images/allmovie/assets/brand.png";
 import { Service } from "../../types/index";
 
 export const allMovie: Service = {

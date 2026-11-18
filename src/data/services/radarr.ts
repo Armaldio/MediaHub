@@ -1,4 +1,4 @@
-import radarrIcon from "../../assets/apps/images/jellyfin/assets/play_store.png"; // ponytail: add src/assets/apps/images/radarr/assets/logo.svg when sourced
+import radarrIcon from "../../assets/apps/images/radarr/assets/brand.png";
 import { Service, CustomServiceInstance } from "../../types/index";
 import { arrHeaders, arrItemUrl, arrSearchUrl } from "./arrShared";
 import { checkHttpInstance } from "../../utils/instanceHealth";

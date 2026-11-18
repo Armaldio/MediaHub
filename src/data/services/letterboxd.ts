@@ -1,4 +1,4 @@
-import letterboxdIcon from "../../assets/apps/images/letterboxd/assets/play_store.png";
+import letterboxdIcon from "../../assets/apps/images/letterboxd/assets/play_store.webp";
 import { Service } from "../../types/index";
 
 export const letterboxd: Service = {

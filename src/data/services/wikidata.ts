@@ -1,4 +1,4 @@
-import wikidataIcon from "../../assets/apps/images/wikidata/assets/play_store.png";
+import wikidataIcon from "../../assets/apps/images/wikidata/assets/brand.png";
 import { Service } from "../../types/index";
 
 export const wikidata: Service = {

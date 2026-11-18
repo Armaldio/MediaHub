@@ -1,4 +1,4 @@
-import filmarksIcon from "../../assets/apps/images/filmarks/assets/logo.svg";
+import filmarksIcon from "../../assets/apps/images/filmarks/assets/brand.png";
 import { Service } from "../../types/index";
 
 export const filmarks: Service = {

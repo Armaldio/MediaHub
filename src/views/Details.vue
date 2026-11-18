@@ -321,7 +321,7 @@
                           v-if="service.icon"
                           :src="service.icon"
                           :alt="service.name"
-                          class="w-full h-full object-cover"
+                          class="w-full h-full object-contain"
                         />
                         <span
                           v-else

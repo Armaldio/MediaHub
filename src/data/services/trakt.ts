@@ -1,4 +1,4 @@
-import traktIcon from "../../assets/apps/images/trakt/assets/play_store.png";
+import traktIcon from "../../assets/apps/images/trakt/assets/play_store.webp";
 import { Service } from "../../types/index";
 import { traktSlug, traktTvUrl } from "./providerUrls";
 

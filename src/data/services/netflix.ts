@@ -1,4 +1,4 @@
-import netflixIcon from "../../assets/apps/images/netflix/assets/play_store.png";
+import netflixIcon from "../../assets/apps/images/netflix/assets/play_store.webp";
 import { Service } from "../../types/index";
 
 export const netflix: Service = {

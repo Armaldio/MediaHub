@@ -1,4 +1,4 @@
-import tvdbIcon from "../../assets/apps/images/tvdb/assets/favicon.png";
+import tvdbIcon from "../../assets/apps/images/tvdb/assets/brand.png";
 import { Service } from "../../types/index";
 
 export const tvdb: Service = {
