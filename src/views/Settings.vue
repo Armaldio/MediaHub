@@ -124,7 +124,7 @@
             <button
               v-if="!isPro"
               @click="handlePurchase"
-              :disabled="loadingOfferings || !currentOffering"
+              :disabled="loadingOfferings || purchaseLoading || restoreLoading || !currentOffering"
               class="ui-button ui-button--primary flex-1"
             >
               <span
@@ -158,7 +158,7 @@
 
             <button
               @click="handleRestorePurchases"
-              :disabled="restoreLoading"
+              :disabled="restoreLoading || purchaseLoading"
               class="ui-button"
             >
               <span
@@ -455,10 +455,10 @@ import AppHeader from "@/components/AppHeader.vue";
 import InstanceCockpit from "@/components/InstanceCockpit.vue";
 import { useServicesStore } from "@/stores/services";
 import type { Service, CustomServiceInstance, InstanceCheckResult } from "@/types";
-import { useProducts } from "@/composables/products";
+import { hasPro } from "@/composables/products";
 import { Device } from "@capacitor/device";
 import { Capacitor } from "@capacitor/core";
-import { Purchases } from "@revenuecat/purchases-capacitor";
+import { getPurchases } from "@/utils/purchases";
 import {
   RevenueCatUI,
   PAYWALL_RESULT,
@@ -466,7 +466,6 @@ import {
 
 const nativePurchases = Capacitor.getPlatform() !== "web";
 const servicesStore = useServicesStore();
-const { hasPro } = useProducts();
 
 const showInstanceModal = ref(false);
 const showDeleteModal = ref(false);
@@ -561,8 +560,7 @@ const fetchOfferings = async () => {
   loadingOfferings.value = true;
   offeringsError.value = null;
   try {
-    const offerings = await Purchases.getOfferings();
-    console.log("offerings", JSON.stringify(offerings, null, 2));
+    const offerings = await (await getPurchases()).getOfferings();
     currentOffering.value = offerings.current;
 
     if (currentOffering.value?.availablePackages?.length) {
@@ -594,7 +592,7 @@ onMounted(async () => {
 
   // Fetch customer ID and entitlements for display
   try {
-    const { customerInfo } = await Purchases.getCustomerInfo();
+    const { customerInfo } = await (await getPurchases()).getCustomerInfo();
     customerId.value = customerInfo.originalAppUserId;
     activeEntitlements.value = Object.keys(customerInfo.entitlements.active);
   } catch (e) {
@@ -773,7 +771,9 @@ async function deleteInstance() {
 
 const handlePurchase = async () => {
   purchaseLoading.value = true;
+  offeringsError.value = null;
   try {
+    await getPurchases();
     // Present paywall for current offering:
     const { result } = await RevenueCatUI.presentPaywall();
 
@@ -781,6 +781,8 @@ const handlePurchase = async () => {
     switch (result) {
       case PAYWALL_RESULT.NOT_PRESENTED:
       case PAYWALL_RESULT.ERROR:
+        offeringsError.value = "Could not open the purchase screen. Please try again.";
+        return false;
       case PAYWALL_RESULT.CANCELLED:
         return false;
       case PAYWALL_RESULT.PURCHASED:
@@ -791,6 +793,9 @@ const handlePurchase = async () => {
       default:
         return false;
     }
+  } catch (error) {
+    console.error("Could not open the purchase screen:", error);
+    offeringsError.value = "Could not open the purchase screen. Please try again.";
   } finally {
     purchaseLoading.value = false;
   }
@@ -799,7 +804,7 @@ const handlePurchase = async () => {
 const handleRestorePurchases = async () => {
   restoreLoading.value = true;
   try {
-    const { customerInfo } = await Purchases.restorePurchases();
+    const { customerInfo } = await (await getPurchases()).restorePurchases();
     const restored =
       typeof customerInfo.entitlements.active["custom-instances"] !== "undefined" ||
       typeof customerInfo.entitlements.active["unlimited-services"] !== "undefined"

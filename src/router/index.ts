@@ -1,45 +1,6 @@
-import { createRouter, createWebHistory, type NavigationGuard } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 import { useServicesStore } from '@/stores/services'
 import { parseDeepLink, getDeepLinkLocation } from '@/utils/deepLink'
-
-// Handle deep link navigation
-const handleDeepLink: NavigationGuard = (to, _from, next) => {
-  // Check for deep link in query parameters (web fallback)
-  if (to.query.deep_link) {
-    const deepLink = Array.isArray(to.query.deep_link) 
-      ? to.query.deep_link[0] 
-      : to.query.deep_link || '';
-    
-    if (deepLink) {
-      const params = parseDeepLink(deepLink);
-      if (params) {
-        const location = getDeepLinkLocation(params);
-        if (location) return next(location);
-      }
-    }
-  }
-  
-  // Handle direct navigation with explicit ID types
-  if (to.name === 'details') {
-    const idType = to.query.source === 'imdb' ? 'imdb' : 'tmdb';
-    const id = to.params[`${idType}id`];
-    
-    if (id) {
-      const paramKey = idType === 'tmdb' ? 'tmdbId' : 'imdbId';
-      next({
-        name: `details-${idType}`,
-        params: {
-          ...to.params,
-          [paramKey]: id
-        },
-        query: to.query
-      });
-      return;
-    }
-  }
-  
-  next();
-};
 
 const router = createRouter({
   history: createWebHistory(),
@@ -47,15 +8,13 @@ const router = createRouter({
     {
       path: '/',
       name: 'introduction',
-      component: () => import('@/views/Introduction.vue'),
-      beforeEnter: handleDeepLink
+      component: () => import('@/views/Introduction.vue')
     },
     {
       path: '/home',
       name: 'home',
       component: () => import('@/views/Home.vue'),
-      meta: { requiresServices: true },
-      beforeEnter: handleDeepLink
+      meta: { requiresServices: true }
     },
     {
       path: '/details/:mediaType/tmdb/:tmdbId',
@@ -82,6 +41,21 @@ const router = createRouter({
       component: () => import('@/views/Settings.vue'),
       meta: { requiresServices: true }
     },
+    {
+      path: '/:linkType(movie|show)',
+      alias: '/mediahub/:linkType(movie|show)',
+      redirect: (to) => {
+        const query = new URLSearchParams()
+        for (const key of ['tmdbId', 'imdbId', 'season', 'episode']) {
+          const value = to.query[key]
+          if (typeof value === 'string') query.set(key, value)
+        }
+        return {
+          name: 'introduction',
+          query: { deep_link: `mediahub://${to.params.linkType}?${query}` },
+        }
+      },
+    },
     // Catch-all route for web-based deep links
     {
       path: '/:pathMatch(.*)*',
@@ -90,25 +64,40 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, _from, next) => {
+router.beforeEach((to) => {
   const servicesStore = useServicesStore()
-  
-  // Always load services from localStorage first
   servicesStore.loadFromLocalStorage()
 
-  // If we're going to introduction but have services selected, redirect to home
-  if (to.name === 'introduction' && servicesStore.hasSelectedServices && to.query.force !== '1') {
-    next({ name: 'home', query: to.query })
-    return
+  const links = to.query.deep_link
+  const deepLink = Array.isArray(links) ? links[0] : links
+  if (typeof deepLink === 'string') {
+    const params = parseDeepLink(deepLink)
+    const location = params && getDeepLinkLocation(params)
+    if (location) return location
   }
-  
-  // Existing requiresServices check
+
   if (to.meta.requiresServices && !servicesStore.hasSelectedServices) {
-    next({ name: 'introduction' })
-    return
+    const isDetails = to.name === 'details-tmdb' || to.name === 'details-imdb'
+    return { name: 'introduction', query: isDetails ? { continueTo: to.fullPath } : {} }
   }
-  
-  next()
+
+  if ((to.name === 'introduction' || to.name === 'home') && servicesStore.hasSelectedServices) {
+    const destination = to.query.continueTo
+    if (typeof destination === 'string' && /^\/details\//.test(destination)) {
+      const resolved = router.resolve(destination)
+      if (resolved.name === 'details-tmdb' || resolved.name === 'details-imdb') {
+        return { path: resolved.path, query: resolved.query, replace: true }
+      }
+    }
+    if (to.name === 'home' && destination !== undefined) {
+      const query = { ...to.query }
+      delete query.continueTo
+      return { name: 'home', query, replace: true }
+    }
+    if (to.name === 'introduction' && to.query.force !== '1') {
+      return { name: 'home', query: to.query }
+    }
+  }
 })
 
 export default router

@@ -7,8 +7,8 @@ export const appleTvPlus: Service = {
   description: "Apple Original shows and movies",
   icon: appleTvPlusIcon,
   websiteUrl: "https://tv.apple.com",
-  appUrl: "https://apps.apple.com/app/apple-tv/id1174078549",
-  androidAppId: "com.apple.atve.sony.appletv",
+  appUrl: "https://play.google.com/store/apps/details?id=com.apple.atve.androidtv.appletv",
+  androidAppId: "com.apple.atve.androidtv.appletv",
   color: "#000000",
   deepLinks: [
     {

@@ -1,6 +1,5 @@
+import { requestInstance } from "./instanceRequest";
 import type { CustomServiceInstance, InstanceCheckResult } from "@/types";
-
-const REQUEST_TIMEOUT_MS = 8_000;
 
 export function normalizeInstanceUrl(rawUrl: string, allowBareHost = false): string {
   const value = rawUrl.trim().replace(/\/+$/, "");
@@ -42,14 +41,11 @@ export async function checkHttpInstance(
     return result("unreachable", "The instance URL is invalid. Check the address and try again.");
   }
 
-  const controller = new AbortController();
-  const timeout = globalThis.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
   try {
-    const response = await fetch(`${baseUrl}${options.path}`, {
+    const response = await requestInstance(`${baseUrl}${options.path}`, {
       method: options.method ?? "GET",
       headers: options.headers,
       body: options.body,
-      signal: controller.signal,
     });
     if (response.status === 401) return result("authentication_required", "Authentication is required. Check the credentials.", 401);
     if (response.status === 403) return result("unauthorized", "The credentials were rejected or lack permission.", 403);
@@ -63,8 +59,6 @@ export async function checkHttpInstance(
       ? "The connection timed out. Check that the server is online."
       : "The instance could not be reached. Check the URL, network, and server status.";
     return result("unreachable", message);
-  } finally {
-    globalThis.clearTimeout(timeout);
   }
 }
 

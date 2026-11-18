@@ -1,3 +1,4 @@
+import { requestInstance } from "../../utils/instanceRequest";
 import radarrIcon from "../../assets/apps/images/radarr/assets/brand.png";
 import { Service, CustomServiceInstance } from "../../types/index";
 import { arrHeaders, arrItemUrl, arrSearchUrl } from "./arrShared";
@@ -18,7 +19,7 @@ async function findRadarrMovie(
   if (!base) return null;
 
   try {
-    const res = await fetch(`${base}/api/v3/movie/lookup/tmdb?tmdbId=${tmdbId}`, {
+    const res = await requestInstance(`${base}/api/v3/movie/lookup/tmdb?tmdbId=${tmdbId}`, {
       headers: arrHeaders(instance),
     });
     if (res.ok) return res.json() as Promise<RadarrMovie>;

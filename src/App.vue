@@ -18,14 +18,16 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useServicesStore } from '@/stores/services'
 import { setupDeepLinkHandler } from '@/utils/deepLinkHandler'
 
 const servicesStore = useServicesStore()
+const router = useRouter()
 
 onMounted(() => {
   servicesStore.loadFromLocalStorage()
   // Initialize deep link handler
-  setupDeepLinkHandler()
+  setupDeepLinkHandler(router)
 })
 </script>

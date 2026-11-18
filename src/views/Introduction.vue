@@ -317,7 +317,13 @@ function resetFilters() {
   showInstalledOnly.value = false
 }
 function goToHome() {
-  if (servicesStore.hasSelectedServices) void router.push('/home')
+  if (!servicesStore.hasSelectedServices) return
+  const continueTo = router.currentRoute.value.query.continueTo
+  if (typeof continueTo === 'string') {
+    void router.replace({ name: 'home', query: { continueTo } })
+    return
+  }
+  void router.push('/home')
 }
 function goToSettings() { void router.push({ name: 'settings' }) }
 onMounted(() => { void servicesStore.checkInstalledApps() })

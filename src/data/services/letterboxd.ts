@@ -7,7 +7,7 @@ export const letterboxd: Service = {
   description: "Social film discovery",
   icon: letterboxdIcon,
   websiteUrl: "https://letterboxd.com",
-  appUrl: "https://play.google.com/store/apps/details?id=com.letterboxd",
+  appUrl: "https://play.google.com/store/apps/details?id=com.letterboxd.letterboxd",
   androidAppId: "com.letterboxd.letterboxd",
   color: "#00D735",
   deepLinks: [

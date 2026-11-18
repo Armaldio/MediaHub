@@ -56,3 +56,18 @@ Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` if Chromium is installed at a custom path.
 
 Vue DevTools is opt-in to keep normal startup lean. Run
 `VUE_DEVTOOLS=true pnpm dev` when you need the inspector.
+
+
+## Android deep links
+
+Use `mediahub://movie?tmdbId=100` or
+`mediahub://show?tmdbId=200&season=1&episode=2` to open a title in the app.
+The web app accepts the same parameters on `/movie` and `/show`.
+
+Verified HTTPS App Links require a domain controlled by the project. The
+previously configured `mediahub.app` is parked. To enable App Links, host the
+web app and `/.well-known/assetlinks.json` on the project domain, include the
+Google Play app signing certificate fingerprint for
+`xyz.armaldio.mediahub.app`, and declare that host and the two paths in an
+`android:autoVerify` intent filter. Update the accepted HTTPS origin in the
+deep link parser to match.

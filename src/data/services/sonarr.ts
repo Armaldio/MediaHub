@@ -1,3 +1,4 @@
+import { requestInstance } from "../../utils/instanceRequest";
 import sonarrIcon from "../../assets/apps/images/sonarr/assets/brand.png";
 import { Service, CustomServiceInstance } from "../../types/index";
 import { FormattedDetails } from "../../models/models";
@@ -21,7 +22,7 @@ async function findSonarrSeries(
 
   // Prefer lookup by TMDB id (Sonarr v3 supports tmdb: term).
   try {
-    const res = await fetch(`${base}/api/v3/series/lookup?term=tmdb:${data.tmdbId}`, {
+    const res = await requestInstance(`${base}/api/v3/series/lookup?term=tmdb:${data.tmdbId}`, {
       headers: arrHeaders(instance),
     });
     if (res.ok) {
@@ -34,7 +35,7 @@ async function findSonarrSeries(
 
   if (data.tvdbId) {
     try {
-      const res = await fetch(`${base}/api/v3/series/lookup?term=tvdb:${data.tvdbId}`, {
+      const res = await requestInstance(`${base}/api/v3/series/lookup?term=tvdb:${data.tvdbId}`, {
         headers: arrHeaders(instance),
       });
       if (res.ok) {

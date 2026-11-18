@@ -358,6 +358,7 @@
 </template>
 
 <script setup lang="ts">
+import { Capacitor } from "@capacitor/core";
 import {
   computed,
   onMounted,
@@ -761,22 +762,28 @@ const openDeepLink = async (service: Service, link: DeepLink) => {
     const resolvedUrl = link.customUrlBuilder
       ? await link.customUrlBuilder(details, instance!)
       : await link.url(details, instance);
-    if (!resolvedUrl) return;
-
-    // Handle different types of deep links
-    if (resolvedUrl.startsWith("http")) {
-      window.open(resolvedUrl, "_blank", "noopener,noreferrer");
-    } else if (service.androidAppId) {
-      try {
-        const { AppLauncher } = await import("@capacitor/app-launcher");
-        await AppLauncher.openUrl({ url: resolvedUrl });
-      } catch (error) {
-        console.error("Error opening app:", error);
-        window.open(service.appUrl, "_blank", "noopener,noreferrer");
+    if (!resolvedUrl) throw new Error("No link available");
+    const isWebUrl = /^https?:\/\//i.test(resolvedUrl);
+    if (instance && !isWebUrl) throw new Error("Invalid instance link");
+    if (!Capacitor.isNativePlatform()) {
+      if (isWebUrl) {
+        window.open(resolvedUrl, "_blank", "noopener,noreferrer");
       }
+      return;
     }
+
+    const { AppLauncher } = await import("@capacitor/app-launcher");
+    const opened = await AppLauncher.openUrl({ url: resolvedUrl }).catch(() => ({ completed: false }));
+    if (opened.completed) return;
+
+    if (service.appUrl && service.appUrl !== resolvedUrl) {
+      const fallback = await AppLauncher.openUrl({ url: service.appUrl });
+      if (fallback.completed) return;
+    }
+    throw new Error("No app could open the link");
   } catch (error) {
-    console.error("Error processing deep link:", error);
+    console.error("Error opening service link:", error);
+    alert(`Could not open ${service.name}. Please try again.`);
   } finally {
     loadingLinks.value = { ...loadingLinks.value, [loadingKey]: false };
   }

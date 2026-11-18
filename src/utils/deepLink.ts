@@ -9,8 +9,9 @@ export interface DeepLinkParams {
 export function parseDeepLink(url: string): DeepLinkParams | null {
   try {
     // Handle both mediahub:// and https://mediahub.app/ URLs
-    const cleanUrl = url.replace('mediahub://', 'https://mediahub.app/');
+    const cleanUrl = url.replace(/^mediahub:\/\//i, 'https://mediahub.app/');
     const parsedUrl = new URL(cleanUrl);
+    if (parsedUrl.origin !== 'https://mediahub.app') return null;
     const path = parsedUrl.pathname.replace(/^\/+/, ''); // Remove leading slashes
     
     // Handle movie deep links

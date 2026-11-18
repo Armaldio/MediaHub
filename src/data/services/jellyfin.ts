@@ -1,3 +1,4 @@
+import { requestInstance } from "../../utils/instanceRequest";
 import jellyfinIcon from "../../assets/apps/images/jellyfin/assets/play_store.webp";
 import { Service, CustomServiceInstance } from "../../types/index";
 import { FormattedDetails } from "../../models/models";
@@ -30,7 +31,7 @@ async function findJellyfinItemId(
     `limit=10`;
 
   try {
-    const response = await fetch(hintsUrl, { headers });
+    const response = await requestInstance(hintsUrl, { headers });
     if (response.ok) {
       const data = await response.json();
       const hints: JellyfinSearchHint[] = data.SearchHints || [];
@@ -49,7 +50,7 @@ async function findJellyfinItemId(
     `${instance.baseUrl}/Items?Recursive=true&` +
     `IncludeItemTypes=${wantedKind}&Fields=ProviderIds`;
   try {
-    const response = await fetch(itemsUrl, { headers });
+    const response = await requestInstance(itemsUrl, { headers });
     if (!response.ok) return null;
     const data = await response.json();
     const items: { Id?: string; ProviderIds?: { Tmdb?: string } }[] =

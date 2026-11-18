@@ -1,3 +1,4 @@
+import { requestInstance } from "../utils/instanceRequest";
 import { ref } from "vue";
 import type { CustomServiceInstance } from "@/types";
 import type { FormattedDetails } from "@/models/models";
@@ -173,7 +174,7 @@ async function getStatusFromApi(
 
   try {
     const mediaType = data.type === "movie" ? "movie" : "tv";
-    const res = await fetch(`${baseUrl(instance)}/api/v1/${mediaType}/${data.tmdbId}`, {
+    const res = await requestInstance(`${baseUrl(instance)}/api/v1/${mediaType}/${data.tmdbId}`, {
       headers: headers(instance),
     });
     if (!res.ok) return "unknown";
@@ -204,7 +205,7 @@ async function postRequest(
   const payload = buildSeerrRequestPayload(data);
 
   try {
-    const res = await fetch(`${baseUrl(instance)}/api/v1/request`, {
+    const res = await requestInstance(`${baseUrl(instance)}/api/v1/request`, {
       method: "POST",
       headers: headers(instance),
       body: JSON.stringify(payload),

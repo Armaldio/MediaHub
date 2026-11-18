@@ -1,10 +1,10 @@
 import { App, type URLOpenListenerEvent } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { navigateFromDeepLink, parseDeepLink } from './deepLink';
-import { useRouter } from 'vue-router';
+import type { Router } from 'vue-router';
 
-export function setupDeepLinkHandler() {
-  const router = useRouter();
+export function setupDeepLinkHandler(router: Router) {
+  if (!Capacitor.isNativePlatform()) return;
   let lastNativeUrl: string | null = null;
   let lastNativeUrlAt = 0;
 
@@ -18,27 +18,11 @@ export function setupDeepLinkHandler() {
   };
   
   // Handle deep links when app is already open
-  App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
+  void App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
     handleNativeUrl(event.url);
-  });
+  }).catch((error) => console.error('Unable to subscribe to app links:', error));
 
-  if (Capacitor.isNativePlatform()) {
-    void App.getLaunchUrl().then((launch) => {
-      if (launch?.url) handleNativeUrl(launch.url);
-    }).catch((error) => console.error('Unable to read app launch URL:', error));
-  }
-
-  // For web, we'll handle deep links through the router
-  if (!Capacitor.isNativePlatform()) {
-    // Check for deep link in URL on initial load
-    if (window.location.pathname.startsWith('/mediahub/')) {
-      const deepLink = `${window.location.pathname.replace(/^\/mediahub\//, 'mediahub://')}${window.location.search}`;
-      const params = parseDeepLink(deepLink.toString());
-      console.log('deepLink', deepLink.toString());
-      console.log('params', JSON.stringify(params));  
-      if (params) {
-        navigateFromDeepLink(router, params);
-      }
-    }
-  }
+  void App.getLaunchUrl().then((launch) => {
+    if (launch?.url) handleNativeUrl(launch.url);
+  }).catch((error) => console.error('Unable to read app launch URL:', error));
 }

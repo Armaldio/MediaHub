@@ -1,3 +1,4 @@
+import { requestInstance } from "../../utils/instanceRequest";
 import embyIcon from "../../assets/apps/images/emby/assets/favicon.png";
 import { Service, CustomServiceInstance } from "../../types/index";
 import { FormattedDetails } from "../../models/models";
@@ -12,7 +13,7 @@ async function findEmbyItemId(
   const includeItemTypes = type === "movie" ? "Movie" : "Series";
   const url = `${instance.baseUrl}/Items?Recursive=true&IncludeItemTypes=${includeItemTypes}&Fields=ProviderIds&api_key=${instance.apiKey}`;
   try {
-    const response = await fetch(url, {
+    const response = await requestInstance(url, {
       headers: {
         "X-Emby-Token": instance.apiKey,
         "X-MediaBrowser-Token": instance.apiKey,

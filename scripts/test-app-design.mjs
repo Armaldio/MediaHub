@@ -293,9 +293,23 @@ try {
     .getByRole("button", { name: "Open A quiet adventure", exact: true })
     .first()
     .waitFor();
+  const fresh = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  fresh.setDefaultTimeout(60_000);
+  await fresh.route("https://api.themoviedb.org/**", (route) => route.fulfill({ json: movie }));
+  await fresh.goto(`${baseUrl}/movie?tmdbId=100`);
+  await fresh.getByRole("checkbox", { name: "IMDb", exact: true }).waitFor();
+  // Reload before finishing onboarding to exercise the saved destination.
+  await fresh.reload();
+  await fresh.getByRole("checkbox", { name: "IMDb", exact: true }).focus();
+  await fresh.keyboard.press("Space");
+  await fresh.getByRole("button", { name: "Continue", exact: true }).click();
+  await fresh.waitForURL("**/details/movie/tmdb/100?source=tmdb");
+  await fresh.getByRole("heading", { name: movie.title, exact: true }).waitFor();
+  await fresh.close();
+
   assert.deepEqual(errors, []);
   console.log(
-    "Cross-app design: search, keyboard cards, movie/TV navigation, responsive layouts, modal focus, connection CRUD and health checks passed"
+    "Cross-app design: search, keyboard cards, movie/TV navigation, first-use deep links, responsive layouts, modal focus, connection CRUD and health checks passed"
   );
 } finally {
   await browser.close();
