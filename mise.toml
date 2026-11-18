@@ -6,7 +6,17 @@ node = "24"
 ANDROID_HOME = "/home/armaldio/Android/Sdk"
 
 [tasks.dev]
-run = "pnpm dev"
+description = "Start the app with DubbingBase dev credentials from Doppler"
+run = "doppler run --project dubbingbase --config dev --only-secrets TMDB_API_KEY,TVDB_API_KEY --no-fallback -- mise run dev-server"
+
+[tasks.dev-server]
+hide = true
+run = "pnpm dev --host 127.0.0.1"
+
+[tasks.dev-server.env]
+VITE_TMDB_API_KEY = "{{ get_env(name='TMDB_API_KEY') }}"
+VITE_TMDB_KEY = "{{ get_env(name='TMDB_API_KEY') }}"
+VITE_TVDB_API_KEY = "{{ get_env(name='TVDB_API_KEY') }}"
 
 [tasks.build-prod]
 run = "pnpm build"

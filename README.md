@@ -4,6 +4,17 @@ This template should help get you started developing with Vue 3 and TypeScript i
 
 Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
 
+## Local development
+
+With Doppler installed and authenticated for the `dubbingbase` project, run:
+
+```sh
+mise run dev
+```
+
+This loads the `dev` config, maps the TMDB and TVDB credentials to the app's
+`VITE_*` variables, and starts the app at http://127.0.0.1:5173 without an `.env` file.
+
 ## TV season and episode links
 
 TV links can target a season or episode while keeping the show as the identity
