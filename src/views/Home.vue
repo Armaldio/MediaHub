@@ -245,11 +245,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Search, X, Cog, Film, Star, ChevronRight } from 'lucide-vue-next'
 import { useMoviesStore } from '@/stores/movies'
 import MediaCard from '@/components/MediaCard.vue'
+import { loadRecentSearches } from '@/utils/recentSearches'
 import { MultiSearchResult, Movie, TV } from 'tmdb-ts'
 
 const router = useRouter()
@@ -257,7 +258,7 @@ const route = useRoute()
 const moviesStore = useMoviesStore()
 const searchQuery = ref('')
 const filterType = ref<'all' | 'movie' | 'tv'>('all')
-const recentSearches = ref<string[]>(JSON.parse(localStorage.getItem('recentSearches') || '[]'))
+const recentSearches = ref<string[]>(loadRecentSearches())
 let searchTimeout: ReturnType<typeof setTimeout>
 
 const saveRecent = (q: string) => {
@@ -278,6 +279,7 @@ const handleSearch = () => {
 }
 
 const clearSearch = () => {
+  clearTimeout(searchTimeout)
   searchQuery.value = ''
   moviesStore.clearSearch()
 }
@@ -307,6 +309,7 @@ const getResultRating = (item: MultiSearchResult) => {
 }
 
 const selectRecent = (q: string) => {
+  clearTimeout(searchTimeout)
   searchQuery.value = q
   moviesStore.searchMulti(q)
 }
@@ -361,4 +364,8 @@ const fetchInitialData = async () => {
 
 // Fetch data when component mounts
 onMounted(fetchInitialData)
+onUnmounted(() => {
+  clearTimeout(searchTimeout)
+  moviesStore.clearSearch()
+})
 </script>

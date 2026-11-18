@@ -21,9 +21,18 @@ details page, seasons and episodes are browsable. Links that support the
 selected scope open that season or episode; other providers continue to open
 the parent show.
 
-To run the browser regression for empty season and episode metadata, start the
-dev server with `pnpm dev -- --host 127.0.0.1`, then run this in another
-terminal (Playwright Chromium must be installed):
+Run `pnpm lint`, `pnpm check`, and `pnpm test:stores` for static checks and
+store regressions.
+
+To run the browser regression for empty season/episode metadata, enrichment
+without Wikidata, and token logging, start the dev server with dummy credentials
+(all API responses in this test are mocked):
+
+```sh
+VITE_TMDB_API_KEY=test VITE_TMDB_KEY=test VITE_TVDB_API_KEY=test VITE_TRAKT_CLIENT_ID=test pnpm dev --host 127.0.0.1
+```
+
+Then run this in another terminal (Playwright Chromium must be installed):
 
 ```sh
 BASE_URL=http://127.0.0.1:5173 pnpm exec node scripts/test-tv-metadata.mjs

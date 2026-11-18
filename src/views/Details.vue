@@ -919,13 +919,8 @@ watch(
 
     fetchSeerrStatuses(formattedDetails.value);
 
-    if (!wikidata_id) {
-      console.log("No Wikidata ID available");
-      return;
-    }
-
-    // Fetch all external IDs from Wikidata in parallel
-    const claims = await fetchWikidataClaims(wikidata_id);
+    // Wikidata claims are optional; TVDB and Trakt also use TMDB identifiers.
+    const claims = wikidata_id ? await fetchWikidataClaims(wikidata_id) : {};
     if (requestId !== enrichmentRequestId) return;
     const claimValue = (property: string) => {
       const value = claims[property]?.[0]?.mainsnak?.datavalue?.value;
