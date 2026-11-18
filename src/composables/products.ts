@@ -1,4 +1,3 @@
-import { Purchases } from "@revenuecat/purchases-capacitor";
 import { onMounted, ref } from "vue";
 
 export const useProducts = () => {
@@ -11,6 +10,7 @@ export const useProducts = () => {
     if (import.meta.env.VITE_BYPASS_PREMIUM === "true") return true;
 
     try {
+      const { Purchases } = await import("@revenuecat/purchases-capacitor");
       const { customerInfo } = await Purchases.getCustomerInfo();
 
       console.log("RevenueCat customerInfo:", customerInfo);

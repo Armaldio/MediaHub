@@ -38,4 +38,10 @@ Then run this in another terminal (Playwright Chromium must be installed):
 BASE_URL=http://127.0.0.1:5173 pnpm exec node scripts/test-tv-metadata.mjs
 ```
 
+Run `BASE_URL=http://127.0.0.1:5173 node scripts/test-service-picker.mjs` to
+check picker selection, keyboard reordering, saved choices, filters, and phone layouts.
+
 Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE` if Chromium is installed at a custom path.
+
+Vue DevTools is opt-in to keep normal startup lean. Run
+`VUE_DEVTOOLS=true pnpm dev` when you need the inspector.

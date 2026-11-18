@@ -4,14 +4,14 @@ import router from "./router";
 import App from "./App.vue";
 import "./style.css";
 
-import { LOG_LEVEL, Purchases } from "@revenuecat/purchases-capacitor";
 import { Capacitor } from "@capacitor/core";
 import { EdgeToEdge } from "@capawesome/capacitor-android-edge-to-edge-support";
 import { StatusBar, Style } from "@capacitor/status-bar";
 
 const configure = async () => {
   const platform = Capacitor.getPlatform();
-  console.log("platform", platform);
+  if (platform !== "ios" && platform !== "android") return;
+  const { LOG_LEVEL, Purchases } = await import("@revenuecat/purchases-capacitor");
   if (platform === "ios" || platform === "android") {
     await Purchases.setLogLevel({ level: LOG_LEVEL.DEBUG });
   }

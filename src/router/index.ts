@@ -1,8 +1,4 @@
 import { createRouter, createWebHistory, type NavigationGuard } from 'vue-router'
-import Introduction from '@/views/Introduction.vue'
-import Home from '@/views/Home.vue'
-import Details from '@/views/Details.vue'
-import Settings from '@/views/Settings.vue'
 import { useServicesStore } from '@/stores/services'
 import { parseDeepLink, getDeepLinkLocation } from '@/utils/deepLink'
 
@@ -51,27 +47,27 @@ const router = createRouter({
     {
       path: '/',
       name: 'introduction',
-      component: Introduction,
+      component: () => import('@/views/Introduction.vue'),
       beforeEnter: handleDeepLink
     },
     {
       path: '/home',
       name: 'home',
-      component: Home,
+      component: () => import('@/views/Home.vue'),
       meta: { requiresServices: true },
       beforeEnter: handleDeepLink
     },
     {
       path: '/details/:mediaType/tmdb/:tmdbId',
       name: 'details-tmdb',
-      component: Details,
+      component: () => import('@/views/Details.vue'),
       props: true,
       meta: { requiresServices: true },
     },
     {
       path: '/details/:mediaType/imdb/:imdbId',
       name: 'details-imdb',
-      component: Details,
+      component: () => import('@/views/Details.vue'),
       props: true,
       meta: { requiresServices: true },
     },
@@ -83,7 +79,7 @@ const router = createRouter({
     {
       path: '/settings',
       name: 'settings',
-      component: Settings,
+      component: () => import('@/views/Settings.vue'),
       meta: { requiresServices: true }
     },
     // Catch-all route for web-based deep links
