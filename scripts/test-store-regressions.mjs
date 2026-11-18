@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { createServer } from 'vite'
 
 const saved = new Map()
+globalThis.testInstalledApps = { platform: 'web', packages: [] }
 globalThis.localStorage = {
   getItem: key => saved.get(key) ?? null,
   setItem: (key, value) => saved.set(key, value),
@@ -11,16 +12,22 @@ const { createPinia, setActivePinia } = await import('pinia')
 const server = await createServer({
   configFile: false,
   cacheDir: 'node_modules/.vite-store-tests',
-  ssr: { noExternal: ['tmdb-ts', '@capacitor/device'] },
+  ssr: { noExternal: ['tmdb-ts', '@capacitor/core', '@capacitor/device', '@capacitor/app-launcher'] },
   plugins: [{
     name: 'mock-tmdb',
     enforce: 'pre',
     resolveId(id) {
       if (id === 'tmdb-ts') return '\0mock-tmdb'
+      if (id === '@capacitor/core') return '\0mock-capacitor'
       if (id === '@capacitor/device') return '\0mock-device'
+      if (id === '@capacitor/app-launcher') return '\0mock-app-launcher'
     },
     load(id) {
-      if (id === '\0mock-device') return `export const Device = { getInfo: async () => ({ platform: 'web' }) }`
+      if (id === '\0mock-capacitor') return `export const Capacitor = { getPlatform: () => globalThis.testInstalledApps.platform }`
+      if (id === '\0mock-device') return `export const Device = { getInfo: async () => ({ platform: globalThis.testInstalledApps.platform }) }`
+      if (id === '\0mock-app-launcher') return `export const AppLauncher = {
+        canOpenUrl: async ({ url }) => ({ value: globalThis.testInstalledApps.packages.includes(url) }),
+      }`
       if (id !== '\0mock-tmdb') return
       return `export class TMDB {
         constructor() {
@@ -54,6 +61,8 @@ try {
   const { useServicesStore } = await server.ssrLoadModule('/src/stores/services.ts')
   const services = useServicesStore()
   await services.initStore()
+  services.preselectInstalledApps()
+  assert.equal(saved.has('servicesState'), false)
   const first = services.addCustomInstance('seerr', { name: 'Primary', baseUrl: 'https://example.test', apiKey: 'fake' })
   const second = services.addCustomInstance('seerr', { name: 'Secondary', baseUrl: 'https://second.test' })
   const firstId = `seerr-${first.id}`
@@ -76,6 +85,35 @@ try {
   services.removeCustomInstance('seerr', first.id)
   assert.equal(services.availableServices.some(service => service.id === firstId), false)
   assert.equal(services.getDefaultInstance('seerr').id, second.id)
+
+  saved.delete('servicesState')
+  globalThis.testInstalledApps = {
+    platform: 'android',
+    packages: ['com.netflix.mediaclient', 'com.disney.disneyplus', 'tv.trakt.trakt',
+      'com.imdb.mobile', 'com.crunchyroll.crunchyroid', 'com.mb.android'],
+  }
+  setActivePinia(createPinia())
+  const firstRun = useServicesStore()
+  await firstRun.initStore()
+  firstRun.preselectInstalledApps()
+  assert.equal(firstRun.installedServices.length, 6)
+  assert.deepEqual(firstRun.selectedServiceIds, firstRun.installedServices.map(service => service.id))
+  assert.deepEqual(JSON.parse(saved.get('servicesState')).selectedServiceIds, firstRun.selectedServiceIds)
+  for (const id of [...firstRun.selectedServiceIds]) firstRun.toggleService(id)
+
+  setActivePinia(createPinia())
+  const returningUser = useServicesStore()
+  await returningUser.initStore()
+  returningUser.preselectInstalledApps()
+  assert.deepEqual(returningUser.selectedServiceIds, [])
+
+  saved.delete('servicesState')
+  setActivePinia(createPinia())
+  const manualFirstRun = useServicesStore()
+  manualFirstRun.toggleService('yamtrack')
+  await manualFirstRun.checkInstalledApps()
+  manualFirstRun.preselectInstalledApps()
+  assert.deepEqual(manualFirstRun.selectedServiceIds, ['yamtrack'])
 
   const { useMoviesStore } = await server.ssrLoadModule('/src/stores/movies.ts')
   const movies = useMoviesStore()
@@ -122,4 +160,5 @@ try {
   globalThis.fetch = originalFetch
   await server.close()
   delete globalThis.localStorage
+  delete globalThis.testInstalledApps
 }
