@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { Capacitor } from '@capacitor/core'
 import { Device } from '@capacitor/device'
 import { v4 as uuidv4 } from 'uuid'
 import type { Service, CustomServiceInstance } from '@/types'
@@ -84,7 +85,7 @@ export const useServicesStore = defineStore('services', () => {
     saveToLocalStorage();
   }
 
-  const checkInstalledApps = async () => {
+  const scanInstalledApps = async () => {
     try {
       const { AppLauncher } = await import('@capacitor/app-launcher')
       const deviceInfo = await Device.getInfo()
@@ -140,6 +141,14 @@ export const useServicesStore = defineStore('services', () => {
     }
   }
 
+  let installedAppsScan: Promise<void> | undefined
+  const checkInstalledApps = () => {
+    installedAppsScan ??= scanInstalledApps().finally(() => {
+      installedAppsScan = undefined
+    })
+    return installedAppsScan
+  }
+
   const saveToLocalStorage = () => {
     try {
       // Prepare custom instances data
@@ -191,6 +200,14 @@ export const useServicesStore = defineStore('services', () => {
       // Discard malformed persisted state.
       localStorage.removeItem('servicesState')
     }
+  }
+
+  const preselectInstalledApps = () => {
+    if (Capacitor.getPlatform() !== 'android' || selectedServiceIds.value.length) return
+    if (localStorage.getItem('servicesState') !== null) return
+
+    selectedServiceIds.value = [...installedApps.value]
+    saveToLocalStorage()
   }
 
   const getInstancesForService = (serviceId: string): CustomServiceInstance[] => {
@@ -354,6 +371,7 @@ export const useServicesStore = defineStore('services', () => {
     toggleService,
     reorderServices,
     checkInstalledApps,
+    preselectInstalledApps,
     loadFromLocalStorage,
     hasSelectedServices,
     initStore,

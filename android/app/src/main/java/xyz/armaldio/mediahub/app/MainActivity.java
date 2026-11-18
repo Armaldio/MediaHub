@@ -8,6 +8,7 @@ import com.getcapacitor.BridgeActivity;
 public class MainActivity extends BridgeActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        registerPlugin(InstalledWebAppPlugin.class);
         super.onCreate(savedInstanceState);
         // Draw the app full-bleed behind the transparent system bars (edge-to-edge)
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);

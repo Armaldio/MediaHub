@@ -301,7 +301,7 @@
                       @click.stop="openDeepLink(service, link)"
                       class="ui-button service-link"
                       :disabled="loadingLinks[getLoadingKey(service, link)]"
-                      :title="link.name"
+                      :title="floppyAppLinks.has(service.id) ? 'App' : link.name"
                     >
                       <LoaderCircle
                         v-if="loadingLinks[getLoadingKey(service, link)]"
@@ -310,12 +310,12 @@
                         aria-hidden="true"
                       />
                       <AppWindow
-                        v-else-if="link.requiresApp"
+                        v-else-if="link.requiresApp || floppyAppLinks.has(service.id)"
                         :size="16"
                         aria-hidden="true"
                       />
                       <ExternalLink v-else :size="16" aria-hidden="true" />
-                      <span class="flex-1 truncate">{{ link.name }}</span>
+                      <span class="flex-1 truncate">{{ floppyAppLinks.has(service.id) ? 'App' : link.name }}</span>
                       <ArrowUpRight :size="15" aria-hidden="true" />
                     </button>
                   </template>
@@ -358,7 +358,6 @@
 </template>
 
 <script setup lang="ts">
-import { Capacitor } from "@capacitor/core";
 import {
   computed,
   onMounted,
@@ -367,6 +366,7 @@ import {
   nextTick,
   watch,
 } from "vue";
+import { Capacitor, registerPlugin } from "@capacitor/core";
 import type { DeepLink, Service, CustomServiceInstance } from "@/types";
 
 interface InstanceService extends Service {
@@ -385,6 +385,7 @@ import { useServicesStore } from "@/stores/services";
 import { FormattedDetails } from "@/models/models";
 import { MediaType } from "tmdb-ts";
 import { fetchTVDBData } from "@/data/services";
+import { floppyDetailUrl } from "@/data/services/floppy";
 import { extractWikidataProviderIds } from "@/utils/wikidataProviderIds";
 import { getTraktSlug } from "@/utils/traktLookup";
 import { useSeerr } from "@/composables/useSeerr";
@@ -744,6 +745,36 @@ watch(
 
 const loadingLinks = ref<Record<string, boolean>>({});
 
+const isAndroid = Capacitor.getPlatform() === "android";
+const installedWebApp = registerPlugin<{
+  canOpen(options: { url: string }): Promise<{ value: boolean }>;
+  open(options: { url: string }): Promise<{ value: boolean }>;
+}>("InstalledWebApp");
+const floppyAppLinks = ref(new Set<string>());
+const floppyLinkUrls = computed(() => {
+  const details = formattedDetails.value;
+  if (!isAndroid || !details) return [];
+
+  return servicesStore.selectedServices
+    .filter((service): service is InstanceService =>
+      isInstance(service) && service.parentServiceId === "floppy",
+    )
+    .map((service) => ({ id: service.id, url: floppyDetailUrl(details, service.instanceData) }));
+});
+
+watch(floppyLinkUrls, async (links, _previous, onCleanup) => {
+  let cancelled = false;
+  onCleanup(() => { cancelled = true; });
+  floppyAppLinks.value = new Set();
+  const appLinks = await Promise.all(links.map(async ({ id, url }) => {
+    const result = await installedWebApp.canOpen({ url }).catch(() => null);
+    return result?.value ? id : null;
+  }));
+  if (!cancelled) {
+    floppyAppLinks.value = new Set(appLinks.filter((id) => id !== null));
+  }
+}, { immediate: true });
+
 const getLoadingKey = (service: Service, link: DeepLink) => {
   return `${service.id}-${link.name}`;
 };
@@ -770,6 +801,12 @@ const openDeepLink = async (service: Service, link: DeepLink) => {
         window.open(resolvedUrl, "_blank", "noopener,noreferrer");
       }
       return;
+    }
+
+    if (isWebUrl && floppyAppLinks.value.has(service.id)) {
+      const opened = await installedWebApp.open({ url: resolvedUrl }).catch(() => null);
+      if (opened?.value) return;
+      floppyAppLinks.value.delete(service.id);
     }
 
     const { AppLauncher } = await import("@capacitor/app-launcher");

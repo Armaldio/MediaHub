@@ -326,7 +326,10 @@ function goToHome() {
   void router.push('/home')
 }
 function goToSettings() { void router.push({ name: 'settings' }) }
-onMounted(() => { void servicesStore.checkInstalledApps() })
+onMounted(async () => {
+  await servicesStore.checkInstalledApps()
+  servicesStore.preselectInstalledApps()
+})
 </script>
 
 <style scoped>

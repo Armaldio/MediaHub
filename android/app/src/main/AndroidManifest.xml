@@ -43,6 +43,12 @@
     </application>
 
     <queries>
+        <!-- Discover WebAPKs for user-configured instance URLs. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" android:host="*" />
+        </intent>
         <!-- Keep in sync with androidAppId in src/data/services. -->
         <package android:name="com.allocine.androidapp" />
         <package android:name="com.amazon.avod.thirdpartyclient" />
