@@ -14,44 +14,27 @@ interface InstanceService extends Service {
 }
 
 export const useServicesStore = defineStore('services', () => {
-  // Build the list of available services plus one flattened entry per
-  // custom instance, using the provided custom-instances map.
-  const buildAvailableServices = (
-    instancesMap: Record<string, CustomServiceInstance[]>
-  ): (Service | InstanceService)[] => {
-    const services: (Service | InstanceService)[] = []
-
-    servicesData.forEach(service => {
-      const instances = instancesMap[service.id] || []
-      const serviceWithInstances: Service = {
+  // Parent services own instance data; flattened entries are derived for the UI.
+  const parentServices = ref<Service[]>(servicesData.map(service => ({
+    ...service,
+    customInstances: []
+  })))
+  const availableServices = computed<(Service | InstanceService)[]>(() =>
+    parentServices.value.flatMap(service => [
+      service,
+      ...(service.supportsCustomInstances ? service.customInstances || [] : []).map(instance => ({
         ...service,
-        customInstances: instances
-      }
-
-      services.push(serviceWithInstances)
-
-      if (service.supportsCustomInstances && instances.length > 0) {
-        instances.forEach(instance => {
-          services.push({
-            ...serviceWithInstances,
-            id: `${serviceWithInstances.id}-${instance.id}`,
-            name: `${serviceWithInstances.name} (${instance.name})`,
-            description: `Instance of ${serviceWithInstances.name}`,
-            isInstance: true,
-            instanceId: instance.id,
-            parentServiceId: serviceWithInstances.id,
-            instanceData: instance
-          } as InstanceService)
-        })
-      }
-    })
-
-    return services
-  }
-
-  const initializeServices = () => buildAvailableServices({})
-
-  const availableServices = ref<(Service | InstanceService)[]>(initializeServices())
+        customInstances: undefined,
+        id: `${service.id}-${instance.id}`,
+        name: `${service.name} (${instance.name})`,
+        description: `Instance of ${service.name}`,
+        isInstance: true as const,
+        instanceId: instance.id,
+        parentServiceId: service.id,
+        instanceData: instance
+      }))
+    ])
+  )
 
   const selectedServiceIds = ref<string[]>([])
   const installedApps = ref<string[]>([])
@@ -113,14 +96,14 @@ export const useServicesStore = defineStore('services', () => {
       if (!isNative.value) {
         // In web environment, native detection is unavailable — mark all native apps as not installed
         // Web-only services stay false (no app to install)
-        availableServices.value.forEach(service => {
+        parentServices.value.forEach(service => {
           service.isInstalled = false
         })
         return
       }
 
       // Create a new array to avoid modifying the original while iterating
-      const updatedServices = [...availableServices.value]
+      const updatedServices = [...parentServices.value]
       
       // Check each service that has a package name
       for (let i = 0; i < updatedServices.length; i++) {
@@ -147,11 +130,11 @@ export const useServicesStore = defineStore('services', () => {
       }
       
       // Update the services array
-      availableServices.value = updatedServices
+      parentServices.value = updatedServices
     } catch (error) {
       console.error('Error in checkInstalledApps:', error)
       // Fallback: mark all as not installed (unknown state)
-      availableServices.value.forEach(service => {
+      parentServices.value.forEach(service => {
         service.isInstalled = false
       })
     }
@@ -161,7 +144,7 @@ export const useServicesStore = defineStore('services', () => {
     try {
       // Prepare custom instances data
       const customInstancesToSave: Record<string, CustomServiceInstance[]> = {}
-      availableServices.value.forEach(service => {
+      parentServices.value.forEach(service => {
         if (service.customInstances?.length) {
           customInstancesToSave[service.id] = service.customInstances
         }
@@ -188,7 +171,11 @@ export const useServicesStore = defineStore('services', () => {
 
         // Rebuild the service list so custom-instance entries are recreated
         // (their ids must match for saved selections to persist)
-        availableServices.value = buildAvailableServices(restoredInstances)
+        parentServices.value = servicesData.map(service => ({
+          ...service,
+          isInstalled: installedApps.value.includes(service.id),
+          customInstances: restoredInstances[service.id] || []
+        }))
 
         // Restore selected service IDs (instance ids now exist again)
         const restored = Array.isArray(parsed.selectedServiceIds)
@@ -197,24 +184,17 @@ export const useServicesStore = defineStore('services', () => {
             )
           : []
 
-        // Auto-select any custom instances so they appear on the details page
-        // (covers instances added before this change, which were never selected)
-        const instanceIds = availableServices.value
-          .filter(s => 'isInstance' in s)
-          .map(s => s.id)
-        selectedServiceIds.value = [...new Set([...restored, ...instanceIds])]
+        selectedServiceIds.value = [...new Set<string>(restored)]
       }
     } catch (error) {
       console.error('Error loading from localStorage:', error)
-      // Clear corrupted data but preserve custom instances
+      // Discard malformed persisted state.
       localStorage.removeItem('servicesState')
     }
   }
 
   const getInstancesForService = (serviceId: string): CustomServiceInstance[] => {
-    const parent = availableServices.value.find(
-      s => s.id === serviceId && !('isInstance' in s)
-    ) as Service | undefined
+    const parent = parentServices.value.find(s => s.id === serviceId)
     if (!parent) return []
     return parent.customInstances || []
   }
@@ -236,7 +216,7 @@ export const useServicesStore = defineStore('services', () => {
 
   // Custom instance management
   const addCustomInstance = (serviceId: string, instance: Omit<CustomServiceInstance, 'id'>) => {
-    const parentService = availableServices.value.find(s => s.id === serviceId && !('isInstance' in s)) as Service | undefined
+    const parentService = parentServices.value.find(s => s.id === serviceId)
     if (!parentService) return null
 
     const newInstance: CustomServiceInstance = {
@@ -258,33 +238,17 @@ export const useServicesStore = defineStore('services', () => {
       newInstance.isDefault = true
     }
 
-    // Create the instance service
-    const instanceService: InstanceService = {
-      ...parentService,
-      id: `${parentService.id}-${newInstance.id}`,
-      name: `${parentService.name} (${newInstance.name})`,
-      description: `Instance of ${parentService.name}`,
-      isInstance: true,
-      instanceId: newInstance.id,
-      parentServiceId: parentService.id,
-      instanceData: newInstance
-    }
-
-    // Add to available services and update parent
     parentService.customInstances.push(newInstance)
-    availableServices.value.push(instanceService)
 
-    // Auto-select the new instance so it shows up on the details page
-    if (!selectedServiceIds.value.includes(instanceService.id)) {
-      selectedServiceIds.value.push(instanceService.id)
-    }
+    // Newly created instances are selected; later loads respect saved choices.
+    selectedServiceIds.value.push(`${serviceId}-${newInstance.id}`)
 
     saveToLocalStorage()
     return newInstance
   }
 
   const updateCustomInstance = (serviceId: string, instanceId: string, updates: Partial<CustomServiceInstance>) => {
-    const parentService = availableServices.value.find(s => s.id === serviceId && !('isInstance' in s)) as Service | undefined
+    const parentService = parentServices.value.find(s => s.id === serviceId)
     if (!parentService) return null
 
     // Ensure customInstances is initialized
@@ -314,23 +278,12 @@ export const useServicesStore = defineStore('services', () => {
 
     instances[instanceIndex] = updatedInstance
 
-    // Update the corresponding instance service
-    const instanceServiceIndex = availableServices.value.findIndex(s =>
-      s.id === `${serviceId}-${instanceId}` && 'isInstance' in s
-    )
-
-    if (instanceServiceIndex !== -1) {
-      const instanceService = availableServices.value[instanceServiceIndex] as InstanceService
-      instanceService.instanceData = updatedInstance
-      instanceService.name = `${parentService.name} (${updatedInstance.name})`
-    }
-
     saveToLocalStorage()
     return updatedInstance
   }
 
   const removeCustomInstance = (serviceId: string, instanceId: string) => {
-    const parentService = availableServices.value.find(s => s.id === serviceId && !('isInstance' in s)) as Service | undefined
+    const parentService = parentServices.value.find(s => s.id === serviceId)
     if (!parentService) return false
 
     // Ensure customInstances is initialized
@@ -346,15 +299,6 @@ export const useServicesStore = defineStore('services', () => {
 
     // Remove from parent service
     parentService.customInstances.splice(instanceIndex, 1)
-
-    // Remove the corresponding instance service
-    const instanceServiceIndex = availableServices.value.findIndex(s =>
-      s.id === `${serviceId}-${instanceId}` && 'isInstance' in s
-    )
-
-    if (instanceServiceIndex !== -1) {
-      availableServices.value.splice(instanceServiceIndex, 1)
-    }
 
     // Remove the instance from the selection so it disappears from the details page
     const selIndex = selectedServiceIds.value.indexOf(`${serviceId}-${instanceId}`)
@@ -372,7 +316,7 @@ export const useServicesStore = defineStore('services', () => {
   }
 
   const getDefaultInstance = (serviceId: string): CustomServiceInstance | null => {
-    const parentService = availableServices.value.find(s => s.id === serviceId && !('isInstance' in s)) as Service | undefined
+    const parentService = parentServices.value.find(s => s.id === serviceId)
     if (!parentService) return null
 
     // Ensure customInstances is initialized
@@ -385,8 +329,7 @@ export const useServicesStore = defineStore('services', () => {
 
   const clearStoredCredentials = () => {
     let cleared = 0
-    availableServices.value.forEach(service => {
-      if ('isInstance' in service) return
+    parentServices.value.forEach(service => {
       service.customInstances?.forEach(instance => {
         if (instance.apiKey || instance.username || instance.password) cleared++
         delete instance.apiKey
@@ -399,6 +342,7 @@ export const useServicesStore = defineStore('services', () => {
   }
 
   return {
+    parentServices,
     availableServices,
     selectedServices,
     selectedServiceIds,

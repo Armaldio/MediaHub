@@ -141,7 +141,8 @@ async function extractManifestXml(apkPath: string): Promise<string> {
         `  - Android SDK apkanalyzer (cmdline-tools)\n` +
         `  - apktool (https://apktool.org/docs/install)\n` +
         `  - pnpm add -D app-info-parser\n` +
-        `Then re-run. Original error: ${e}`
+        `Then re-run. Original error: ${e}`,
+        { cause: e }
       );
     }
   }
@@ -464,7 +465,7 @@ function validateServices(opts: { apkFilters?: IntentFilter[]; serviceId?: strin
       }
       const schemeMatch = urlTemplate.match(/^([a-z0-9+.-]+):\/\//i);
       const scheme = schemeMatch?.[1];
-      const hostMatch = urlTemplate.match(/^[a-z0-9+.-]+:\/\/([^\/\?#]+)/i);
+      const hostMatch = urlTemplate.match(/^[a-z0-9+.-]+:\/\/([^/?#]+)/i);
       const host = hostMatch?.[1]?.split(":")[0]; // strip port if any
       if (scheme && scheme !== "http" && scheme !== "https" && opts.apkFilters) {
         if (!apkSchemes.has(scheme)) {
@@ -538,11 +539,11 @@ function extractFullMetadata(xml: string, apkPath: string, filters: IntentFilter
   }
   const manifestFallback = j?.manifest ?? {};
   const app = (j?.manifest?.application) ?? {};
-  let manifestForMeta: any = j?.manifest ?? {};
+  const manifestForMeta: any = j?.manifest ?? {};
 
   let permissions: string[] = ensureArray(manifestForMeta["uses-permission"]).map((p:any)=>p["android:name"]).filter(Boolean);
   let features: string[] = ensureArray(manifestForMeta["uses-feature"]).map((f:any)=>f["android:name"]).filter(Boolean);
-  let queries: any = manifestForMeta["queries"] ?? {};
+  const queries: any = manifestForMeta["queries"] ?? {};
   let queryPackages: string[] = ensureArray(queries["package"]).map((p:any)=>p["android:name"]).filter(Boolean);
   let queryIntents: any[] = ensureArray(queries["intent"]).map((q:any)=>{
     const a = ensureArray(q["action"]).map((x:any)=>x["android:name"]).filter(Boolean);
@@ -582,7 +583,7 @@ function extractFullMetadata(xml: string, apkPath: string, filters: IntentFilter
   let apkSize = "";
   try { apkSize = `${(fs.statSync(apkPath).size/1024/1024).toFixed(1)} MB`; } catch {}
   // Deeplink-related strings (heuristic: contains deeplink, scheme, host)
-  let deeplinkStrings: string[] = [];
+  const deeplinkStrings: string[] = [];
   try {
     // If we still have decoded dir, try to read strings (best-effort, already cleaned)
     // Fallback: grep manifest for @string/ that we resolved earlier would have been replaced, so skip

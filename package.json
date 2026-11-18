@@ -13,7 +13,8 @@
     "test:tv-navigation": "tsx scripts/test-tv-navigation.ts",
     "test:season-episode-links": "tsx scripts/test-season-episode-links.ts",
     "preview": "vite preview",
-    "download-app-icons": "npx tsx src/scripts/download-app-images/index.ts"
+    "download-app-icons": "npx tsx src/scripts/download-app-images/index.ts",
+    "test:stores": "node scripts/test-store-regressions.mjs"
   },
   "dependencies": {
     "@capacitor/android": "7.4.4",
@@ -41,15 +42,20 @@
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^7.4.4",
+    "@eslint/js": "^10.0.1",
     "@tailwindcss/postcss": "^4.1.17",
     "@types/node": "^24.10.1",
     "@vitejs/plugin-vue": "^6.0.1",
     "autoprefixer": "^10.4.22",
+    "eslint": "^10.15.0",
+    "eslint-plugin-vue": "^10",
+    "globals": "^16",
     "playwright": "^1.56.1",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.17",
     "tsx": "^4.23.13",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8",
     "vite": "^7.2.2",
     "vite-plugin-vue-devtools": "^8.0.3",
     "vue-tsc": "^3.1.3"

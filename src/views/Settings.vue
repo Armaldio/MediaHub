@@ -831,7 +831,7 @@ const handleRestorePurchases = async () => {
 };
 
 const contactSupport = async () => {
-  let body = "";
+  let body: string;
   try {
     const info = await Device.getInfo();
     body = `Platform: ${info.platform}\nOS: ${info.operatingSystem} ${info.osVersion}\nModel: ${info.model}`;

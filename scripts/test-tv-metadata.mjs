@@ -17,7 +17,7 @@ try {
     hasTouch: true,
   });
   await context.addInitScript(() => localStorage.setItem('servicesState', JSON.stringify({
-    selectedServiceIds: ['the_movie_database', 'imdb', 'trakt'],
+    selectedServiceIds: ['the_movie_database', 'imdb', 'trakt', 'tvdb'],
     customInstances: {},
   })));
 
@@ -107,6 +107,34 @@ try {
   assert.ok(showBody.includes('7.0'));
   assert.deepEqual(errors, []);
   console.log('PASS parent show metadata remains visible; no page errors');
+
+  // Enrichment must work when TMDB supplies external IDs without Wikidata.
+  show.external_ids.tvdb_id = 321;
+  show.external_ids.trakt = 789;
+  const enrichmentRequests = [];
+  const consoleMessages = [];
+  page.on('console', message => consoleMessages.push(message.text()));
+  await page.route('https://api4.thetvdb.com/**', async route => {
+    const { pathname } = new URL(route.request().url());
+    enrichmentRequests.push(pathname);
+    const data = pathname.endsWith('/login')
+      ? { token: 'regression-test-bearer-token' }
+      : pathname.endsWith('/artwork') ? [] : { slug: 'browser-test-show' };
+    await route.fulfill({ json: { data } });
+  });
+  await page.route('https://api.trakt.tv/**', async route => {
+    enrichmentRequests.push(new URL(route.request().url()).pathname);
+    await route.fulfill({ json: { ids: { slug: 'browser-test-show-2020' } } });
+  });
+  const artworkResponse = page.waitForResponse('https://api4.thetvdb.com/v4/series/321/artwork');
+  const traktResponse = page.waitForResponse('https://api.trakt.tv/shows/789?extended=false');
+  await page.reload();
+  await Promise.all([artworkResponse, traktResponse]);
+  await page.getByRole('heading', { name: 'TheTVDB', exact: true }).waitFor();
+  assert.ok(enrichmentRequests.includes('/shows/789'), 'Trakt lookup runs without Wikidata');
+  assert.ok(!consoleMessages.some(message => message.includes('regression-test-bearer-token')));
+  assert.deepEqual(errors, []);
+  console.log('PASS TVDB and Trakt enrichment without Wikidata; bearer token stays out of logs');
 } finally {
   await browser?.close();
 }

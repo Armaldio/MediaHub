@@ -101,7 +101,6 @@ export const useTVDBStore = defineStore("tvdb", () => {
       }
 
       authToken.value = data.data.token;
-      console.log("authToken.value", authToken.value);
 
       // Token expires in 24 hours, but we'll refresh after 23 hours to be safe
       tokenExpiry.value = Date.now() + 23 * 60 * 60 * 1000;
@@ -114,14 +113,6 @@ export const useTVDBStore = defineStore("tvdb", () => {
   // Ensure we have a valid token
   const ensureAuthenticated = async (): Promise<void> => {
     const now = Date.now();
-
-    console.log(
-      "ensureAuthenticated",
-      authToken.value,
-      tokenExpiry.value,
-      now,
-      tokenExpiry.value && now >= tokenExpiry.value
-    );
 
     if (!authToken.value || !tokenExpiry.value || now >= tokenExpiry.value) {
       await authenticate();
@@ -202,8 +193,6 @@ export const useTVDBStore = defineStore("tvdb", () => {
 
     try {
       await ensureAuthenticated();
-
-      console.log("authToken.value", authToken.value);
 
       const response = await fetch(`${TVDB_BASE_URL}/movies/${tvdbId}`, {
         headers: {
